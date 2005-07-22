@@ -1,0 +1,10 @@
+To Install dbsnpload:
+
+1) cp dbsnpload.config.default dbsnpload.config
+and edit as necessary
+
+2) DLAInstall common.config.sh dbsnpload.config
+
+A typical Install is done from dbsnpload root directory as follows:
+/usr/local/mgi/live/dbutils/dlautils/DLAInstall /usr/local/mgi/live/etc/common.config.sh dbsnpload.config
+
