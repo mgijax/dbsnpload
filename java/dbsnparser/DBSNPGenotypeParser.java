@@ -15,8 +15,17 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import org.jax.mgi.shr.stringutil.StringLib;
+import org.jax.mgi.shr.dla.log.DLALogger;
+import org.jax.mgi.shr.dla.log.DLALoggingException;
 
 public class DBSNPGenotypeParser implements DBSNPParser {
+
+    // DEBUG
+    DLALogger logger;
+    public DBSNPGenotypeParser() throws DLALoggingException {
+        logger = DLALogger.getInstance();
+    }
+
     /**
      * This parses the file, using registered SAX handlers, and outputs
      * the events in the parsing process cycle.
@@ -248,10 +257,13 @@ public class DBSNPGenotypeParser implements DBSNPParser {
                 // map the dbSNP strain id to the strain name or jax id
                 strainMap.put(currentStrainMapStrainId, currentStrain);
             }
-            // When we get to the end of a record, add the rs to the vector and
-            // reset the structures
+            // When we get to the end of the ss information we are done with
+            // the record. Add the alleles to the strain allele map
             else if (localName.equals("SsInfo")) {
                 currentInput.addSSAlleles(currentSSId, currentStrAlleleMap);
+              //  if (currentStrAlleleMap.size() < 1 ) {
+              //      logger.logcInfo("NO ALLELES RS" + currentInput.getRsId() + " SS" + currentSSId, false);
+              //  }
             }
 
             else if (localName.equals("SnpInfo")) {

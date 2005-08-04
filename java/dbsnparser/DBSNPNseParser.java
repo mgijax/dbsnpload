@@ -185,6 +185,7 @@ public class DBSNPNseParser implements DBSNPParser {
                 for (int i = 0; i < atts.getLength(); i++) {
                     if (atts.getLocalName(i) == "value") {
                         currentFxnSet.setFxnClass(atts.getValue(i));
+                        //logger.logcInfo("\tNSE-FxnSet_fxn-class-contig " + atts.getValue(i), false);
                     }
                 }
             }
@@ -205,6 +206,7 @@ public class DBSNPNseParser implements DBSNPParser {
 
             if (localName.equals("NSE-rs_refsnp-id")) {
                 currentNseInput.setRsId(currentCharString);
+                //logger.logcInfo(currentCharString, false);
                 //System.out.println("rsId: " + currentCharString);
             }
             else if (localName.equals("NSE-rs_seq-5_E")) {
@@ -239,12 +241,26 @@ public class DBSNPNseParser implements DBSNPParser {
                 currentMapLoc.setStartCoord(new Double(currentCharString));
            }
             else if (localName.equals("NSE-FxnSet_locusid")) {
+                //logger.logcInfo("NSE-FxnSet_locusid " + currentCharString, false);
                 currentFxnSet.setLocusId(currentCharString);
             }
+            else if (localName.equals("NSE-FxnSet_reading-frame")) {
+                //logger.logcInfo("\tNSE-FxnSet_reading-frame " + currentCharString, false);
+            }
+            else if (localName.equals("NSE-FxnSet_allele")) {
+                //logger.logcInfo("\tNSE-FxnSet_allele " + currentCharString, false);
+            }
+            else if (localName.equals("NSE-FxnSet_residue")) {
+                //logger.logcInfo("\tNSE-FxnSet_residue " + currentCharString, false);
+            }
+            else if (localName.equals("NSE-FxnSet_aa-position")) {
+                //logger.logcInfo("\tNSE-FxnSet_aa-position " + currentCharString, false);
+            }
             else if (localName.equals("NSE-FxnSet")) {
-                /*if (currentFxnSet.fxnClass == null) {
-                    System.out.println(currentNseInput.getRsId() + "\t" + currentFxnSet.getLocusId() + "\t" + currentFxnSet.getFxnClass()) ;
-                }*/
+                if (currentFxnSet.getFxnClass() == null || currentFxnSet.getLocusId() == null ) {
+                    logger.logcInfo(currentNseInput.getRsId() + "\t" + currentFxnSet.getLocusId() + "\t" + currentFxnSet.getFxnClass(), false) ;
+                }
+
                 currentMapLoc.addFxn(currentFxnSet);
             }
             else if (localName.equals("NSE-rsMaploc")) {

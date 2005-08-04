@@ -63,8 +63,20 @@ public class DBSNPNse {
     // the set of markers for this RS
     private Vector markerVector;
 
-
-
+    /**
+     * Constructs a DBSNPNse object with just a stream
+     * @param stream the stream which to pass the DAO objects to perform database
+     *        inserts, updates, and deletes
+     */
+    public DBSNPNse(SQLStream stream) {
+        this.stream = stream;
+        ssMap = new HashMap();
+        strAlleleVector = new Vector();
+        flankVector = new Vector();
+        accVector = new Vector();
+        coordVector = new Vector();
+        markerVector = new Vector();
+    }
     /**
      * Constructs a DBSPNse object by creating MGI_SNP_ConsensusSNPDAO
      * for 'rsState'
@@ -79,15 +91,9 @@ public class DBSNPNse {
 
     public DBSNPNse(MGI_SNP_ConsensusSNPState rsState, SQLStream stream)
         throws ConfigException, DBException {
+        this(stream);
         rsDAO = new MGI_SNP_ConsensusSNPDAO(rsState);
-        this.stream = stream;
-        //ssVector = new Vector();
-        ssMap = new HashMap();
-        strAlleleVector = new Vector();
-        flankVector = new Vector();
-        accVector = new Vector();
-        coordVector = new Vector();
-        markerVector = new Vector();
+
 
         /*
         for(Iterator i = rsStates.iterator(); i.hasNext();) {
@@ -113,7 +119,26 @@ public class DBSNPNse {
         MGI_SNP_SubSNPDAO dao = (MGI_SNP_SubSNPDAO)ssMap.get(ssId);
         return dao.getKey().getKey();
     }
+    /**
+     * add
+     * @param state
+     * @throws ConfigException
+     * @throws DBException
+     */
+    /*
+    public void addRS(MGI_SNP_ConsensusSNPState state) throws ConfigException,
+        DBException {
+        rsDAO = new MGI_SNP_ConsensusSNPDAO(state);
+    }
+    */
 
+   /**
+    * adds the allele summary to the RS DAO
+    * @param summary the allele summary to add to the RS state
+    */
+    public void addRSAlleleSummary(String summary) {
+        rsDAO.getState().setAlleleSummary(summary);
+    }
     /**
      * Adds a MGI_SNP_SubSNPDAO to the set of DAO's representing the
      * SS of this RS
