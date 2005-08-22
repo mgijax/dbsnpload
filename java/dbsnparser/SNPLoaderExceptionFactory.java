@@ -20,13 +20,13 @@ public class SNPLoaderExceptionFactory
     }
 
     /**
-     * Repeat file IOException
+     * Coordinate file IOException
      */
-    public static final String RepeatFileIOErr=
+    public static final String CoordFileIOErr=
         "org.jax.mgi.shr.dla.seqloader.RepeatFileIOException";
     static {
-        exceptionsMap.put(RepeatFileIOErr, new SNPLoaderException(
-            "Repeat file IOException", false));
+        exceptionsMap.put(CoordFileIOErr, new SNPLoaderException(
+            "Coordinate file IOException", false));
     }
 
     /**

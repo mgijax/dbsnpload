@@ -17,7 +17,9 @@ class DBSNPNseSS {
     // SS Validation status
     String ssValidStatus;
     // true if exemplar ss
-    Boolean isExemplar = Boolean.FALSE;
+    private Boolean isExemplar = Boolean.FALSE;
+    // dbsnp ss observed alleles; a summary of the ss alleles
+    private String observedAlleles;
 
     /**********************
      * Constructors
@@ -55,7 +57,9 @@ class DBSNPNseSS {
     public void setIsExemplar(Boolean i) {
        isExemplar = i;
     }
-
+    public void setObservedAlleles(String s) {
+        observedAlleles = s;
+    }
     /******************
      * Get methods
      *****************/
@@ -76,9 +80,12 @@ class DBSNPNseSS {
      }
      public String getSSValidStatus() {
          return ssValidStatus;
-      }
-      public Boolean getIsExemplar() {
+     }
+     public Boolean getIsExemplar() {
           return isExemplar;
-       }
+     }
+     public String getObservedAlleles() {
+         return observedAlleles;
+     }
 
 }

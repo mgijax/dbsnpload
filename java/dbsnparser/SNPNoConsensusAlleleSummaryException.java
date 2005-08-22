@@ -6,8 +6,7 @@ package dbsnparser;
 import org.jax.mgi.shr.exception.MGIException;
 
     /**
-     * An MGIException thrown when there are no strain alleles in the genotype
-     * file for this rs
+     * An MGIException thrown when a consensus snp allele summary is empty
      * @has an exception message, a data related indicator and a parent
      * exception which can be null.
      * @does nothing
@@ -16,9 +15,9 @@ import org.jax.mgi.shr.exception.MGIException;
      * @version 1.0
      */
 
-    public class SNPNoStrainAlleleException extends MGIException {
-        public SNPNoStrainAlleleException() {
-            super("No Strain Alleles for RS ??", false);
+    public class SNPNoConsensusAlleleSummaryException extends MGIException {
+        public SNPNoConsensusAlleleSummaryException() {
+            super("No ConsensusAlleleSummary for RS ??", false);
         }
     }
 

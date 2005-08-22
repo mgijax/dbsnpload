@@ -24,13 +24,6 @@ import java.util.Vector;
 import java.util.Iterator;
 import java.util.HashSet;
 import java.util.ArrayList;
-import org.jax.mgi.shr.dla.input.OrganismChecker;
-import org.jax.mgi.shr.dla.input.SequenceInput;
-import org.jax.mgi.dbs.mgd.loads.Seq.SequenceInputProcessor;
-import org.jax.mgi.dbs.mgd.loads.Seq.SequenceAttributeResolver;
-import org.jax.mgi.dbs.mgd.loads.Seq.SequenceResolverException;
-import org.jax.mgi.dbs.rdr.qc.SeqQCReporter;
-import org.jax.mgi.dbs.mgd.loads.Seq.*;
 
 public class DBSNPLoader extends DLALoader {
     /**
@@ -56,7 +49,7 @@ public class DBSNPLoader extends DLALoader {
     private SQLStream radarStream;
 
     // Puts SNPs into the database
-    private DBSNPInputProcessor processor;
+    private DBSNPInputProcessor dbsnpProcessor;
 
     // current number of SNPs processed
     private int snpCtr;
@@ -67,8 +60,18 @@ public class DBSNPLoader extends DLALoader {
     // current number of rs with no BL6 coordinates
     private int rsWithNoBL6Ctr;
 
+    // current number of rs with no allele summary (means no strain resolved or
+    // all alleles are 'N'
+    private int rsWithNoAlleleSummaryCtr;
+
     // list of chromsomes to parse
     private ArrayList chrList;
+
+    // writer for CoordLoad input file
+    private BufferedWriter coordWriter;
+
+    // configurator
+    private DBSNPLoaderCfg loadCfg;
 
     /**
      * Initializes instance variables
@@ -87,20 +90,31 @@ public class DBSNPLoader extends DLALoader {
         // The list of chromosomes for iterating thru Chr files
         chrList = new ArrayList();
 
-        /*for (int i = 1; i < 20; i++) {
+        for (int i = 1; i < 20; i++) {
             chrList.add(String.valueOf(i));
         }
         chrList.add("X");
         chrList.add("Multi");
-*/
-        chrList.add("1");
+
+        //chrList.add("1");
+        loadCfg = new DBSNPLoaderCfg();
+       // for creating coordload input file
+        try {
+            coordWriter = new BufferedWriter(new FileWriter(
+                loadCfg.getCoordFilename()));
+        }
+        catch (IOException e) {
+            throw new MGIException(e.getMessage());
+        }
+
         // rename the stream for clarity - the DLA thinks of the radar database as qc.
         radarStream = qcStream;
-        processor = new DBSNPInputProcessor(radarStream);
+        dbsnpProcessor = new DBSNPInputProcessor(radarStream, loadStream, coordWriter);
 
         snpCtr = 0;
         rsWithNoAllelesCtr = 0;
         rsWithNoBL6Ctr = 0;
+        rsWithNoAlleleSummaryCtr = 0;
     }
 
     /**
@@ -115,11 +129,10 @@ public class DBSNPLoader extends DLALoader {
             genoInterpreter.loadChromosome(chr);
             DBSNPInput input = (DBSNPInput) genoInterpreter.interpret();
             while (input != null) {
-                processor.processInput(input);
+                dbsnpProcessor.processInput(input);
                 input = (DBSNPInput)genoInterpreter.interpret();
             }
         }
-
     }
 
     /**
@@ -132,6 +145,7 @@ public class DBSNPLoader extends DLALoader {
      */
     protected void run()  throws MGIException {
         // interpret/process chromosome files one at a time
+
         for (Iterator i = chrList.iterator(); i.hasNext(); ) {
             String chr = ((String)i.next()).trim();
             logger.logdDebug("Processing chr " + chr);
@@ -140,7 +154,7 @@ public class DBSNPLoader extends DLALoader {
             //logger.logDebug(input.getRsId() + "\t" + ((DBSNPNseInput)input).getSubSNPs().toString());
             while (input != null) {
                 try {
-                    processor.processInput(input);
+                    dbsnpProcessor.processInput(input);
                 }
                 catch (SNPNoStrainAlleleException e) {
                    // logger.logdInfo("No StrainAlleles: " + input.getRsId(), true);
@@ -148,6 +162,9 @@ public class DBSNPLoader extends DLALoader {
                 }
                 catch (SNPNoBL6Exception e) {
                     rsWithNoBL6Ctr++;
+                }
+                catch (SNPNoConsensusAlleleSummaryException e) {
+                    rsWithNoAlleleSummaryCtr++;
                 }
                 input = (DBSNPInput) nseInterpreter.interpret();
                 snpCtr++;
@@ -162,10 +179,16 @@ public class DBSNPLoader extends DLALoader {
      */
     protected void postprocess() throws MGIException
     {
-    logger.logdInfo("Closing load stream", false);
-    this.radarStream.close();
-    reportLoadStatistics();
-    logger.logdInfo("DBSNPLoader complete", true);
+        try {
+            coordWriter.close();
+        } catch (IOException e) {
+            throw new MGIException(e.getMessage());
+        }
+        logger.logdInfo("Closing load stream", false);
+        this.radarStream.close();
+        this.loadStream.close();
+        reportLoadStatistics();
+        logger.logdInfo("DBSNPLoader complete", true);
     }
 
     /**
@@ -177,9 +200,13 @@ public class DBSNPLoader extends DLALoader {
      */
     private void reportLoadStatistics() {
         logger.logdInfo("Total RefSnps Looked at: " + snpCtr, false);
-        logger.logdInfo("Total RefSnps with no Strain Alleles: " + rsWithNoAllelesCtr, false);
-        logger.logdInfo("Total RefSnps with no BL6 coordinates: " + rsWithNoBL6Ctr, false);
-        for (Iterator i = processor.getProcessedReport().iterator(); i.hasNext(); ) {
+        logger.logdInfo("Total RefSnps with no Strain Alleles: " +
+                        rsWithNoAllelesCtr, false);
+        logger.logdInfo("Total RefSnps with no BL6 coordinates: " +
+                        rsWithNoBL6Ctr, false);
+        logger.logdInfo("Total RefSnps with no ConsensusSnpAlleleSummary: " +
+                        rsWithNoAlleleSummaryCtr, false);
+        for (Iterator i = dbsnpProcessor.getProcessedReport().iterator(); i.hasNext(); ) {
             logger.logdInfo((String)i.next(), false);
         }
     }

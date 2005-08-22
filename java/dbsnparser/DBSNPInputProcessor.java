@@ -20,12 +20,18 @@ import org.jax.mgi.shr.config.ConfigException;
 import org.jax.mgi.shr.cache.KeyNotFoundException;
 import org.jax.mgi.dbs.mgd.lookup.TranslationException;
 import org.jax.mgi.shr.exception.MGIException;
+import org.jax.mgi.dbs.mgd.lookup.StrainKeyLookup;
+import org.jax.mgi.dbs.mgd.lookup.AccessionLookup;
+import org.jax.mgi.dbs.mgd.LogicalDBConstants;
+import org.jax.mgi.dbs.mgd.MGITypeConstants;
+import org.jax.mgi.dbs.mgd.AccessionLib;
 
 import java.util.Vector;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.io.BufferedWriter;
 
 /**
  * an object that
@@ -46,8 +52,13 @@ import java.util.Set;
  */
 
 public class DBSNPInputProcessor {
-
+    // DEBUG
     private Stopwatch stopWatch;
+
+    // for temporary load to mgd
+    private SNPProcessor snpProcessor;
+    // stream for temporarily loading mgd
+    private SQLStream loadStream;
 
     // a stream for handling RADAR DAO objects
     private SQLStream radarStream;
@@ -58,6 +69,8 @@ public class DBSNPInputProcessor {
     // get a sequence load configurator
     private DBSNPLoaderCfg config;
 
+    // summaryAllele orderer
+
     // jobstream key for the load
     private Integer jobStreamKey;
 
@@ -67,9 +80,16 @@ public class DBSNPInputProcessor {
     // Compound object holding all the DAOs representing an RS
     private DBSNPNse dbSNPNse;
 
+    // the current rsId we are processing
+    String rsId;
     // current number of sequences added
     private int addCtr = 0;
 
+    // > 1 dbsnp strainIds can map to the same mgd strain
+    // so the consensusAllele calculation will be incorrect unless we resolve the
+    // strain to a strain key here in the data provider side of the load
+    private StrainKeyLookup strainKeyLookup;
+    private AccessionLookup jaxRegistryLookup;
     // analysis of RS vs SS var class; each is current count of the SS class
     // when the RS class is mixed
     private int mixedRS_SSConflictCtr = 0;
@@ -79,6 +99,15 @@ public class DBSNPInputProcessor {
     private int mixedCtr = 0;
     private int snpCtr = 0;
     private int namedCtr = 0;
+    // analysis of RefSeq proteins and mrnas
+    private int nm = 0;
+    private int nr = 0;
+    private int np = 0;
+    private int xm = 0;
+    private int xr = 0;
+    private int xp = 0;
+    private int otherProt = 0;
+    private int otherMrna = 0;
     /**
      * Constructs a
      * @assumes Nothing
@@ -89,19 +118,25 @@ public class DBSNPInputProcessor {
      * @throws DLALoggingException if error creating a logger
      */
 
-    public DBSNPInputProcessor(SQLStream radarSqlStream) throws CacheException,
-        DBException, ConfigException, DLALoggingException {
+    public DBSNPInputProcessor(SQLStream radarSqlStream, SQLStream loadSqlStream, BufferedWriter coordWriter) throws CacheException,
+        DBException, ConfigException, DLALoggingException, TranslationException, MGIException {
         /**
          * Debug stuff
          */
         stopWatch = new Stopwatch();
 
         radarStream = radarSqlStream;
+        loadStream = loadSqlStream;
         logger = DLALogger.getInstance();
         // configurator to lookup logicalDB
         config = new DBSNPLoaderCfg();
         jobStreamKey = new Integer(config.getJobstreamKey());
         rsStrainAllelesBySS = new HashMap();
+        strainKeyLookup = new StrainKeyLookup();
+        jaxRegistryLookup = new AccessionLookup(LogicalDBConstants.JAXREGISTRY,
+        MGITypeConstants.STRAIN, AccessionLib.PREFERRED);
+
+        snpProcessor = new SNPProcessor(loadStream, coordWriter);
     }
 
     /**
@@ -115,39 +150,33 @@ public class DBSNPInputProcessor {
      */
 
     public void processInput(DBSNPInput input) throws DBException,
-        ConfigException, SNPNoStrainAlleleException, SNPNoBL6Exception {
+        ConfigException, SNPNoStrainAlleleException, SNPNoBL6Exception, MGIException,
+           SNPNoConsensusAlleleSummaryException {
         // RefSNP id of 'input'
-        String rsId;
+        rsId = input.getRsId();
 
         // Create a map of rs ids to their  strain alleles by SS, if the
         // input object is for the genotype file
         if (input.getClass().getName().equals("dbsnparser.DBSNPGenotypeInput")){
-            rsId = ( (DBSNPGenotypeInput) input).getRsId();
+            //rsId = ( (DBSNPGenotypeInput) input).getRsId();
             //logger.logdDebug(rsId);
             // ssAlleleMap looks like  ssId:HashMap(strain:Allele)
             HashMap ssAlleleMap = ( (DBSNPGenotypeInput) input).getAlleleMapForRs();
             rsStrainAllelesBySS.put(rsId, ssAlleleMap);
-            reportAllReverse(rsId, ssAlleleMap);
+            //reportAllReverse(rsId, ssAlleleMap);
         }
         // Process this way if the input object is for the NSE file
          else if (input.getClass().getName().equals("dbsnparser.DBSNPNseInput")){
 
-                 //logger.logdDebug("rsStrainAllelesBySS.size = " + rsStrainAllelesBySS.size());
-                 rsId = ( (DBSNPNseInput) input).getRsId();
-                 // get the set of strain alleles, for this rs, each SSId is mapped to
-                 // its set of strain alleles e.g. ssid:HashMap(strain:allele)
-
-               //  if (isValid(contigHits)) {
-                 // CHECK TO MAKE SURE currentSSAlleleMap is not NULL
+                 // get the set of strain alleles, for this rs
+                 // looks like ssid:HashMap(strain:allele)
                  HashMap currentSSAlleleMap = (HashMap) rsStrainAllelesBySS.get(
                      rsId);
-
+                // if currentSSAlleleMap is NULL (when no record in the genotype
+                // file for this rs)
+                // throw an exception so the loader
+                // can decide what to do (load or not load that is the question)
                  if (currentSSAlleleMap == null) {
-                     // throw an exception to be caught at the loader level
-                     // loader can decide (via configuration?) behaviour when there
-                     // are no strain alleles for an rs - log and go on to the next
-                     // snp or fatal error.
-                     //System.out.println("No alleles for RS" + rsId);
                      SNPNoStrainAlleleException e = new
                          SNPNoStrainAlleleException();
                      e.bind(rsId);
@@ -158,30 +187,39 @@ public class DBSNPInputProcessor {
                  Vector flank3Prime = ( (DBSNPNseInput) input).get3PrimeFlank();
                  Vector flank5Prime = ( (DBSNPNseInput) input).get5PrimeFlank();
                  Vector contigHits = ( (DBSNPNseInput) input).getContigHits();
+                 //ANALYSIS
                  // analyze varClass where RS is mixed and SS don't have a varClass
                  // consensus
                  /*
                  if (rsVarClass.equals("mixed") && subSNPs.size() > 1) {
                      analyzeVarClass(rsId, rsVarClass, subSNPs);
                  }*/
-
+                 // END ANALYSIS
                  // create the MGI consensus object
                  Integer consensusKey = createConsensus(rsVarClass);
                  // create coordinate and marker objects; do this first because
                  // some RS are rejected )we are only loading C57BL/6J
                  // coordinates)
-                 // send rsId for reporting
+                 // send rsId for reporting purpoases
                  createCoordinates(consensusKey, contigHits, rsId);
                  // create MGI accession object for rsid
                  createAccession(rsId, SNPLoaderConstants.LDB_CSNP, consensusKey,
-                                 SNPLoaderConstants.OBJECTYPE_CSNP);
-                 // create subSNP objects, accession objects for their ssId and submitter snp id
-                 // and strain allele objects for each of their strain alleles
-                 for (Iterator i = subSNPs.iterator(); i.hasNext(); ) {
+                                 SNPLoaderConstants.OBJECTYPE_CSNP, Boolean.FALSE);
+                 // create 1) subSNP objects, 2) accession objects for their ssId and submitter snp id
+                 // and 3) strain allele objects for each of their strain alleles
+
+                 // current number of ss that have strain alleles
+                 int ssWithAllelesCt = 0;
+                 for  ( Iterator i = subSNPs.iterator();i.hasNext(); ) {
                      DBSNPNseSS ss = (DBSNPNseSS) i.next();
-                     createSS(consensusKey, ss,
-                              (HashMap) currentSSAlleleMap.get(ss.getSSId()));
-                     // analyze exemplars with no strain alleles
+                     HashMap alleleMap = (HashMap) currentSSAlleleMap.get(ss.getSSId());
+                     // We don't want to load RS in the genotype file for which none of the
+                     // SS have strain alleles. RS13476574 is an example
+                     if(alleleMap.size() > 1) {
+                         ssWithAllelesCt++;
+                     }
+                     createSS(consensusKey, ss, alleleMap);
+                     // ANALYSIS exemplars with no strain alleles
                      /*
                      if (ss.isExemplar.equals(Boolean.TRUE)) {
                          String s = ss.getSSId();
@@ -189,7 +227,23 @@ public class DBSNPInputProcessor {
                              logger.logcInfo("RS" + rsId + " SS " + s + " is exemplar and has no alleles", false);
                          }
                      }*/
-                     // end analyze exemplars with no strain alleles
+                     // end ANAYSIS exemplars with no strain alleles
+
+
+                 }
+                 // if none of the ss in the genotype file have any strain
+                 // alleles, throw an exception
+                 if (ssWithAllelesCt < 1) {
+                     // throw an exception to be caught at the loader level
+                     // loader can decide (via configuration?) behaviour when there
+                     // are no strain alleles for an rs - log and go on to the next
+                     // snp or fatal error.
+                     logger.logdDebug("No alleles for RS" + rsId);
+                     SNPNoStrainAlleleException e = new
+                         SNPNoStrainAlleleException();
+                     e.bind(rsId);
+                     throw e;
+
                  }
                  // create flank objects for the 5' flanking sequence
                  createFlank(consensusKey, flank5Prime, Boolean.TRUE);
@@ -200,6 +254,13 @@ public class DBSNPInputProcessor {
                  createConsensusAlleles(consensusKey, currentSSAlleleMap, rsId);
                  dbSNPNse.sendToStream();
                  addCtr++;
+                 // now do the (temporary) mgd part
+
+                 try {
+                     snpProcessor.process(dbSNPNse, rsId);
+                 } catch (SNPUnresolvedStrainException e) {
+                     logger.logdInfo(e.getMessage(), false);
+                 }
             }
              else {
                  // throw exception and log here
@@ -216,46 +277,76 @@ public class DBSNPInputProcessor {
      public Vector getProcessedReport() {
          Vector report = new Vector();
          report.add("Total SNPs created: " + addCtr);
-        logger.logcInfo("Total Mixed Class RefSNPS with SS varClass that disagree: " + mixedRS_SSConflictCtr, false );
-        logger.logcInfo("Total Mixed Class RefSNPS wtih SS varClass that agree: " + mixedRS_noSSConflictCtr, false );
+        //logger.logcInfo("Total Mixed Class RefSNPS with SS varClass that disagree: " + mixedRS_SSConflictCtr, false );
+        //logger.logcInfo("Total Mixed Class RefSNPS wtih SS varClass that agree: " + mixedRS_noSSConflictCtr, false );
+        //logger.logcInfo("Total NM: " + nm, false);
+        //logger.logcInfo("Total NR: " + nr, false);
+        //logger.logcInfo("Total NP: " + np, false);
+        //logger.logcInfo("Total XM: " + xm, false);
+        //logger.logcInfo("Total XR: " + xr, false);
+        //logger.logcInfo("Total XP: " + xp, false);
+        //logger.logcInfo("Total other MRNA: " + otherMrna, false);
+        //logger.logcInfo("Total other Protein: " + otherProt, false);
+
          return report;
      }
 
     // creates MGI_SNP_ConsensusSNP object
-    private Integer createConsensus(String rsVarClass) throws DBException, ConfigException {
+    private Integer createConsensus(String rsVarClass) throws DBException, ConfigException  {
         MGI_SNP_ConsensusSNPState state = new MGI_SNP_ConsensusSNPState();
         state.setVariationClass(rsVarClass);
         state.setJobStreamKey(jobStreamKey);
         dbSNPNse = new DBSNPNse(state, radarStream);
         return dbSNPNse.getConsensusKey();
     }
+
     // create MGI_SNP_StrainAlleles for the RS consensus strain alleles
     // ssAlleleMap looks like ssId:HashMap(strain:Allele)
     private void createConsensusAlleles(Integer consensusKey, HashMap ssAlleleMap,
-                            String rsId) throws DBException, ConfigException {
-
+                            String rsId) throws DBException, ConfigException,
+        TranslationException, CacheException, SNPNoConsensusAlleleSummaryException {
+        //System.out.println(rsId);
         // looks like strain:HashMap[allele:count]
         HashMap consensusAlleleMap = new HashMap();
+        // true if 1 or more 'N' alleles are present in this RS
+        boolean hasNAllele = false;
         // summary of the consensus alleles
-        HashSet alleleSummary = new HashSet();
-        // get alleles for each ss into newMap
+        HashSet alleleSummarySet = new HashSet();
         int ssWithAllelesCt = 0; //DEBUG
+        /**
+         * Iterate thru each SS
+         */
         for (Iterator i = ssAlleleMap.keySet().iterator(); i.hasNext(); ) {
             // get the ssid
-            String ssId = (String) i.next();
+            String currentSSId = (String) i.next();
             // get the set of strain alleles for this ssId
-            HashMap alleleMap = (HashMap) ssAlleleMap.get(ssId);
+            HashMap alleleMap = (HashMap) ssAlleleMap.get(currentSSId);
             if (alleleMap.size() > 0 ) {
                 ssWithAllelesCt++;
             }
-            // iterate thru the strain alleles
+            /**
+             * Iterate thru the strain alleles of the current SS
+             */
+
             for (Iterator j = alleleMap.keySet().iterator(); j.hasNext(); ) {
                 String strain = (String) j.next();
+                Integer strainKey = resolveStrain(strain);
+                // if we can't resolve the strain, log it and continue
+                if(strainKey == null) {
+                    logger.logcInfo("BAD CS STRAIN " + strain + " RS" + rsId + " SS" + currentSSId, false);
+                    //SNPUnresolvedStrainException e = new SNPUnresolvedStrainException();
+                    //e.bind(strain);
+                    continue;
+                    //throw e;
+                }
+                ////////
                 String allele = ( (Allele) alleleMap.get(strain)).getAllele();
 
-                // if in reverse orientation we need to flip 'allele' before storing
+                /**
+                 * if in reverse orientation we need to flip 'allele' before storing
+                 */
                 if ( ( (Allele) alleleMap.get(strain)).getOrientation().equals(
-                    SNPLoaderConstants.REVERSE_ORIENT)) {
+                    SNPLoaderConstants.GENO_REVERSE_ORIENT)) {
                     StringBuffer convertedAllele = new StringBuffer();
                     char[] alArray = allele.toCharArray();
                     for (int k = 0; k < alArray.length; k++) {
@@ -266,23 +357,31 @@ public class DBSNPInputProcessor {
                             case 'G': convertedAllele.append("C"); break;
                             case 'N': convertedAllele.append("N"); break;
                             case '-': convertedAllele.append("-"); break;
-                            default: System.out.println("Bad input for ss " + ssId);
+                            default: System.out.println("Bad input for ss " + currentSSId);
                         }
                     }
-                    // set a to the flipped versio of the allele
+                    // set allele to its the flipped version
                     allele = convertedAllele.toString();
-                    // add allele to the alleleSummary set
-                    alleleSummary.add(allele);
                 }
+                /**
+                 * Add the allele to alleleSummary set (proper set, no repeats)
+                 */
+                if (!allele.equals("N")) {
+                    alleleSummarySet.add(allele);
+                }
+                else { hasNAllele = true; }
 
-                // now put the allele in the consensus allele map
-
-                // if the strain is already in the consensus allele map,
-                // increment ctr for the allele or add anew allele with ct=1 is necessary
-                // consensusAlleleMap looks like strain:HashMap[allele:count]
-                if (consensusAlleleMap.containsKey(strain)) {
+                /**
+                 * now map this allele to its strain; we'll process consensusAlleleMap
+                 * later.
+                 * consensusAlleleMap looks like strainKey:HashMap[allele:count]
+                 * where ct is the number of instance of this allele for this
+                 * strainKey. Remember we are using strain key because >1 dbsnp strains
+                 * map to an mgd strain
+                 */
+                if (consensusAlleleMap.containsKey(strainKey)) {
                     // existing map looks like allele:count
-                    HashMap existingMap = (HashMap)consensusAlleleMap.get(strain);
+                    HashMap existingMap = (HashMap)consensusAlleleMap.get(strainKey);
                     if (existingMap.containsKey(allele)) {
                         int ct = ((Integer)existingMap.get(allele)).intValue();
                         ct++;
@@ -291,38 +390,76 @@ public class DBSNPInputProcessor {
                     else {
                         existingMap.put(allele, new Integer(1));
                     }
-                    consensusAlleleMap.put(strain, existingMap);
+                    consensusAlleleMap.put(strainKey, existingMap);
                 }
-                // if the strain is not in the map, add the new strain  with
-                // and add the strain and allele the the consensus allele map
+                // if the strainKey is not in the map, add a new entry
                 else {
                     HashMap newMap = new HashMap();
                     newMap.put(allele, new Integer(1));
-                    consensusAlleleMap.put(strain, newMap);
+                    consensusAlleleMap.put(strainKey, newMap);
                 }
             }
-            /*if(ssWithAllelesCt > 2) {
-                logger.logcInfo("RS" + rsId + " has > 2 ss with alleles ", false);
-            }*/
+            /**
+             * Done iterating thru strain alleles for current SS
+             */
+
         }
-        // add allele summary to the rs
-        String alleleString = alleleSummary.toString();
-        dbSNPNse.addRSAlleleSummary(alleleString.substring(1,alleleString.length()-1));
-        // now find the consensus allele
-         //logger.logdDebug("RS" + rsId);
-         // consensusAlleleMap looks like strain:HashMap[allele:count]
+        /**
+         * Done iterating thru all SS for this RS
+         */
+
+        /**
+         * Process the alleleSummary
+         */
+
+        // add the delimiters
+        StringBuffer summaryString = new StringBuffer();
+        for (Iterator i = alleleSummarySet.iterator(); i.hasNext(); ) {
+            summaryString.append((String)i.next() + "/");
+        }
+        // remove the trailing delimiter
+        int len = summaryString.length();
+        //System.out.println(rsId);
+        //System.out.println("\t" + summaryString.toString());
+        /**
+         * if we have 0 length summary allele it is because
+         * 1) no strains resolve, therefore no alleles.
+         * 2) the only allele is 'N'
+         */
+        if(len < 1) {
+            logger.logdDebug("No ConsensusSnp Summary Allele for RS" + rsId);
+            SNPNoConsensusAlleleSummaryException e = new
+                SNPNoConsensusAlleleSummaryException();
+            e.bind(rsId);
+            throw e;
+        }
+        summaryString.deleteCharAt(len-1);
+        dbSNPNse.addRSAlleleSummary(summaryString.toString());
+        /**
+         * now find the consensus allele
+         * consensusAlleleMap looks like strainKey:HashMap[allele:count]
+         */
          for (Iterator j = consensusAlleleMap.keySet().iterator(); j.hasNext();) {
-             // the current consensus allele found
+             // the consensus allele determined thus far
              String conAllele = "";
              // the count of instances of conAllele
              int currentCt = 0;
-             // true if the currentCt is equal to count
+             // true current comparison of allele counts are equal (we don't have
+             // a consensus)
              boolean isEqual = false;
              // get the strain and the alleles
-             String strain = (String)j.next();
-             HashMap alleles = (HashMap)consensusAlleleMap.get(strain);
-             //logger.logdDebug("\tstrain " + strain );
-             // iterate thru the alleles of sthi strain
+             Integer strainKey = (Integer)j.next();
+             HashMap alleles = (HashMap)consensusAlleleMap.get(strainKey);
+             // ANALYSIS
+             if (alleles.size() > 2) {
+                 logger.logdDebug("RS" + rsId + " has > 2 alleles for strainKey " + strainKey);
+                 for (Iterator k = alleles.keySet().iterator(); k.hasNext();) {
+                     String allele = (String)k.next();
+                     logger.logdDebug("Allele: " + allele + " count " + alleles.get(allele)   );
+                 }
+             }
+             // END ANALYSIS
+             // iterate thru the alleles of this strain
              for (Iterator k = alleles.keySet().iterator(); k.hasNext();) {
                  // get an allele for this strain
                  String allele = (String)k.next();
@@ -340,32 +477,64 @@ public class DBSNPInputProcessor {
                      conAllele = allele;
                      isEqual = false;
                  }
-                 logger.logdDebug("\t\t" + " allele: " +
-                                  allele + " count " + count);
+                // logger.logdDebug("\t\t" + " allele: " +
+                  //                allele + " count " + count);
              }
-             // if the equal flag is true we don't have consensus
-             if(isEqual == true) {
+             // if the equal flag is true  OR the consensusAllele is "N",
+            // we don't have consensus
+             if(isEqual == true || conAllele.equals("N")) {
                  conAllele = "?";
              }
              // now create the consensus allele
              MGI_SNP_StrainAlleleState state = new MGI_SNP_StrainAlleleState();
              state.setAllele(conAllele);
-             state.setStrain(strain);
+             state.setMgdStrainKey(strainKey);
+             // no conflict if only 1 distinct allele for this strain that is NOT "?",
+             // (which means the single allele was an "N")
+             // otherwise we have a '?' or a simple majority which we flag
+             if(alleles.size() == 1 && !conAllele.equals("?")) {
+                 state.setIsConflict(Boolean.FALSE);
+             }
+             else {
+                 state.setIsConflict(Boolean.TRUE);
+             }
              state.setObjectKey(consensusKey);
              state.setObjectType(SNPLoaderConstants.OBJECTYPE_CSNP);
              state.setJobStreamKey(jobStreamKey);
              dbSNPNse.addStrainAllele(state);
+             // ANALYSIS
              // if the set of alleles for a strain is > 2 we may have a problem with
              // computing majority; build 124 this case does not exist
              //if(alleles.keySet().size() > 2) {
              //logger.logcInfo("RS" + rsId + " strain " + strain + " has " + alleles.keySet().size() + "alleles " + alleles.keySet().toString(), false);
              //logger.logcInfo("\tconsensusAllele: " + conAllele, false);
              //}
+             //END ANALYSIS
          }
     }
-
+    private Integer resolveStrain(String strain) throws DBException, ConfigException,
+        TranslationException, CacheException {
+        Integer strainKey = null;
+        // try looking up the strain in the strain vocab
+        try {
+            strainKey = strainKeyLookup.lookup(strain);
+        }
+        catch (KeyNotFoundException e) {
+            strainKey = null;
+        }
+        // if not found, it may be a jax registry id
+        if (strainKey == null) {
+            try {
+                strainKey = jaxRegistryLookup.lookup(strain);
+            }
+            catch (KeyNotFoundException e) {
+                strainKey = null;
+            }
+        }
+        return strainKey;
+    }
     private void createSS(Integer consensusKey, DBSNPNseSS ss, HashMap alleleMap)
-            throws DBException, ConfigException {
+            throws DBException, ConfigException, CacheException, TranslationException{
         // get the ssId, we will use it alot
         String ssId = ss.getSSId();
         // create a SS state object
@@ -377,47 +546,59 @@ public class DBSNPInputProcessor {
         state.setOrientation(ss.getSSOrientToRS());
         state.setSubmitterHandle(ss.getSubmitterHandle());
         state.setVariationClass(ss.getSSVarClass());
-
+        state.setObservedAlleles(ss.getObservedAlleles());
         // add the completed state object to the DBSNPNse object
         dbSNPNse.addSS(ssId, state);
         // get the ssKey so we can create other associated objects
         Integer ssKey = dbSNPNse.getSSKey(ssId);
         // create an accession object for the current ssId
         createAccession(ssId, SNPLoaderConstants.LDB_SSNP, ssKey,
-                        SNPLoaderConstants.OBJECTYPE_SSNP);
+                        SNPLoaderConstants.OBJECTYPE_SSNP, Boolean.FALSE);
         // create an accession object for the current submitter snp id
         createAccession(ss.getSubmitterSNPId(), SNPLoaderConstants.LDB_SUBMITTER,
-                        ssKey, SNPLoaderConstants.OBJECTYPE_SSNP);
+                        ssKey, SNPLoaderConstants.OBJECTYPE_SSNP, Boolean.FALSE);
         if (alleleMap != null) {
-            createStrainAlleles(ssKey, alleleMap);
+            createSSStrainAlleles(ssKey, ssId, alleleMap);
         }
 
     }
     private void createAccession(String accid, String logicalDB,
-            Integer objectKey, String objectType)
+            Integer objectKey, String objectType,  Boolean isPrivate)
                 throws DBException, ConfigException {
         MGI_SNP_AccessionState state = new MGI_SNP_AccessionState();
+        //System.out.println(accid);
         state.setAccID(accid);
         state.setLogicalDB(logicalDB);
         state.setObjectKey(objectKey);
         state.setObjectType(objectType);
-        state.setPrivateVal(Boolean.FALSE);
         state.setJobStreamKey(jobStreamKey);
+        state.setPrivateVal(isPrivate);
         dbSNPNse.addAccession(state);
     }
-    private void createStrainAlleles(Integer subSNPKey, HashMap alleleMap)
-        throws DBException, ConfigException {
+    private void createSSStrainAlleles(Integer subSNPKey, String ssId, HashMap alleleMap)
+        throws DBException, ConfigException, CacheException, TranslationException {
         // create an strain allele object for each strain assay for this ss
         for (Iterator i = alleleMap.keySet().iterator(); i.hasNext(); ) {
             String strain = (String)i.next();
+            Integer strainKey = resolveStrain(strain);
+            // if we still haven't found it write it to the curation log and throw an
+             // exception
+             if(strainKey == null) {
+                 logger.logcInfo("BAD CS STRAIN " + strain + " RS" + rsId + " SS" + ssId, false);
+                 //SNPUnresolvedStrainException e = new SNPUnresolvedStrainException();
+                 //e.bind(strain);
+                 continue;
+                 //throw e;
+             }
             MGI_SNP_StrainAlleleState state = new MGI_SNP_StrainAlleleState();
             state.setObjectKey(subSNPKey);
             state.setObjectType(SNPLoaderConstants.OBJECTYPE_SSNP);
             state.setJobStreamKey(jobStreamKey);
-            state.setStrain(strain);
+            state.setMgdStrainKey(strainKey);
             // get the allele string from the Allele object, set in state
             Allele allele = (Allele)alleleMap.get(strain);
             state.setAllele(allele.getAllele());
+            state.setIsConflict(Boolean.FALSE);
             dbSNPNse.addStrainAllele(state);
         }
     }
@@ -491,39 +672,54 @@ public class DBSNPInputProcessor {
                 DBSNPNseMapLoc mloc = (DBSNPNseMapLoc) j.next();
                 // set the location attributes
                 cState.setOrientation(mloc.getRSOrientToChr());
-                cState.setStartCoord(mloc.getStartCoord());
+                // need to use startCoord in the marker too
+                Double startCoord = mloc.getStartCoord();
+                cState.setStartCoord(startCoord);
                 dbSNPNse.addCoordinate(cState);
 
                 // now get the fxnSet and create the Marker objects
                 Vector fxnSets = mloc.getFxnSets();
-                // thes set of locusId fxnClass pairs; we don't want to load
-                // dups
+                // the set of locusId fxnClass pairs; we don't want to load
+                // dups. also analyzes refseq accessions
                 //analyzeFxnSets(fxnSets, rsId);
+                // Contains String locusId + fxnClass to avoid fxn class/locus id dups
                 HashSet fxnSetSet = new HashSet();
                 // iterate over the FxnSets
 
                 for (Iterator k = fxnSets.iterator(); k.hasNext(); ) {
                     DBSNPNseFxnSet fSet = (DBSNPNseFxnSet)k.next();
                     String fxnClass = fSet.getFxnClass();
-                    // we dont want 'reference' fxn classes
-                    // 7/25 - maybe we do want reference
+                    // we dont want 'reference' fxn class
+                    // 7/25 - we do want reference fxn class
                     /*if(fxnClass.equals(SNPLoaderConstants.REFERENCE)) {
                         continue;
                     }*/
-                    // we don't want dup locusId/fxnclass pairs
+
                     String locusId = fSet.getLocusId();
-                    String join = locusId + fxnClass;
+                    String nucleotideId = fSet.getNucleotideId();
+                    String proteinId = fSet.getProteinId();
+                    // we don't want duplicate chromosome/coord/locusId/fxnClass/nucleotide/protein
+                    // records
+                    String join = chromosome + startCoord + locusId +
+                        fxnClass + nucleotideId + proteinId;
                     if (fxnSetSet.contains(join)) {
                         continue;
                     }
-                    fxnSetSet.add(locusId + fxnClass);
-
+                    fxnSetSet.add(join);
                     // create the state object
                     MGI_SNP_MarkerState mState = new MGI_SNP_MarkerState();
                     mState.setConsensusSNPKey(consensusKey);
-                    mState.setJobStreamKey(jobStreamKey);
                     mState.setEntrezGeneId(locusId);
                     mState.setFxnClass(fxnClass);
+                    mState.setChromosome(chromosome);
+                    mState.setStartCoord(startCoord);
+                    mState.setRefseqNucleotide(fSet.getNucleotideId());
+                    mState.setRefseqProtein(fSet.getProteinId());
+                    mState.setContigAllele(fSet.getContigAllele());
+                    mState.setResidue(fSet.getAAResidue());
+                    mState.setAaPosition(fSet.getAAPostition());
+                    mState.setReadingFrame(fSet.getReadingFrame());
+                    mState.setJobStreamKey(jobStreamKey);
                     dbSNPNse.addMarker(mState);
                 }
             }
@@ -538,7 +734,7 @@ public class DBSNPInputProcessor {
 
         }
     }
-    // for statistics
+    // ANALYSIS methods
     private void reportAllReverse(String rsId, HashMap ssAlleleMap) {
         // the set of orientations for ss that have alleles
         HashSet orientSet = new HashSet();
@@ -609,6 +805,9 @@ public class DBSNPInputProcessor {
         for (Iterator k = fxnSets.iterator(); k.hasNext(); ) {
             DBSNPNseFxnSet fSet = (DBSNPNseFxnSet) k.next();
             String fxnClass = fSet.getFxnClass();
+            String mrna = fSet.getNucleotideId();
+            String prot = fSet.getProteinId();
+
             // we dont want 'reference' fxn classes
             // 7/25 - maybe we do want reference
             /*if(fxnClass.equals(SNPLoaderConstants.REFERENCE)) {
@@ -620,6 +819,41 @@ public class DBSNPInputProcessor {
             if (fxnSetSet.contains(join)) {
                 continue;
             }
+
+            if(mrna != null) {
+                //System.out.println(mrna.substring(0,2));
+                if ((mrna.substring(0, 2)).equals("NM")) {
+                    nm++;
+                    //logger.logcInfo(rsId + "\t" + mrna, false);
+                }
+                else if ((mrna.substring(0, 2)).equals("NR")) {
+                    nr++;
+                }
+                else if((mrna.substring(0, 2)).equals("XM")) {
+                    xm++;
+                }
+                else if((mrna.substring(0, 2)).equals("XR")) {
+                    xr++;
+                }
+                else {
+                    logger.logcInfo("Other MRNA RefSeq: " + mrna, false);
+                    otherMrna++;
+                }
+            }
+            if(prot != null) {
+                //System.out.println(prot.substring(0,2));
+                if ((prot.substring(0, 2)).equals("NP")) {
+                    np++;
+                    //logger.logcInfo(rsId + "\t" + prot, false);
+                }
+                else if ((mrna.substring(0, 2)).equals("XP")) {
+                    xp++;
+                }
+                else {
+                    //logger.logcInfo("Other Prot RefSeq: " + prot, false);
+                    otherProt++;
+                }
+            }
             fxnSetSet.add(locusId + fxnClass);
             if (fxnClass.equals("coding-nonsynon")) {
                 nonsynonFlag = true;
@@ -630,10 +864,10 @@ public class DBSNPInputProcessor {
             else if (fxnClass.equals("reference")) {
                 referenceCtr++;
             }
-        }
+        }/*
         if (nonsynonFlag == true && synonFlag == true) {
             logger.logcInfo("RS" + rsId + " has " + referenceCtr + " reference class instances", false);
-        }
+        }*/
     }
 }
 // $Log

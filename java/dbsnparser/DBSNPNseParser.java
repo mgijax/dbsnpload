@@ -213,6 +213,9 @@ public class DBSNPNseParser implements DBSNPParser {
                 currentNseInput.add5PrimeFlank(new DBSNPNseFlank(
                     currentCharString, currentNseInput.getNext5PrimeSeqNum()));
             }
+            else if (localName.equals("NSE-ss_observed")) {
+                currentSS.setObservedAlleles(currentCharString);
+            }
             else if (localName.equals("NSE-rs_seq-3_E")) {
                 currentNseInput.add3PrimeFlank(new DBSNPNseFlank(
                     currentCharString, currentNseInput.getNext3PrimeSeqNum()));
@@ -246,15 +249,27 @@ public class DBSNPNseParser implements DBSNPParser {
             }
             else if (localName.equals("NSE-FxnSet_reading-frame")) {
                 //logger.logcInfo("\tNSE-FxnSet_reading-frame " + currentCharString, false);
+                currentFxnSet.setReadingFrame(currentCharString);
             }
             else if (localName.equals("NSE-FxnSet_allele")) {
                 //logger.logcInfo("\tNSE-FxnSet_allele " + currentCharString, false);
+                currentFxnSet.setContigAllele(currentCharString);
             }
             else if (localName.equals("NSE-FxnSet_residue")) {
                 //logger.logcInfo("\tNSE-FxnSet_residue " + currentCharString, false);
+                currentFxnSet.setAAResidue(currentCharString);
             }
             else if (localName.equals("NSE-FxnSet_aa-position")) {
                 //logger.logcInfo("\tNSE-FxnSet_aa-position " + currentCharString, false);
+                currentFxnSet.setAAPosition(currentCharString);
+            }
+            else if (localName.equals("NSE-FxnSet_mrna-acc")) {
+                //System.out.println(currentCharString);
+                currentFxnSet.setNucleotideId(currentCharString);
+            }
+            else if (localName.equals("NSE-FxnSet_prot-acc")) {
+                //System.out.println(currentCharString);
+                currentFxnSet.setProteinId(currentCharString);
             }
             else if (localName.equals("NSE-FxnSet")) {
                 if (currentFxnSet.getFxnClass() == null || currentFxnSet.getLocusId() == null ) {

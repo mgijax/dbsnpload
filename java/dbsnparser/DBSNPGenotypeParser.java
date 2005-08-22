@@ -92,6 +92,9 @@ public class DBSNPGenotypeParser implements DBSNPParser {
         // Vector of RS objects
         private Vector rsVector;
 
+        // DEBUG
+        Vector SSPopIdVector = new Vector();
+
         public DBSNPContentHandler() {
             // one per rs record processed, reset in end element
             currentInput = new DBSNPGenotypeInput();
@@ -144,20 +147,15 @@ public class DBSNPGenotypeParser implements DBSNPParser {
                                  String rawName, Attributes atts) throws
             SAXException {
 
-            // This is the start of a RefSNP genotype record, get the rsId
-            // value and set in the current RSGenotype object
-            /*if (localName.equals("Population")) {
+            // DEBUG
+            if (localName.equals("ByPop")) {
                 for (int i = 0; i < atts.getLength(); i++) {
                     if (atts.getLocalName(i) == "popId") {
                         //System.out.println(atts.getValue(i));
-                        currentHandleMapPopId = atts.getValue(i);
-                    }
-                    else if (atts.getLocalName(i) == "handle") {
-                        //System.out.println(atts.getValue(i));
-                        currentHandle = atts.getValue(i);
+                        SSPopIdVector.add(atts.getValue(i));
                     }
                 }
-            }*/
+            }
             if (localName.equals("Individual")) {
                 for (int i = 0; i < atts.getLength(); i++) {
                     // indId, in this section, is the dbSNP strain id used in
@@ -261,9 +259,18 @@ public class DBSNPGenotypeParser implements DBSNPParser {
             // the record. Add the alleles to the strain allele map
             else if (localName.equals("SsInfo")) {
                 currentInput.addSSAlleles(currentSSId, currentStrAlleleMap);
-              //  if (currentStrAlleleMap.size() < 1 ) {
-              //      logger.logcInfo("NO ALLELES RS" + currentInput.getRsId() + " SS" + currentSSId, false);
-              //  }
+                // DEBUG
+                int size = SSPopIdVector.size();
+                if(size > 1) {
+                    logger.logdDebug("RS" + currentInput.getRsId() + " has SS with " + size + " popId");
+                    for(Iterator i = SSPopIdVector.iterator(); i.hasNext(); ) {
+                        logger.logdDebug( "\t" + (String)i.next());
+                    }
+                }
+                SSPopIdVector = new Vector();
+                //  if (currentStrAlleleMap.size() < 1 ) {
+                //      logger.logcInfo("NO ALLELES RS" + currentInput.getRsId() + " SS" + currentSSId, false);
+                //  }
             }
 
             else if (localName.equals("SnpInfo")) {

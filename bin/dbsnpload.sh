@@ -149,7 +149,7 @@ shutDown ()
 # Function that runs the java load
 #
 
-run ()
+runsnpload ()
 {
     #
     # log time 
@@ -175,6 +175,32 @@ run ()
 
 }
 
+checkstatus ()
+{
+
+    if [ $1 -ne 0 ]
+    then
+        echo "$1 Failed. Return status: $2" >> ${LOG_PROC}
+        shutDown
+        exit 1
+    fi
+    echo "$1 completed successfully" >> ${LOG_PROC}
+
+}
+
+runtruncate () 
+{
+    ${MGD_DBSCHEMADIR}/table/SNP_truncate.logical | tee -a ${LOG}
+    stat=$?
+    msg="truncate mgd tables "
+    checkstatus msg stat
+
+    ${RADAR_DBSCHEMADIR}/table/MGI_SNP_truncate.logical
+    stat=$?
+    msg="truncate radar tables "
+    checkstatus msg stat
+}
+
 ##################################################################
 # main
 ##################################################################
@@ -184,17 +210,33 @@ run ()
 #
 preload ${OUTPUTDIR}
 
-
 #
 # rm all files/dirs from OUTPUTDIR and RPTDIR
 #
 cleanDir ${OUTPUTDIR} ${RPTDIR}
 
-# run the load
-#
-run
+# truncate snp tables
+# 
+#runtruncate
 
+# run the snpload
 #
+runsnpload
+
+# run the snp coordinate load
+#echo "running ${COORD_LOAD}"
+#${COORDLOAD} 
+#stat=$?
+#msg="snp coordload "
+#checkstatus stat msg
+
+# run the snp coordinate cache load
+#echo "running ${COORD_CACHE_LOAD}"
+#${COORD_CACHE_LOAD}
+#stat=$?
+#msg="snp coord cache load "
+#checkstatus stat msg
+
 # run postload cleanup and email logs
 #
 shutDown

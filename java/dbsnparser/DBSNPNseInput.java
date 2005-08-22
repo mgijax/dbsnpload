@@ -22,7 +22,6 @@ class DBSNPNseInput extends DBSNPInput{
      **********************/
     public DBSNPNseInput() {
         subSNPs = new Vector();
-        //subSNPs = new HashMap();
         flank5Prime = new Vector();
         flank3Prime = new Vector();
         contigHits = new Vector();

@@ -101,6 +101,14 @@ public class DBSNPLoaderCfg extends Configurator {
     public String getJobstreamKey() throws ConfigException {
         return getConfigString("JOBKEY");
     }
+    /**
+     * Gets the coordload filename
+     * @return the coordload filename
+     * @throws ConfigException if "COORD_L" not found by the Configurator
+     */
+    public String getCoordFilename() throws ConfigException {
+        return getConfigString("COORD_OUTPUT_FILE");
+    }
 
 
 }

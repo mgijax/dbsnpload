@@ -1,5 +1,19 @@
+TAG: dbsnpload-1-0-1
+DATE: 08/22/2005
+STAFF: sc
+RELEASE: dev
+CHANGES: 
+1) changes additions up until 8/18/2005
+   Not done:
+   * rs var class calculation 
+   * multi population handling
+   * need to update jobstream to call coordload as it does in the seqloader.
+   *
+
 TAG: dbsnpload-1-0-0
 DATE: 08/04/2005
 STAFF: sc
 RELEASE: dev
-CHANGES: initial dev tag
+CHANGES: initial dev tag - still to do: changes/additions
+that came out of 8/4 meeting
+ 

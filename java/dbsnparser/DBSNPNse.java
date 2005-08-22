@@ -250,6 +250,33 @@ public class DBSNPNse {
      * create get methods for remaining attributes
      */
 
+    public HashMap getSSDAOs() {
+        // the set of DP_DBSNP_SSDAO; all ss for this RS
+        return ssMap;
+    }
+    public Vector getStrAlleleDAOs() {
+
+    // the set of strain alleles for every SS making up this RS
+            return strAlleleVector;
+    }
+    public Vector getAccDAOs() {
+
+        // the set of Accession ids for this RS and all its SS
+        return accVector;
+    }
+    public Vector getFlankDAOs() {
+        // the set of Flanking sequences for this RS
+        return flankVector;
+    }
+    public Vector getCoordDAOs() {
+        // the set of Coordinates for this RS
+        return coordVector;
+    }
+    public Vector getMarkerDAOs() {
+        // the set of markers for this RS
+        return markerVector;
+    }
+
 
     /**
      * Determines the stream methods for and passes to those methods each of
