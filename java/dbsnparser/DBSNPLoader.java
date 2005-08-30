@@ -15,6 +15,7 @@ import org.jax.mgi.dbs.mgd.loads.SeqSrc.UnresolvedAttributeException;
 import org.jax.mgi.dbs.mgd.lookup.AccessionLookup;
 import org.jax.mgi.dbs.mgd.lookup.LogicalDBLookup;
 import org.jax.mgi.dbs.mgd.MGITypeConstants;
+import org.jax.mgi.dbs.mgd.LogicalDBConstants;
 import org.jax.mgi.dbs.mgd.AccessionLib;
 
 import java.io.BufferedWriter;
@@ -26,24 +27,17 @@ import java.util.HashSet;
 import java.util.ArrayList;
 
 public class DBSNPLoader extends DLALoader {
-    /**
-     * implements the DLALoader methods
-     * 'initialize' and 'run' to accomplish DBSNP load initialization and processing.
-     * @has a set of 'basic-needs' objects for doing DLA loads<br>
-     * <UL>
-     *   <LI>A Interpretor for parsing records from the input
-     *   <LI>A Processor for adding dbSNP records to the database
-     * </UL>
-     * @does gets records from the input and gets them into the database
-     * @author sc
-     * @version 1.0
-     */
-
     // Gets SNP records from the genotype input
-    private DBSNPInterpreter genoInterpreter;
+
 
     // Gets SNP records from the NSE input
+
+
+    // Gets SNP records from the genotype input
+
+    private DBSNPInterpreter genoInterpreter;
     private DBSNPInterpreter nseInterpreter;
+
 
     // the SQLStream used for loading data
     private SQLStream radarStream;
@@ -73,6 +67,10 @@ public class DBSNPLoader extends DLALoader {
     // configurator
     private DBSNPLoaderCfg loadCfg;
 
+    // SNP exception factory
+    private SNPLoaderExceptionFactory snpEFactory;
+
+
     /**
      * Initializes instance variables
      * @effects instance variables will be instantiated
@@ -90,7 +88,7 @@ public class DBSNPLoader extends DLALoader {
         // The list of chromosomes for iterating thru Chr files
         chrList = new ArrayList();
 
-        for (int i = 1; i < 20; i++) {
+       for (int i = 1; i < 20; i++) {
             chrList.add(String.valueOf(i));
         }
         chrList.add("X");
@@ -98,6 +96,7 @@ public class DBSNPLoader extends DLALoader {
 
         //chrList.add("1");
         loadCfg = new DBSNPLoaderCfg();
+
        // for creating coordload input file
         try {
             coordWriter = new BufferedWriter(new FileWriter(
@@ -110,6 +109,7 @@ public class DBSNPLoader extends DLALoader {
         // rename the stream for clarity - the DLA thinks of the radar database as qc.
         radarStream = qcStream;
         dbsnpProcessor = new DBSNPInputProcessor(radarStream, loadStream, coordWriter);
+        snpEFactory = new SNPLoaderExceptionFactory();
 
         snpCtr = 0;
         rsWithNoAllelesCtr = 0;
@@ -123,6 +123,12 @@ public class DBSNPLoader extends DLALoader {
      * @throws MGIException if errors occur during preprocessing
      */
     protected void preprocess() throws MGIException {
+        // delete accession records, note that truncating tables is done at the
+        // dla level via Configuration
+        if(loadCfg.getOkToDeleteAccessions().equals(Boolean.TRUE)) {
+            deleteAccessions();
+        }
+        // create the genotype lookup
         for (Iterator i = chrList.iterator(); i.hasNext(); ) {
             String chr = ((String)i.next()).trim();
             logger.logdInfo("creating the genotype lookup for chr " + chr, false);
@@ -209,5 +215,40 @@ public class DBSNPLoader extends DLALoader {
         for (Iterator i = dbsnpProcessor.getProcessedReport().iterator(); i.hasNext(); ) {
             logger.logdInfo((String)i.next(), false);
         }
+    }
+    private void deleteAccessions() throws MGIException {
+        logger.logdInfo("Deleting Accessions", true);
+
+        try {
+            loadDBMgr.executeUpdate(
+                    "select a._Accession_key " +
+                    "into #todelete " +
+                    "from ACC_Accession a " +
+                    "where a._MGIType_key =  " + MGITypeConstants.CONSENSUSSNP +
+                    " and a._LogicalDB_key = " + LogicalDBConstants.REFSNP +
+                    " UNION " +
+                    "select a._Accession_key " +
+                    "from ACC_Accession a " +
+                    "where a._MGIType_key =  " + MGITypeConstants.SUBSNP +
+                    " and a._LogicalDB_key = " + LogicalDBConstants.SUBSNP +
+                    " UNION " +
+                    "select a._Accession_key " +
+                    "from ACC_Accession a " +
+                    "where a._MGIType_key =  " + MGITypeConstants.SUBSNP +
+                    " and a._LogicalDB_key = " + LogicalDBConstants.SUBMITTERSNP);
+
+            loadDBMgr.executeUpdate("create index idx1 on #todelete(_Accession_key)");
+
+            loadDBMgr.executeUpdate("delete ACC_Accession " +
+                           "from #todelete d, ACC_Accession a " +
+                           "where d._Accession_key = a._Accession_key");
+       }
+       catch (MGIException e) {
+           SNPLoaderException e1 =
+                   (SNPLoaderException) snpEFactory.getException(
+                   SNPLoaderExceptionFactory.SNPDeleteAccessionsErr, e);
+               throw e1;
+
+       }
     }
 }
