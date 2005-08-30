@@ -110,5 +110,7 @@ public class DBSNPLoaderCfg extends Configurator {
         return getConfigString("COORD_OUTPUT_FILE");
     }
 
-
+    public Boolean getOkToDeleteAccessions() throws ConfigException {
+        return getConfigBoolean("SNP_OK_TO_DELETE_ACCESSIONS", Boolean.FALSE);
+    }
 }
