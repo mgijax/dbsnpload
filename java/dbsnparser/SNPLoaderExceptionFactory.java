@@ -62,6 +62,17 @@ public class SNPLoaderExceptionFactory
             false));
     }
 
+    /**
+     * Database Error deleting Accessions
+     */
+    public static final String SNPDeleteAccessionsErr =
+        "org.jax.mgi.shr.dla.seqloader.SNPDeleteAccessionsErr";
+    static {
+        exceptionsMap.put(SNPDeleteAccessionsErr, new SNPLoaderException(
+            "Database Error deleting SNP Accessions",
+            false));
+    }
+
 
 }
 // $Log
