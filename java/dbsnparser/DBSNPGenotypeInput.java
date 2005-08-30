@@ -7,46 +7,28 @@ import java.util.Iterator;
 
 class DBSNPGenotypeInput extends DBSNPInput{
 
-    // ssId:HashMap(strain:allele)
-    private HashMap ssAlleleMap;
+    // ssId:Vector of DBSNPGenotypePopulation objects
+    private HashMap ssPopulationMap;
 
     public DBSNPGenotypeInput() {
-        ssAlleleMap = new HashMap();
+        ssPopulationMap = new HashMap();
     }
     public DBSNPGenotypeInput(String rs) {
         this();
         rsId = rs;
     }
 
-    public void addSSAlleles(String ssId, HashMap alleles) {
-        ssAlleleMap.put(ssId, alleles);
+    public void addPopulation(String ssId, Vector pops) {
+        ssPopulationMap.put(ssId, pops);
     }
 
-    // get the strain allele map for 'ssId'
-    public HashMap getAlleleMapForSS(String ssId) {
-        return (HashMap)ssAlleleMap.get(ssId);
-    }
-    // get all the ss to strain allele mappings for this rs
-    public HashMap getAlleleMapForRs() {
-        return ssAlleleMap;
-    }
-/*
-    // Vector of DBSNPGenotypeSS objects
-    private Vector ssVector;
-
-
-    public DBSNPGenotypeInput() {
-        ssVector = new Vector();
+    // get the Population Vector for 'ssId'
+    public Vector getPopulationsForSS(String ssId) {
+        return (Vector)ssPopulationMap.get(ssId);
     }
 
-    // Add a SS object to the Vector
-    public void addSS(DBSNPGenotypeSS s) {
-        ssVector.add(s);
+    // get all  ss to Population mappings for this RS
+    public HashMap getSSPopulationsForRs() {
+        return ssPopulationMap;
     }
-
-    // get the SS objects for this RS
-    public Vector getSubSNPs() {
-        return ssVector;
-    }
-    */
 }

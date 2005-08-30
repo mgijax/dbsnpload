@@ -80,27 +80,28 @@ public class DBSNPGenotypeParser implements DBSNPParser {
         // maps dbSNP strainId to strain or Jax Registry Id
         private HashMap strainMap = new HashMap();
 
-        // The current strain and allele for currentSS
+        // The current strain id
         private String currentStrainId;
         // currentStrainId converted to dbSNP id
         String currentConvertedStrainId;
         // allele for currentStrainId
         private Allele currentAllele;
         // The set of strain alleles for the currentSS
-        private HashMap currentStrAlleleMap;
+        //private HashMap currentStrAlleleMap;
 
         // Vector of RS objects
         private Vector rsVector;
 
-        // DEBUG
-        Vector SSPopIdVector = new Vector();
+        // Vector of DBSNPGenotypePopulation objects for the current SS
+        Vector currentSSPopulationVector;
+        DBSNPGenotypePopulation currentPopulation;
 
         public DBSNPContentHandler() {
             // one per rs record processed, reset in end element
             currentInput = new DBSNPGenotypeInput();
-            // current ss processed
-            //currentSS = new DBSNPGenotypeSS();
-            // one of these per app invocation
+            // current population processed
+            currentPopulation = new DBSNPGenotypePopulation();
+            currentSSPopulationVector = new Vector();
             rsVector = new Vector();
         }
 
@@ -147,15 +148,6 @@ public class DBSNPGenotypeParser implements DBSNPParser {
                                  String rawName, Attributes atts) throws
             SAXException {
 
-            // DEBUG
-            if (localName.equals("ByPop")) {
-                for (int i = 0; i < atts.getLength(); i++) {
-                    if (atts.getLocalName(i) == "popId") {
-                        //System.out.println(atts.getValue(i));
-                        SSPopIdVector.add(atts.getValue(i));
-                    }
-                }
-            }
             if (localName.equals("Individual")) {
                 for (int i = 0; i < atts.getLength(); i++) {
                     // indId, in this section, is the dbSNP strain id used in
@@ -189,7 +181,7 @@ public class DBSNPGenotypeParser implements DBSNPParser {
             else if (localName.equals("SsInfo")) {
                 for (int i = 0; i < atts.getLength(); i++) {
                      if( atts.getLocalName(i) == "ssId") {
-                         currentStrAlleleMap = new HashMap();
+                         //currentStrAlleleMap = new HashMap();
                          currentSSId = atts.getValue(i);
                      }
                      else if (atts.getLocalName(i) == "ssOrientToRs") {
@@ -197,13 +189,21 @@ public class DBSNPGenotypeParser implements DBSNPParser {
                      }
                 }
             }
+            if (localName.equals("ByPop")) {
+                for (int i = 0; i < atts.getLength(); i++) {
+                    if (atts.getLocalName(i) == "popId") {
+                        currentPopulation.setPopId(atts.getValue(i));
+                        //currentStrAlleleMap = new HashMap();
+                    }
+                }
+            }
+
             else if (localName.equals("GTypeByInd")) {
                 for (int i = 0; i < atts.getLength(); i++) {
                     if (atts.getLocalName(i) == "gtype") {
                         String allele = atts.getValue(i);
                         ArrayList a = StringLib.split(allele, "/");
                         allele = (String)a.get(0);
-                        //currentAllele = new Allele(atts.getValue(i));
                         currentAllele = new Allele(allele, currentSSOrientToRS);
                         int size = allele.length();
                         if(size > 30) {
@@ -213,14 +213,10 @@ public class DBSNPGenotypeParser implements DBSNPParser {
                     else if (atts.getLocalName(i) == "indId") {
                         currentStrainId = atts.getValue(i);
                         if (strainMap.containsKey(currentStrainId)) {
-                            // add an strain/allele to the current input object
-                            //currentInput.addSSAlleles();
-                           // currentSS.addStrainAllele( (String) strainMap.get(
-                             //   currentStrainId),
-                               // currentAllele);
                             // set converted strain and its allele into the strain allele map
                             currentConvertedStrainId = (String)strainMap.get(currentStrainId);
-                            currentStrAlleleMap.put(currentConvertedStrainId, currentAllele);
+                            //currentStrAlleleMap.put(currentConvertedStrainId, currentAllele);
+                            currentPopulation.addStrainAlleles(currentConvertedStrainId, currentAllele);
                         }
                         else {
                             System.out.println("No strain for strainId " +
@@ -230,10 +226,8 @@ public class DBSNPGenotypeParser implements DBSNPParser {
                     else if (atts.getLocalName(i) == "flag") {
                         String flag = (atts.getValue(i)).trim();
                         if (flag.equals("gtyFlag1")) {
-                            //currentSS.addStrainAlleleFlag((String)strainMap.get(currentStrainId),true);
-                            Allele a = (Allele)currentStrAlleleMap.get(currentConvertedStrainId);
+                            Allele a = (Allele)currentPopulation.getStrainAlleles().get(currentConvertedStrainId);
                             a.setGtyFlag1(true);
-                            currentStrAlleleMap.put(currentConvertedStrainId, a);
                         }
                     }
                 }
@@ -255,30 +249,25 @@ public class DBSNPGenotypeParser implements DBSNPParser {
                 // map the dbSNP strain id to the strain name or jax id
                 strainMap.put(currentStrainMapStrainId, currentStrain);
             }
-            // When we get to the end of the ss information we are done with
-            // the record. Add the alleles to the strain allele map
-            else if (localName.equals("SsInfo")) {
-                currentInput.addSSAlleles(currentSSId, currentStrAlleleMap);
-                // DEBUG
-                int size = SSPopIdVector.size();
-                if(size > 1) {
-                    logger.logdDebug("RS" + currentInput.getRsId() + " has SS with " + size + " popId");
-                    for(Iterator i = SSPopIdVector.iterator(); i.hasNext(); ) {
-                        logger.logdDebug( "\t" + (String)i.next());
-                    }
-                }
-                SSPopIdVector = new Vector();
-                //  if (currentStrAlleleMap.size() < 1 ) {
-                //      logger.logcInfo("NO ALLELES RS" + currentInput.getRsId() + " SS" + currentSSId, false);
-                //  }
-            }
-
             else if (localName.equals("SnpInfo")) {
                 // add RS to the vector
                 rsVector.add(currentInput);
                 // reset globals for the next record
                 currentInput = new DBSNPGenotypeInput();
             }
+            // When we get to the end of the ss information we are done with
+            // the record. Add the alleles to the strain allele map
+            else if (localName.equals("SsInfo")) {
+                currentInput.addPopulation(currentSSId, currentSSPopulationVector);
+                currentSSPopulationVector = new Vector();
+            }
+
+            if (localName.equals("ByPop")) {
+                currentSSPopulationVector.add(currentPopulation);
+                // reset for next population
+                currentPopulation = new DBSNPGenotypePopulation();
+            }
+
         }
 
         /**
