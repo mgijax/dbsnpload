@@ -38,7 +38,8 @@ public class SNPProcessor {
     private VocabKeyLookup varClassLookup;
     private VocabKeyLookup subHandleLookup;
     private StrainKeyLookup strainKeyLookup;
-    private AccessionLookup jaxRegistryLookup;
+    //private AccessionLookup jaxRegistryLookup;
+    private AccessionLookup populationKeyLookup;
     private SQLStream mgdStream;
     private SNP snp;
     private Integer mgdConsensusSnpKey;
@@ -57,8 +58,10 @@ public class SNPProcessor {
         varClassLookup = new VocabKeyLookup(VocabularyTypeConstants.SNPVARCLASS);
         subHandleLookup = new VocabKeyLookup(VocabularyTypeConstants.SUBHANDLE);
         strainKeyLookup = new StrainKeyLookup();
-        jaxRegistryLookup = new AccessionLookup(LogicalDBConstants.JAXREGISTRY,
-                MGITypeConstants.STRAIN, AccessionLib.PREFERRED);
+        //jaxRegistryLookup = new AccessionLookup(LogicalDBConstants.JAXREGISTRY,
+                //MGITypeConstants.STRAIN, AccessionLib.PREFERRED);
+        populationKeyLookup = new AccessionLookup(LogicalDBConstants.SNPPOPULATION,
+                MGITypeConstants.SNPPOPULATION, AccessionLib.PREFERRED);
         mgdStream = mgdSqlStream;
         coordWriter = writer;
         logger = DLALogger.getInstance();
@@ -81,7 +84,6 @@ public class SNPProcessor {
         //System.out.println("Process ConsensusSnp");
         Vector radarAccessions = nse.getAccDAOs();
         processConsensusSnp(csState, nse.getConsensusKey(), radarAccessions, radarStrAlleleDAOs);
-        //processAccessions(accVector);
 
         // process the set of Flanking sequences for this RS
         //System.out.println("Process Flanks");
@@ -337,6 +339,9 @@ public class SNPProcessor {
                       mgdState.setSubSnpKey(mgdSSKey);
                       mgdState.setStrainKey(radarState.getMgdStrainKey());
                       mgdState.setAllele(radarState.getAllele());
+                      String popId = radarState.getPopId();
+                      Integer popKey = populationKeyLookup.lookup(popId);
+                      mgdState.setPopulationKey(popKey);
                       snp.setSubSnpStrainAllele(mgdState);
                   }
               }
