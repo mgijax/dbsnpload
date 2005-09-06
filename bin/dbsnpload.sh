@@ -70,8 +70,7 @@ fi
 #  Establish the configuration file names.
 #
 CONFIG_COMMON=`pwd`/common.config.sh
-CONFIG_DBSNPCOMMON=`pwd`/dbsnpload.config
-
+CONFIG_LOAD=`pwd`/dbsnpload.config
 echo ${CONFIG_LOAD}
 
 #
@@ -83,17 +82,18 @@ then
     exit 1
 fi
 
-#if [ ! -r ${CONFIG_LOAD} ]
-#then
-#    echo "Cannot read configuration file: ${CONFIG_LOAD}" | tee -a ${LOG}
-#    exit 1
-#fi
-
-if [ ! -r ${CONFIG_DBSNPCOMMON} ]
+if [ ! -r ${CONFIG_LOAD} ]
 then
-    echo "Cannot read configuration file: ${CONFIG_DBSNPCOMMON}" | tee -a ${LOG}
+    echo "Cannot read configuration file: ${CONFIG_LOAD}" | tee -a ${LOG}
     exit 1
 fi
+
+#if [ ! -r ${CONFIG_DBSNPCOMMON} ]
+#then
+#    echo "Cannot read configuration file: ${CONFIG_DBSNPCOMMON}" | tee -a ${LOG}
+#    exit 1
+#
+#fi
 
 #
 # Source the common configuration files
@@ -103,8 +103,8 @@ fi
 #
 # Source the DBSNP Load configuration files
 #
-#. ${CONFIG_LOAD}
-. ${CONFIG_DBSNPCOMMON}
+. ${CONFIG_LOAD}
+#. ${CONFIG_DBSNPCOMMON}
 
 echo "javaruntime:${JAVARUNTIMEOPTS}"
 echo "classpath:${CLASSPATH}"
@@ -146,7 +146,7 @@ shutDown ()
 }
 
 #
-# Function that runs the java load
+# Function that runs the java dbsnp load
 #
 
 runsnpload ()
@@ -159,47 +159,62 @@ runsnpload ()
     # run dbsnpload
     #
     ${JAVA} ${JAVARUNTIMEOPTS} -classpath ${CLASSPATH} \
-	-DCONFIG=${CONFIG_COMMON},${CONFIG_DBSNPCOMMON} \
+	-DCONFIG=${CONFIG_COMMON},${CONFIG_LOAD} \
 	-DJOBKEY=${JOBKEY} ${DLA_START}
-
-    STAT=$?
-    if [ ${STAT} -ne 0 ]
-    then
-	echo "dbsnpload processing failed.  \
-	    Return status: ${STAT}" >> ${LOG_PROC}
-	shutDown
-	exit 1
-    fi
-    echo "dbsnpload completed successfully" >> ${LOG_PROC}
-
-
 }
+
+#
+# function that runs the java snp coordinate load
+#
+runcoordload ()
+{
+    #
+    # log time
+    #
+    echo "\n`date`" >> ${LOG_PROC}
+    #
+    # run dbsnp coordload
+
+    # Here we override the Configured value of DLA_LOADER
+    # and set it to the Configured coordload class
+    # we also override 
+    # and DLA_TRUNCATE_LOAD and  DLA_TRUNCATE_QC_TABLES
+    # so we don't delete the SNP tables during the coordload
+    ${JAVA} ${JAVARUNTIMEOPTS} -classpath ${CLASSPATH} \
+    -DCONFIG=${CONFIG_COMMON},${CONFIG_LOAD} \
+    -DDLA_LOADER=${COORD_DLA_LOADER} \
+    -DDLA_TRUNCATE_LOAD_TABLES="" \
+    -DDLA_TRUNCATE_QC_TABLES="" \
+    -DJOBKEY=${JOBKEY} ${DLA_START}
+}
+
 
 checkstatus ()
 {
 
     if [ $1 -ne 0 ]
     then
-        echo "$1 Failed. Return status: $2" >> ${LOG_PROC}
+        echo "$2 Failed. Return status: $1" >> ${LOG_PROC}
         shutDown
         exit 1
     fi
-    echo "$1 completed successfully" >> ${LOG_PROC}
+    echo "$2 completed successfully" >> ${LOG_PROC}
 
 }
 
-runtruncate () 
-{
-    ${MGD_DBSCHEMADIR}/table/SNP_truncate.logical | tee -a ${LOG}
-    stat=$?
-    msg="truncate mgd tables "
-    checkstatus msg stat
-
-    ${RADAR_DBSCHEMADIR}/table/MGI_SNP_truncate.logical
-    stat=$?
-    msg="truncate radar tables "
-    checkstatus msg stat
-}
+# doing this from the java load now
+#runtruncate () 
+#{
+#    ${MGD_DBSCHEMADIR}/table/SNP_truncate.logical | tee -a ${LOG}
+#    STAT=$?
+#    msg="truncate mgd tables "
+#    checkstatus msg STAT 
+#
+#    ${RADAR_DBSCHEMADIR}/table/MGI_SNP_truncate.logical
+#    STAT=$?
+#    msg="truncate radar tables "
+#    checkstatus msg STAT 
+#}
 
 ##################################################################
 # main
@@ -215,27 +230,47 @@ preload ${OUTPUTDIR}
 #
 cleanDir ${OUTPUTDIR} ${RPTDIR}
 
-# truncate snp tables
-# 
-#runtruncate
+echo "running vocabulary loads"
+${DBSNP_VOCLOAD}
+STAT=$?
+msg="dbsnp vocabulary load "
+checkstatus ${STAT} ${msg}
 
-# run the snpload
-#
+echo "running translation load"
+${DBSNP_TRANS_LOAD}
+STAT=$?
+msg="dbsnp translation load "
+checkstatus ${STAT} ${msg}
+
+echo "running population load"
+${POPULATION_LOAD}
+STAT=$?
+msg=" population load "
+checkstatus ${STAT} ${msg}
+
+echo "running dbsnp load"
 runsnpload
+STAT=$?
+msg="dbsnp load "
+checkstatus ${STAT} ${msg}
 
-# run the snp coordinate load
-#echo "running ${COORD_LOAD}"
-#${COORDLOAD} 
-#stat=$?
-#msg="snp coordload "
-#checkstatus stat msg
+echo "running snp coordinate load"
+runcoordload
+STAT=$?
+msg="snp coordload "
+checkstatus  ${STAT} ${msg}
 
-# run the snp coordinate cache load
-#echo "running ${COORD_CACHE_LOAD}"
-#${COORD_CACHE_LOAD}
-#stat=$?
-#msg="snp coord cache load "
-#checkstatus stat msg
+echo "running ${SNP_COORD_CACHE_LOAD}"
+${SNP_COORD_CACHE_LOAD}
+STAT=$?
+msg="snp coord cache load "
+checkstatus  ${STAT} ${msg}
+
+echo "running ${SNP_MARKER_CACHE_LOAD}"
+${SNP_MARKER_CACHE_LOAD}
+STAT=$?
+msg="snp coord cache load "
+checkstatus  ${STAT} ${msg}
 
 # run postload cleanup and email logs
 #
