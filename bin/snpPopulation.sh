@@ -105,16 +105,12 @@ ${MGIDBUTILSDIR}/bin/updateStatistics.csh ${MGD_DBSERVER} ${MGD_DBNAME} ${POP_TA
 #${MGD_DBSCHEMADIR}/index/${ACC_TABLE}_drop.object | tee -a ${LOG_DIAG}
 
 echo "bcp'ing data into ${ACC_TABLE}"
-cat ${MGD_DBPASSWORDFILE} | bcp ${MGD_DBNAME}..${ACC_TABLE} in ${OUTPUTDIR}/${ACC_TABLE}.bcp -c -t \| -S${MGD_DBSERVER} -U${MGD_DBUSER} | tee -a ${LOG_DIAG}
+cat ${MGD_DBPASSWORDFILE} | bcp ${MGD_DBNAME}..${ACC_TABLE} in ${OUTPUTDIR}/${ACC_TABLE}.pop.bcp -c -t \| -S${MGD_DBSERVER} -U${MGD_DBUSER} | tee -a ${LOG_DIAG}
 
 #echo "creating indexes on ${ACC_TABLE}"
 #${MGD_DBSCHEMADIR}/index/${ACC_TABLE}_create.object | tee -a ${LOG_DIAG}
 
 #echo "updating statistics on ${ACC_TABLE}"
 #${MGIDBUTILSDIR}/bin/updateStatistics.csh ${MGD_DBSERVER} ${MGD_DBNAME} ${ACC_TABLE} | tee - a ${LOG_DIAG}
-
-# need to rename this bcp file or dbsnpload will overwrite it.
-echo "renaming ${OUTPUTDIR}/${ACC_TABLE}.bcp to ${OUTPUTDIR}/${ACC_TABLE}.pop.bcp"
-cp -p ${OUTPUTDIR}/${ACC_TABLE}.bcp ${OUTPUTDIR}/${ACC_TABLE}.pop.bcp"
 
 date | tee -a ${LOG} ${LOG_DIAG}

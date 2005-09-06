@@ -57,7 +57,7 @@ handleKeyLookup = {}
 # bcp file objects
 print "%s/%s.bcp" % (outputdir, popTable)
 popBCP = open('%s/%s.bcp' % (outputdir, popTable), 'w')
-accBCP = open('%s/%s.bcp' % (outputdir, accTable), 'w')
+accBCP = open('%s/%s.pop.bcp' % (outputdir, accTable), 'w')
 
 # submitter handle vocab input file, created then run
 #handleFile = open(os.environ['HANDLE_VOCAB_FILE'], 'w')
