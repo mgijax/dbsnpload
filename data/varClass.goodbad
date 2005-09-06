@@ -1,0 +1,5 @@
+	SNP	snp	dbsnp_load
+	IN-DEL	in-del	dbsnp_load
+	Named	named	dbsnp_load
+	Mixed	mixed	dbsnp_load
+	MNP	mnp	dbsnp_load
