@@ -7,3 +7,21 @@ Intron
 Locus-Region							
 mRNA-UTR							
 Splice-Site							
+within 1000 kb of							
+within 1000 kb upstream of							
+within 1000 kb downstream of							
+within 500 kb of							
+within 500 kb upstream of							
+within 500 kb downstream of							
+within 100 kb of							
+within 100 kb upstream of							
+within 100 kb downstream of							
+within 10 kb of							
+within 10 kb upstream of							
+within 10 kb downstream of							
+within 2 kb of							
+within 2 kb upstream of							
+within 2 kb downstream of							
+locus-region (upstream)							
+locus-region (downstream)							
+within coordinates of							
