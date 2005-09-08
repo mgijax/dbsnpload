@@ -1,3 +1,27 @@
+TAG: dbsnpload-1-0-2
+DATE: 09/08/2005
+STAFF: sc
+RELEASE: dev
+CHANGES:
+1) dbsnpload.config - updated configured class names with new package
+   name
+2) ./data/fxnClass.vocab.in - added the 'within' vocab for 
+   mgi determined snp/marker relationships
+3) DBSNPInputProcessor.java - updated to with new package names in when
+   checking for object types in the processInput method. Added call
+   to SNPProcessor.getProcessed report to differentiate between those snps
+   added to radar and mgd. e.g if a variation class can't be resolved, that
+   snp will not be added to mgd, but will be added to radar, so counts can
+   be different.
+4) DBSNPLoader.java - catch SNPVocabResolverException in order to count them
+   and to continue on to next RS when vocabs can't be resolved.
+5) SNPProcessor.java - removed StrainKeyLookup since this is done in 
+   DBSNPProcessor now. Added getProcessedReport method to return the count
+    of snps loaded into mgd. Added try/catch when resolving vocabs in order
+    to catch KeyNotFoundException and throw SNPVocabResolverException. Changed
+    processSS method to processSubSnp for consistency. 
+6) SNPVocabResolverException - new
+	
 TAG: dbsnpload-1-0-1
 DATE: 08/22/2005
 STAFF: sc
