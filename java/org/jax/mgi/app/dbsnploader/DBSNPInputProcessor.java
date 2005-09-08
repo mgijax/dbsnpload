@@ -82,7 +82,7 @@ public class DBSNPInputProcessor {
 
     // the current rsId we are processing
     String rsId;
-    // current number of sequences added
+    // current number of radar snps added
     private int addCtr = 0;
 
     // > 1 dbsnp strainIds can map to the same mgd strain
@@ -149,15 +149,16 @@ public class DBSNPInputProcessor {
      * @throws DBException if error creating DBSNPGenotype objects
      */
 
-    public void processInput(DBSNPInput input) throws DBException,
-        ConfigException, SNPNoStrainAlleleException, SNPNoBL6Exception, MGIException,
-           SNPNoConsensusAlleleSummaryException {
+    public void processInput(DBSNPInput input) throws MGIException {
+        //throws DBException,
+        //ConfigException, SNPNoStrainAlleleException, SNPNoBL6Exception, MGIException,
+        //SNPNoConsensusAlleleSummaryException {
         // RefSNP id of 'input'
         rsId = input.getRsId();
 
         // Create a map of rs ids to their  strain alleles by SS, if the
         // input object is for the genotype file
-        if (input.getClass().getName().equals("dbsnparser.DBSNPGenotypeInput")){
+        if (input.getClass().getName().equals("org.jax.mgi.app.dbsnploader.DBSNPGenotypeInput")){
             //rsId = ( (DBSNPGenotypeInput) input).getRsId();
             //logger.logdDebug(rsId);
             // ssAlleleMap looks like  ssId:HashMap(strain:Allele)
@@ -168,7 +169,7 @@ public class DBSNPInputProcessor {
             //reportAllReverse(rsId, ssAlleleMap);
         }
         // Process this way if the input object is for the NSE file
-         else if (input.getClass().getName().equals("dbsnparser.DBSNPNseInput")){
+         else if (input.getClass().getName().equals("org.jax.mgi.app.dbsnploader.DBSNPNseInput")){
 
                  // get the set of strain alleles, for this rs
                  // looks like ssid:Vector of DBSNPGenotypePopulation objects
@@ -266,11 +267,7 @@ public class DBSNPInputProcessor {
                  dbSNPNse.sendToStream();
                  addCtr++;
                  // now do the (temporary) mgd part
-                 try {
-                     snpProcessor.process(dbSNPNse, rsId);
-                 } catch (SNPUnresolvedStrainException e) {
-                     logger.logdInfo(e.getMessage(), false);
-                 }
+                 snpProcessor.process(dbSNPNse, rsId);
             }
              else {
                  // throw exception and log here
@@ -286,18 +283,10 @@ public class DBSNPInputProcessor {
      */
      public Vector getProcessedReport() {
          Vector report = new Vector();
-         report.add("Total SNPs created: " + addCtr);
-        //logger.logcInfo("Total Mixed Class RefSNPS with SS varClass that disagree: " + mixedRS_SSConflictCtr, false );
-        //logger.logcInfo("Total Mixed Class RefSNPS wtih SS varClass that agree: " + mixedRS_noSSConflictCtr, false );
-        //logger.logcInfo("Total NM: " + nm, false);
-        //logger.logcInfo("Total NR: " + nr, false);
-        //logger.logcInfo("Total NP: " + np, false);
-        //logger.logcInfo("Total XM: " + xm, false);
-        //logger.logcInfo("Total XR: " + xr, false);
-        //logger.logcInfo("Total XP: " + xp, false);
-        //logger.logcInfo("Total other MRNA: " + otherMrna, false);
-        //logger.logcInfo("Total other Protein: " + otherProt, false);
-
+         report.add("Total RADAR SNPs created: " + addCtr);
+         for(Iterator i = snpProcessor.getProcessedReport().iterator(); i.hasNext(); ) {
+             report.add((String)i.next());
+         }
          return report;
      }
 
@@ -706,14 +695,10 @@ public class DBSNPInputProcessor {
         for (Iterator i = alleleMap.keySet().iterator(); i.hasNext(); ) {
             String strain = (String)i.next();
             Integer strainKey = resolveStrain(strain);
-            // if we still haven't found it write it to the curation log and throw an
-             // exception
+            // if we still haven't found it write it to the curation log continue
              if(strainKey == null) {
                  logger.logcInfo("BAD STRAIN " + strain + " RS" + rsId + " SS" + ssId + "PopId" + popId, false);
-                 //SNPUnresolvedStrainException e = new SNPUnresolvedStrainException();
-                 //e.bind(strain);
                  continue;
-                 //throw e;
              }
             MGI_SNP_StrainAlleleState state = new MGI_SNP_StrainAlleleState();
             state.setObjectKey(subSNPKey);
