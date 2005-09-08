@@ -58,6 +58,9 @@ public class DBSNPLoader extends DLALoader {
     // all alleles are 'N'
     private int rsWithNoAlleleSummaryCtr;
 
+    // rs with unresolvable vocabularies
+    private int rsWithVocabResolverExceptionCtr;
+
     // list of chromsomes to parse
     private ArrayList chrList;
 
@@ -88,7 +91,7 @@ public class DBSNPLoader extends DLALoader {
         // The list of chromosomes for iterating thru Chr files
         chrList = new ArrayList();
 
-       for (int i = 1; i < 20; i++) {
+        for (int i = 1; i < 20; i++) {
             chrList.add(String.valueOf(i));
         }
         chrList.add("X");
@@ -115,6 +118,7 @@ public class DBSNPLoader extends DLALoader {
         rsWithNoAllelesCtr = 0;
         rsWithNoBL6Ctr = 0;
         rsWithNoAlleleSummaryCtr = 0;
+        rsWithVocabResolverExceptionCtr = 0;
     }
 
     /**
@@ -171,6 +175,10 @@ public class DBSNPLoader extends DLALoader {
                 }
                 catch (SNPNoConsensusAlleleSummaryException e) {
                     rsWithNoAlleleSummaryCtr++;
+                }
+                catch (SNPVocabResolverException e) {
+                    rsWithVocabResolverExceptionCtr++;
+
                 }
                 input = (DBSNPInput) nseInterpreter.interpret();
                 snpCtr++;
