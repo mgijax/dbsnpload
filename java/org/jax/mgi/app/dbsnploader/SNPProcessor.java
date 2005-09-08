@@ -37,7 +37,7 @@ public class SNPProcessor {
     private LogicalDBLookup ldbLookup;
     private VocabKeyLookup varClassLookup;
     private VocabKeyLookup subHandleLookup;
-    private StrainKeyLookup strainKeyLookup;
+    //private StrainKeyLookup strainKeyLookup;
     //private AccessionLookup jaxRegistryLookup;
     private AccessionLookup populationKeyLookup;
     private SQLStream mgdStream;
@@ -50,6 +50,9 @@ public class SNPProcessor {
     private AlleleOrderer alleleOrderer;
     private IUPACResolver iupacResolver;
 
+    // current number of mgd snps added
+    private int addCtr = 0;
+
     public SNPProcessor(SQLStream mgdSqlStream, BufferedWriter writer)
         throws CacheException, DBException, ConfigException,
             DLALoggingException, TranslationException {
@@ -57,7 +60,7 @@ public class SNPProcessor {
         ldbLookup = new LogicalDBLookup();
         varClassLookup = new VocabKeyLookup(VocabularyTypeConstants.SNPVARCLASS);
         subHandleLookup = new VocabKeyLookup(VocabularyTypeConstants.SUBHANDLE);
-        strainKeyLookup = new StrainKeyLookup();
+        //strainKeyLookup = new StrainKeyLookup();
         //jaxRegistryLookup = new AccessionLookup(LogicalDBConstants.JAXREGISTRY,
                 //MGITypeConstants.STRAIN, AccessionLib.PREFERRED);
         populationKeyLookup = new AccessionLookup(LogicalDBConstants.SNPPOPULATION,
@@ -70,8 +73,8 @@ public class SNPProcessor {
         iupacResolver = new IUPACResolver();
     }
     public void process(DBSNPNse nse, String id) throws  DBException, CacheException,
-       KeyNotFoundException, TranslationException, ConfigException,
-           SNPUnresolvedStrainException, SNPLoaderException {
+       KeyNotFoundException, TranslationException, ConfigException, SNPVocabResolverException,
+           SNPLoaderException {
         consensusSnpId = id;
 
         // consensusAlleles and ssAlleles for this RS
@@ -99,20 +102,33 @@ public class SNPProcessor {
         // looks like ssId:ssDAO
         //System.out.println("Process SubSnps");
         HashMap ssMap = nse.getSSDAOs();
-        processSS(ssMap, radarAccessions, radarStrAlleleDAOs);
+        processSubSnp(ssMap, radarAccessions, radarStrAlleleDAOs);
 
         // don't need this, a separate process will load this table
         //Vector markerVector = nse.getMarkerDAOs();
         //System.out.println("Calling snp.sendToStream");
+        addCtr++;
         snp.sendToStream();
 
     }
+    /**
+     * Gets a Vector containing a String reporting count of Sequences added
+     * @assumes nothing
+     * @effects nothing
+     * @return Vector containing single string with count of Sequences added
+     */
+    public Vector getProcessedReport() {
+        Vector report = new Vector();
+        report.add("Total MGD SNPs created: " + addCtr);
+        return report;
+  }
+
        // radarStrAlleleDAOs is the vector of radar strain allele daos for this consensusSNP
        // it includes cs and ss strain alleles
     private void processConsensusSnp(MGI_SNP_ConsensusSNPState radarState,
             Integer radarConsensusSnpKey, Vector radarAccessions, Vector radarStrAlleleDAOs)
-                throws DBException, CacheException, KeyNotFoundException,
-                   TranslationException, ConfigException, SNPUnresolvedStrainException {
+                throws DBException, CacheException, SNPVocabResolverException, KeyNotFoundException,
+                   TranslationException, ConfigException {
         SNP_ConsensusSnpState mgdState = new SNP_ConsensusSnpState();
         // order allele summary
         //logger.logdDebug("raw allele summary: " + radarState.getAlleleSummary(), false);
@@ -123,7 +139,17 @@ public class SNPProcessor {
         //logger.logdDebug("IUPAC code: " + iupacCode, false);
         mgdState.setAlleleSummary(orderedAlleleSummary);
         mgdState.setIupacCode(iupacCode);
-        mgdState.setVarClassKey(varClassLookup.lookup(radarState.getVariationClass()));
+        try {
+            mgdState.setVarClassKey(varClassLookup.lookup(radarState.getVariationClass()));
+        } catch (KeyNotFoundException e) {
+            String v = radarState.getVariationClass();
+            logger.logcInfo("UNRESOLVED CS VARCLASS " + v +
+                    " RS" + consensusSnpId, false);
+            SNPVocabResolverException e1 = new
+                SNPVocabResolverException("VarClass");
+            e1.bind("RS" + consensusSnpId + " varClass " + v);
+            throw e1;
+        }
         snp = new SNP(mgdState, mgdStream);
         // init this instance variable to be used by other methods
         mgdConsensusSnpKey = snp.getConsensusSnpKey();
@@ -131,8 +157,7 @@ public class SNPProcessor {
         processConsensusSnpAccessions(mgdConsensusSnpKey, radarAccessions);
     }
     private void processConsensusSnpAccessions(Integer key, Vector radarAccessions) throws DBException,
-       CacheException, KeyNotFoundException, TranslationException, ConfigException,
-           SNPUnresolvedStrainException {
+       CacheException, KeyNotFoundException, TranslationException, ConfigException {
         for (Iterator i = radarAccessions.iterator(); i.hasNext(); ) {
             MGI_SNP_AccessionDAO radarDao = (MGI_SNP_AccessionDAO)i.next();
             MGI_SNP_AccessionState radarState = radarDao.getState();
@@ -151,8 +176,7 @@ public class SNPProcessor {
         }
     }
     private void processSubSnpAccession(Integer mgdSSKey,  Integer radarSSKey, Vector radarAccessions) throws DBException,
-       CacheException, KeyNotFoundException, TranslationException, ConfigException,
-           SNPUnresolvedStrainException {
+       CacheException, KeyNotFoundException, TranslationException, ConfigException {
         for (Iterator i = radarAccessions.iterator(); i.hasNext(); ) {
             MGI_SNP_AccessionDAO radarDao = (MGI_SNP_AccessionDAO)i.next();
             MGI_SNP_AccessionState radarState = radarDao.getState();
@@ -175,8 +199,7 @@ public class SNPProcessor {
     }
 
     private void processFlanks(Vector radarFlanks) throws DBException, CacheException,
-        KeyNotFoundException, TranslationException, ConfigException,
-            SNPUnresolvedStrainException {
+        KeyNotFoundException, TranslationException, ConfigException {
        for (Iterator i = radarFlanks.iterator(); i.hasNext(); ) {
            MGI_SNP_FlankDAO radarDao = (MGI_SNP_FlankDAO)i.next();
            MGI_SNP_FlankState radarState = radarDao.getState();
@@ -193,7 +216,7 @@ public class SNPProcessor {
    // note that we have an empty last column.
    private void processCoordinates(Vector radarCoordinates) throws DBException,
        CacheException, KeyNotFoundException, TranslationException, ConfigException,
-           SNPUnresolvedStrainException, SNPLoaderException {
+           SNPLoaderException {
        StringBuffer coord = new StringBuffer();
        for (Iterator i = radarCoordinates.iterator(); i.hasNext(); ) {
            MGI_SNP_CoordinateDAO radarDao = (MGI_SNP_CoordinateDAO)i.next();
@@ -230,16 +253,39 @@ public class SNPProcessor {
              throw e1;
        }
    }
-   private void processSS(HashMap radarSSMap, Vector radarAccessions, Vector radarStrAlleleDAOs) throws DBException, CacheException,
-       KeyNotFoundException, TranslationException, ConfigException,
-           SNPUnresolvedStrainException {
+   private void processSubSnp(HashMap radarSSMap, Vector radarAccessions, Vector radarStrAlleleDAOs) throws DBException, CacheException,
+       SNPVocabResolverException, KeyNotFoundException, TranslationException, ConfigException {
        for (Iterator i = radarSSMap.keySet().iterator(); i.hasNext(); ) {
            MGI_SNP_SubSNPDAO radarDao = (MGI_SNP_SubSNPDAO)radarSSMap.get(i.next());
            MGI_SNP_SubSNPState radarState = radarDao.getState();
            SNP_SubSnpState mgdState = new SNP_SubSnpState();
            mgdState.setConsensusSnpKey(mgdConsensusSnpKey);
-           mgdState.setSubHandleKey(subHandleLookup.lookup(radarState.getSubmitterHandle()));
-           mgdState.setVarClassKey(varClassLookup.lookup(radarState.getVariationClass()));
+           try{
+               mgdState.setSubHandleKey(subHandleLookup.lookup(radarState.
+                   getSubmitterHandle()));
+           } catch (KeyNotFoundException e) {
+            String h = radarState.getSubmitterHandle();
+            logger.logcInfo("UNRESOLVED SUBMITTERHANDLE " + h +
+                    " RS" + consensusSnpId, false);
+            SNPVocabResolverException e1 = new
+                SNPVocabResolverException("SubHandle");
+            e1.bind("RS" + consensusSnpId + " varClass " + h);
+            throw e1;
+        }
+
+           try {
+               mgdState.setVarClassKey(varClassLookup.lookup(radarState.
+                   getVariationClass()));
+           } catch (KeyNotFoundException e) {
+            String v = radarState.getVariationClass();
+            logger.logcInfo("UNRESOLVED SS VARCLASS " + v +
+                    " RS" + consensusSnpId, false);
+            SNPVocabResolverException e1 = new
+                SNPVocabResolverException("VarClass");
+            e1.bind("RS" + consensusSnpId + " varClass " + v);
+            throw e1;
+        }
+
           // resolve orientation
            String orient = radarState.getOrientation();
            String translatedOrient = "";
@@ -269,8 +315,7 @@ public class SNPProcessor {
    // it includes cs and ss strain alleles
    private void processConsensusSnpStrainAlleles(Integer mgdCSKey,
        Vector radarStrAlleleDAOs) throws DBException, CacheException,
-           KeyNotFoundException, TranslationException, ConfigException,
-               SNPUnresolvedStrainException {
+           KeyNotFoundException, TranslationException, ConfigException {
         HashMap strainAlleles = new HashMap();
         for (Iterator i = radarStrAlleleDAOs.iterator(); i.hasNext();) {
             MGI_SNP_StrainAlleleDAO radarDao = (MGI_SNP_StrainAlleleDAO)i.next();
@@ -326,7 +371,7 @@ public class SNPProcessor {
    // it includes cs and ss strain alleles
   private void processSubSnpStrainAllele(Integer mgdSSKey, Integer radarSSKey,
           Vector radarStrAlleleDAOs) throws DBException, CacheException,
-              KeyNotFoundException, TranslationException, ConfigException, SNPUnresolvedStrainException {
+              KeyNotFoundException, TranslationException, ConfigException {
               for (Iterator i = radarStrAlleleDAOs.iterator(); i.hasNext(); ) {
                   MGI_SNP_StrainAlleleDAO radarDao = (MGI_SNP_StrainAlleleDAO) i.next();
                   MGI_SNP_StrainAlleleState radarState = (MGI_SNP_StrainAlleleState)
@@ -340,6 +385,9 @@ public class SNPProcessor {
                       mgdState.setStrainKey(radarState.getMgdStrainKey());
                       mgdState.setAllele(radarState.getAllele());
                       String popId = radarState.getPopId();
+                      // allow this to throw KeyNotFoundException since
+                      // a precondition of this load is that populations are in
+                      // place.
                       Integer popKey = populationKeyLookup.lookup(popId);
                       mgdState.setPopulationKey(popKey);
                       snp.setSubSnpStrainAllele(mgdState);
