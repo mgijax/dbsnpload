@@ -61,7 +61,7 @@ public class DBSNPLoader extends DLALoader {
     // rs with unresolvable vocabularies
     private int rsWithVocabResolverExceptionCtr;
 
-    // list of chromsomes to parse
+    // list of chromosomes to parse
     private ArrayList chrList;
 
     // writer for CoordLoad input file

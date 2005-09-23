@@ -18,7 +18,7 @@ then
 fi
 
 #
-#  Establish general the configuration file names
+#  Establish the configuration file names
 #
 CONFIG_COMMON=`pwd`/common.config.sh
 CONFIG_LOAD=`pwd`/dbsnpload.config
