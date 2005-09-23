@@ -202,20 +202,6 @@ checkstatus ()
 
 }
 
-# doing this from the java load now
-#runtruncate () 
-#{
-#    ${MGD_DBSCHEMADIR}/table/SNP_truncate.logical | tee -a ${LOG}
-#    STAT=$?
-#    msg="truncate mgd tables "
-#    checkstatus msg STAT 
-#
-#    ${RADAR_DBSCHEMADIR}/table/MGI_SNP_truncate.logical
-#    STAT=$?
-#    msg="truncate radar tables "
-#    checkstatus msg STAT 
-#}
-
 ##################################################################
 # main
 ##################################################################
