@@ -1,3 +1,13 @@
+TAG: dbsnpload-1-0-3
+DATE: 09/23/2005
+STAFF: sc
+RELEASE: dev
+CHANGES:
+1) removed dbsnpload.config, added dbsnpload.config.default
+2) dbsnpload.sh - removed old runtruncate function
+3) SNP.java - added code to add MGI_Set for uniq set of strain keys
+4) SNPProcessor.java - added code to add MGI_Set for uniq set of strain keys
+
 TAG: dbsnpload-1-0-2
 DATE: 09/08/2005
 STAFF: sc
