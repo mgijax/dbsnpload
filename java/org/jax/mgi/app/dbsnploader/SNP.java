@@ -63,6 +63,10 @@ public class SNP {
         // The SNP_Strain_CacheDAOs for this SNP
         private Vector strainCache = new Vector();
 
+        // new SNP Strain MGI_SetMemberDAOs representing strains we haven't yet
+        // created a set member for in the load
+        private Vector setMember = new Vector();
+
         /**
          * Constructs a SNP object by creating SNP_ConsensusSnpDAO for 'state'
          * @assumes state does not exist in the database
@@ -109,6 +113,10 @@ public class SNP {
         public void setStrainCache(SNP_Strain_CacheState state) {
             strainCache.add(new SNP_Strain_CacheDAO(state));
         }
+        public void setSetMember(MGI_SetMemberState state)
+            throws ConfigException, DBException{
+            setMember.add(new MGI_SetMemberDAO(state));
+        }
         /**
          *
          * get methods
@@ -149,6 +157,9 @@ public class SNP {
             }
             for( i = strainCache.iterator(); i.hasNext(); ) {
                 stream.insert((SNP_Strain_CacheDAO)i.next());
+            }
+            for (i = setMember.iterator(); i.hasNext();) {
+                stream.insert((MGI_SetMemberDAO)i.next());
             }
 
         }

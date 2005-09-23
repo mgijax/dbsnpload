@@ -49,6 +49,8 @@ public class SNPProcessor {
     private SNPLoaderExceptionFactory snpEFactory;
     private AlleleOrderer alleleOrderer;
     private IUPACResolver iupacResolver;
+    //uniq set of mgd strain keys to create an MGI_Set
+    private HashSet mgdStrainKeySet;
 
     // current number of mgd snps added
     private int addCtr = 0;
@@ -71,6 +73,7 @@ public class SNPProcessor {
         snpEFactory = new SNPLoaderExceptionFactory();
         alleleOrderer = new AlleleOrderer();
         iupacResolver = new IUPACResolver();
+        mgdStrainKeySet = new HashSet();
     }
     public void process(DBSNPNse nse, String id) throws  DBException, CacheException,
        KeyNotFoundException, TranslationException, ConfigException, SNPVocabResolverException,
@@ -382,7 +385,9 @@ public class SNPProcessor {
                       SNP_SubSnp_StrainAlleleState mgdState = new
                           SNP_SubSnp_StrainAlleleState();
                       mgdState.setSubSnpKey(mgdSSKey);
-                      mgdState.setStrainKey(radarState.getMgdStrainKey());
+                      Integer mgdStrainKey = radarState.getMgdStrainKey();
+                      createStrainSetMember(mgdStrainKey);
+                      mgdState.setStrainKey(mgdStrainKey);
                       mgdState.setAllele(radarState.getAllele());
                       String popId = radarState.getPopId();
                       // allow this to throw KeyNotFoundException since
@@ -394,4 +399,17 @@ public class SNPProcessor {
                   }
               }
           }
+    private void createStrainSetMember(Integer mgdStrainKey)
+            throws DBException, CacheException, ConfigException {
+        if (!mgdStrainKeySet.contains(mgdStrainKey)) {
+            // the set of mgd strain keys for which we have already
+            // created an MGI_SetMember
+            mgdStrainKeySet.add(mgdStrainKey);
+            MGI_SetMemberState state = new MGI_SetMemberState();
+            state.setObjectKey(mgdStrainKey);
+            state.setSequenceNum(new Integer(1));
+            state.setSetKey(new Integer(1023));
+            snp.setSetMember(state);
+        }
+    }
 }
