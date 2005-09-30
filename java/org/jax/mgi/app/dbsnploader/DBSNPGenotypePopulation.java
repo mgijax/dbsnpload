@@ -10,7 +10,6 @@ public class DBSNPGenotypePopulation {
     public DBSNPGenotypePopulation () {
         strainAllelesMap = new HashMap();
     }
-
     public void setPopId(String p) {
         popId = p;
     }
