@@ -6,8 +6,7 @@
 #  dbsnpload.sh
 ###########################################################################
 #
-#  Purpose:  This script controls the execution of the DB SNP
-#		Data Provider Load
+#  Purpose:  This script controls the execution of the DB SNP load
 #
    Usage="dbsnpload.sh config_file"
 #
@@ -18,21 +17,21 @@
 #  Inputs:
 #
 #      - Common configuration file (/usr/local/mgi/etc/common.config.sh)
-#      - 
-#      - 
-#
+#      - dbsnpload.config
+#      - two XML format input files (genotypes are in seperate file)
+#      - dbsnpload/data input files for translations and vocabs 
+#      - coordinate file created by dbsnpload is input to coordload
 #  Outputs:
 #
 #      - An archive file
 #      - Log files defined by the environment variables ${LOG_PROC},
 #        ${LOG_DIAG}, ${LOG_CUR} and ${LOG_VAL}
 #      - BCP files for for inserts to each database table to be loaded
-#      - SQL script file for updates
+#      - dbsnpload outputs a coordinate file which is input to coordload
 #      - Records written to the database tables
 #      - Exceptions written to standard error
 #      - Configuration and initialization errors are written to a log file
 #        for the shell script
-#      - QC reports as defined by ${APP_SEQ_QCRPT} and ${APP_MSP_QCRPT}
 #        
 #
 #  Exit Codes:
