@@ -220,6 +220,8 @@ public class DBSNPLoader extends DLALoader {
                         rsWithNoBL6Ctr, false);
         logger.logdInfo("Total RefSnps with no ConsensusSnpAlleleSummary: " +
                         rsWithNoAlleleSummaryCtr, false);
+        logger.logdInfo("Total RefSnps with Vocab resolving errors: " +
+                        rsWithVocabResolverExceptionCtr, false);
         for (Iterator i = dbsnpProcessor.getProcessedReport().iterator(); i.hasNext(); ) {
             logger.logdInfo((String)i.next(), false);
         }

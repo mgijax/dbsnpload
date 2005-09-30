@@ -90,6 +90,11 @@ public class DBSNPInputProcessor {
     // strain to a strain key here in the data provider side of the load
     private StrainKeyLookup strainKeyLookup;
     private AccessionLookup jaxRegistryLookup;
+    // these lookups to create a translatable strain name for dbsnp strains
+    // with integer names
+    private HandleNameByPopIdLookup handleNameLookup;
+    private PopNameByPopIdLookup popNameLookup;
+
     // analysis of RS vs SS var class; each is current count of the SS class
     // when the RS class is mixed
     private int mixedRS_SSConflictCtr = 0;
@@ -134,8 +139,9 @@ public class DBSNPInputProcessor {
         rsPopulationsBySS = new HashMap();
         strainKeyLookup = new StrainKeyLookup();
         jaxRegistryLookup = new AccessionLookup(LogicalDBConstants.JAXREGISTRY,
-        MGITypeConstants.STRAIN, AccessionLib.PREFERRED);
-
+                MGITypeConstants.STRAIN, AccessionLib.PREFERRED);
+        popNameLookup = new PopNameByPopIdLookup();
+        handleNameLookup = new HandleNameByPopIdLookup();
         snpProcessor = new SNPProcessor(loadStream, coordWriter);
     }
 
@@ -337,7 +343,7 @@ public class DBSNPInputProcessor {
                  */
                 for (Iterator k = strAlleleMap.keySet().iterator(); k.hasNext(); ) {
                     String strain = (String) k.next();
-                    Integer mgdStrainKey = resolveStrain(strain);
+                    Integer mgdStrainKey = resolveStrain(strain, pop.getPopId());
                     // if we can't resolve the strain, continue
                     if (mgdStrainKey == null) {
                         //logger.logcInfo("BAD STRAIN " + strain + " RS" + rsId + " SS" + currentSSId, false);
@@ -409,80 +415,6 @@ public class DBSNPInputProcessor {
          * now find the consensus allele
          */
         createConsensusAlleles(consensusKey, consensusAlleleMap);
-        /*
-         for (Iterator j = consensusAlleleMap.keySet().iterator(); j.hasNext();) {
-             // the consensus allele determined thus far
-             String conAllele = "";
-             // the count of instances of conAllele
-             int currentCt = 0;
-             // true current comparison of allele counts are equal (we don't have
-             // a consensus)
-             boolean isEqual = false;
-             // get the strain and the alleles
-             Integer strainKey = (Integer)j.next();
-             HashMap alleles = (HashMap)consensusAlleleMap.get(strainKey);
-             // ANALYSIS
-             if (alleles.size() > 2) {
-                 logger.logdDebug("RS" + rsId + " has > 2 alleles for strainKey " + strainKey);
-                 for (Iterator k = alleles.keySet().iterator(); k.hasNext();) {
-                     String allele = (String)k.next();
-                     logger.logdDebug("Allele: " + allele + " count " + alleles.get(allele)   );
-                 }
-             }
-             // END ANALYSIS
-             // iterate thru the alleles of this strain
-             for (Iterator k = alleles.keySet().iterator(); k.hasNext();) {
-                 // get an allele for this strain
-                 String allele = (String)k.next();
-                 // get number of instances of this allele
-                 int count = ((Integer)alleles.get(allele)).intValue();
-                 // if currentCt == count, we flag it as equal
-                 // if we have 2 alleles e.g. A, T that each have 1 instance
-                 // we do not have a majority therefore no consensus
-                 // if we have 2 alleles A=2, T=1 A is consensus allele
-                 if (currentCt == count) {
-                     isEqual = true;
-                 }
-                 else if (currentCt < count) {
-                     currentCt = count;
-                     conAllele = allele;
-                     isEqual = false;
-                 }
-                // logger.logdDebug("\t\t" + " allele: " +
-                  //                allele + " count " + count);
-             }
-             // if the equal flag is true  OR the consensusAllele is "N",
-            // we don't have consensus
-             if(isEqual == true || conAllele.equals("N")) {
-                 conAllele = "?";
-             }
-             // now create the consensus allele
-             MGI_SNP_StrainAlleleState state = new MGI_SNP_StrainAlleleState();
-             state.setAllele(conAllele);
-             state.setMgdStrainKey(strainKey);
-             // no conflict if only 1 distinct allele for this strain that is NOT "?",
-             // (which means the single allele was an "N")
-             // otherwise we have a '?' or a simple majority which we flag
-             if(alleles.size() == 1 && !conAllele.equals("?")) {
-                 state.setIsConflict(Boolean.FALSE);
-             }
-             else {
-                 state.setIsConflict(Boolean.TRUE);
-             }
-             state.setObjectKey(consensusKey);
-             state.setObjectType(SNPLoaderConstants.OBJECTYPE_CSNP);
-             state.setJobStreamKey(jobStreamKey);
-             dbSNPNse.addStrainAllele(state);
-             // ANALYSIS
-             // if the set of alleles for a strain is > 2 we may have a problem with
-             // computing majority; build 124 this case does not exist
-             //if(alleles.keySet().size() > 2) {
-             //logger.logcInfo("RS" + rsId + " strain " + strain + " has " + alleles.keySet().size() + "alleles " + alleles.keySet().toString(), false);
-             //logger.logcInfo("\tconsensusAllele: " + conAllele, false);
-             //}
-             //END ANALYSIS
-         }
-         */
     }
 
     private void createConsensusAlleles(Integer csKey, HashMap csAlleleMap)
@@ -560,7 +492,7 @@ public class DBSNPInputProcessor {
             dbSNPNse.addStrainAllele(state);
         }
     }
-    private Integer resolveStrain(String strain) throws DBException, ConfigException,
+    private Integer resolveStrain(String strain, String popId) throws DBException, ConfigException,
         TranslationException, CacheException {
         Integer strainKey = null;
         // try looking up the strain in the strain vocab
@@ -574,6 +506,19 @@ public class DBSNPInputProcessor {
         if (strainKey == null) {
             try {
                 strainKey = jaxRegistryLookup.lookup(strain);
+            }
+            catch (KeyNotFoundException e) {
+                strainKey = null;
+            }
+        }
+        // if still not found may be an integer strain id. IN this case the
+        // translation has been qualified as follows handle_population_strain
+        if (strainKey == null) {
+            try {
+                String handleName = handleNameLookup.lookup(popId);
+                String popName = popNameLookup.lookup(popId);
+                String qualifiedStrainName = handleName + "_" + popName + "_" + strain;
+                strainKey = strainKeyLookup.lookup(qualifiedStrainName);
             }
             catch (KeyNotFoundException e) {
                 strainKey = null;
@@ -694,7 +639,7 @@ public class DBSNPInputProcessor {
         String popId = pop.getPopId();
         for (Iterator i = alleleMap.keySet().iterator(); i.hasNext(); ) {
             String strain = (String)i.next();
-            Integer strainKey = resolveStrain(strain);
+            Integer strainKey = resolveStrain(strain, popId);
             // if we still haven't found it write it to the curation log continue
              if(strainKey == null) {
                  logger.logcInfo("BAD STRAIN " + strain + " RS" + rsId + " SS" + ssId + "PopId" + popId, false);

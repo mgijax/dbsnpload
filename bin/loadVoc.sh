@@ -92,6 +92,7 @@ date | tee -a ${LOG_DIAG}
 
 echo "Creating fxnClass vocab..." | tee -a ${LOG} ${LOG_DIAG}
 ${VOCSIMPLELOAD} ${FXNCLASS_VOCAB_CONFIG} >> ${LOG_DIAG} 2>&1
+
 ## DEBUG ##
 #. /home/sc/snp/vocload/Configuration
 #DAG_ROOT_ID=""

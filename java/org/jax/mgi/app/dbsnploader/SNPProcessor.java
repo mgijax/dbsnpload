@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
@@ -142,7 +143,10 @@ public class SNPProcessor {
         //logger.logdDebug("IUPAC code: " + iupacCode, false);
         mgdState.setAlleleSummary(orderedAlleleSummary);
         mgdState.setIupacCode(iupacCode);
-        try {
+        String dbsnpVarClass = radarState.getVariationClass();
+        Integer varClassKey = resolveCSVarClass(dbsnpVarClass, orderedAlleleSummary);
+        mgdState.setVarClassKey(varClassKey);
+       /* try {
             mgdState.setVarClassKey(varClassLookup.lookup(radarState.getVariationClass()));
         } catch (KeyNotFoundException e) {
             String v = radarState.getVariationClass();
@@ -153,11 +157,152 @@ public class SNPProcessor {
             e1.bind("RS" + consensusSnpId + " varClass " + v);
             throw e1;
         }
+        */
         snp = new SNP(mgdState, mgdStream);
         // init this instance variable to be used by other methods
         mgdConsensusSnpKey = snp.getConsensusSnpKey();
         processConsensusSnpStrainAlleles(mgdConsensusSnpKey, radarStrAlleleDAOs);
         processConsensusSnpAccessions(mgdConsensusSnpKey, radarAccessions);
+    }
+
+    /**
+     *
+     * @param dbsnpVarClass
+     * @param alleleSummary
+     * @return
+     * @throws DBException
+     * @throws CacheException
+     * @throws TranslationException
+     * @throws ConfigException
+     * @throws SNPVocabResolverException
+     * @note
+     * See the requirements doc for Richard's algorithm. This method could
+     * be written with fewer if statements, but I felt it important that the
+     * algorithm be readily apparent in the code.
+     * See the requirements/design doc at
+     * /mgi/all/wts_projects/1500/1560/Data_Req_Design/DataRequirements.pdf
+     */
+    private Integer resolveCSVarClass(String dbsnpVarClass, String alleleSummary)
+        throws DBException, CacheException, TranslationException,
+            ConfigException, SNPVocabResolverException {
+        String varClass = null;
+        // for testing
+        Integer varClassKey = new Integer(989898989);
+
+        // mapping of length of allele to alleles with that length
+        HashMap map = new HashMap();
+
+        // break the alleleSummary into tokens
+        StringTokenizer alleleTokenizer = new StringTokenizer(alleleSummary, "/");
+
+        // the number of alleles in the allele summary
+        int numAlleles = alleleTokenizer.countTokens();
+
+        // load the map
+        while (alleleTokenizer.hasMoreTokens()) {
+            String allele = alleleTokenizer.nextToken();
+            if(!allele.equals("-")) {
+               Integer len = new Integer(allele.length());
+               if(map.keySet().contains(len)) {
+                   // add allele to the map for key 'len'
+                   ((Vector)map.get(len)).add(allele);
+               }
+               else {
+                   // add new key 'len' with value 'v'
+                   Vector v = new Vector();
+                   v.add(allele);
+                   map.put(len, v);
+               }
+            }
+        }
+        // the set of alleles sizes for the current alleleSummary
+        Set alleleSizes = map.keySet();
+        // if dbsnp varClass is 'named', we call it 'named'
+        if(dbsnpVarClass.equals(SNPLoaderConstants.VARCLASS_NAMED)) {
+           varClass = dbsnpVarClass;
+        }
+        // if there is a deletion ('-')
+        else if(alleleSummary.startsWith("-")) {
+            // if '-' is the only allele, or if there are only 2 alleles:
+            if(alleleSummary.equals("-") ||  numAlleles == 2){
+               varClass = SNPLoaderConstants.VARCLASS_INDEL;
+            }
+            // if there are >2 alleles and all alleles, excluding '-',
+            // are of different sizes (numAlleles - 1 because we have excluded
+            // the '-' allele from the map)
+            else if ( (numAlleles > 2) && (alleleSizes.size() == numAlleles - 1)) {
+                varClass = SNPLoaderConstants.VARCLASS_INDEL;
+            }
+            // if there are >2 alleles and >1 of the same size
+            else if ( (numAlleles > 2)) {
+                for (Iterator i = alleleSizes.iterator(); i.hasNext();) {
+                    if ( ( (Vector) map.get( ( (Integer) i.next()))).size() > 1) {
+                        varClass = SNPLoaderConstants.VARCLASS_MIXED;
+                    }
+                }
+            }
+            // log uncovered cases
+            else {
+                logger.logdDebug("CSVarClass Uncovered Case for RS" + consensusSnpId +
+                                 " alleleSummary: " + alleleSummary);
+            }
+
+        }
+        // if there is NOT a deletion
+        else {
+            // if all alleles are singletons (same size and that size is 1)
+            if (alleleSizes.size() == 1 && alleleSizes.contains(new Integer(1))) {
+                varClass = SNPLoaderConstants.VARCLASS_SNP;
+            }
+            // if all alleles are not singletons and are of the same size
+            else if (alleleSizes.size() == 1 ) {
+                varClass = SNPLoaderConstants.VARCLASS_MNP;
+            }
+            // if all alleles are of different sizes
+            else if (alleleSizes.size() == numAlleles) {
+                varClass = SNPLoaderConstants.VARCLASS_INDEL;
+            }
+            // if >2 alleles and > 1 of the same size
+            else if((numAlleles > 2)) {
+                for (Iterator i = alleleSizes.iterator(); i.hasNext();) {
+                    if ( ( (Vector) map.get( ( (Integer) i.next()))).size() > 1) {
+                        varClass = SNPLoaderConstants.VARCLASS_MIXED;
+                    }
+                }
+            }
+            else {
+                logger.logdDebug("CSVarClass Uncovered Case for RS" + consensusSnpId +
+                                 " alleleSummary: " + alleleSummary);
+            }
+        }
+        // now resolve if not null
+        if (varClass == null) {
+            // case not covered; throw an exception
+            logger.logcInfo("resolveCSVarClass case not covered. RS" +
+                            consensusSnpId + " dbsnpVarClass: " +
+                            dbsnpVarClass + " alleleSummary " + alleleSummary, false);
+        }
+        else {
+            try {
+                varClassKey = varClassLookup.lookup(varClass);
+            }
+            catch (KeyNotFoundException e) {
+                logger.logcInfo("UNRESOLVED CS VARCLASS " + varClass +
+                                " RS" + consensusSnpId, false);
+                SNPVocabResolverException e1 = new
+                    SNPVocabResolverException("VarClass");
+                e1.bind("RS" + consensusSnpId + " varClass " + varClass);
+                throw e1;
+            }
+        }
+        //DEBUG
+        /*if (varClass != null) {
+            logger.logcInfo("RS" + consensusSnpId + "\talleleSummary: " +
+                            alleleSummary + "\tdbsnpVarClass: " + dbsnpVarClass +
+                            "\tmgiVarClass " + varClass, false);
+        }
+        */
+        return varClassKey;
     }
     private void processConsensusSnpAccessions(Integer key, Vector radarAccessions) throws DBException,
        CacheException, KeyNotFoundException, TranslationException, ConfigException {
