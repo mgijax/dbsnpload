@@ -1,3 +1,11 @@
+TAG: dbsnpload-3-4-0
+DATE: 09/23/2005
+STAFF: sc
+RELEASE: 1st dev build
+CHANGES:
+1) added code to resolve integer strain keys and resolve RS 
+   variation class
+
 TAG: dbsnpload-1-0-3
 DATE: 09/23/2005
 STAFF: sc
