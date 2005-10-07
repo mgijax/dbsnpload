@@ -8,8 +8,12 @@
 #
 #  Purpose:  This script controls the execution of the DB SNP load
 #
-   Usage="dbsnpload.sh config_file"
+   Usage="dbsnpload.sh [-f -v]"
 #
+#         where:
+#		-f run the fxnClass vocload and translation load
+#               -v run the varClass vocload and translation load
+#               note: subHandle vocload is always run
 #  Env Vars:
 #
 #      See the configuration file
@@ -59,18 +63,30 @@ rm -f ${LOG}
 #
 #  Verify the argument(s) to the shell script.
 #
-if [ $# -ne 0 ]
+doFxn=no
+doVar=no
+
+set -- `getopt fv $*`
+if [ $? != 0 ]
 then
-    echo ${Usage} | tee -a ${LOG}
-    exit 1
+    echo ${usage}
+    exit 2
 fi
+
+for i in $*
+do
+    case $i in
+        -f) doFxn=yes; shift;;
+        -v) doVar=yes; shift;;
+        *) echo "Neither fxnClass nor varClass vocab selected to be loaded"; break;;
+    esac
+done
 
 #
 #  Establish the configuration file names.
 #
 CONFIG_COMMON=`pwd`/common.config.sh
 CONFIG_LOAD=`pwd`/dbsnpload.config
-echo ${CONFIG_LOAD}
 
 #
 #  Make sure the configuration files are readable.
@@ -87,13 +103,6 @@ then
     exit 1
 fi
 
-#if [ ! -r ${CONFIG_DBSNPCOMMON} ]
-#then
-#    echo "Cannot read configuration file: ${CONFIG_DBSNPCOMMON}" | tee -a ${LOG}
-#    exit 1
-#
-#fi
-
 #
 # Source the common configuration files
 #
@@ -103,7 +112,6 @@ fi
 # Source the DBSNP Load configuration files
 #
 . ${CONFIG_LOAD}
-#. ${CONFIG_DBSNPCOMMON}
 
 echo "javaruntime:${JAVARUNTIMEOPTS}"
 echo "classpath:${CLASSPATH}"
@@ -215,17 +223,47 @@ preload ${OUTPUTDIR}
 #
 cleanDir ${OUTPUTDIR} ${RPTDIR}
 
-echo "running vocabulary loads"
-${DBSNP_VOCLOAD}
+# run variation class vocload?
+if [ ${doVar} = "yes" ]
+then
+    ${DBSNP_VOCLOAD} -v
+    STAT=$?
+    msg="dbsnp varClass vocabulary load "
+    checkstatus ${STAT} ${msg}
+fi
+
+# run fxn class vocload?
+if [ ${doFxn} = "yes" ]
+then
+    ${DBSNP_VOCLOAD} -f
+    STAT=$?
+    msg="dbsnp fxnClass vocabulary load "
+    checkstatus ${STAT} ${msg}
+fi
+
+# always run submitter handle vocload
+${DBSNP_VOCLOAD} -h
 STAT=$?
-msg="dbsnp vocabulary load "
+msg="dbsnp subHandle vocabulary load "
 checkstatus ${STAT} ${msg}
 
-echo "running translation load"
-${DBSNP_TRANS_LOAD}
-STAT=$?
-msg="dbsnp translation load "
-checkstatus ${STAT} ${msg}
+# run variation class translation load?
+if [ ${doVar} = "yes" ]
+then
+    ${DBSNP_TRANS_LOAD} -v
+    STAT=$?
+    msg="dbsnp varClass translation load "
+    checkstatus ${STAT} ${msg}
+fi
+
+# run fxn class translation load?
+if [ ${doFxn} = "yes" ]
+then
+    ${DBSNP_TRANS_LOAD} -f
+    STAT=$?
+    msg="dbsnp fxnClass translation load "
+    checkstatus ${STAT} ${msg}
+fi
 
 echo "running population load"
 ${POPULATION_LOAD}
