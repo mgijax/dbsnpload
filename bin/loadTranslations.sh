@@ -1,27 +1,73 @@
-#!/bin/sh
+#!/bin/sh 
+#
+#   $Header
+#   $Name
+# loadVoc.sh
+##############################################################################
+#
+# Purpose: Load SNP translations
+#
+Usage="loadTranslations.sh [-f -v]"
+# where:
+#       -f run the fxnClass translationload
+#       -v run the varClass translationload
+#  Env Vars:  None
+#
+#  Inputs:
+#
+#       - Configuration files
+#       - Configured translation input file
+#  Outputs:
+#       - logs
+#       - bcp files
+#       - MGI_Translation and MGI_TranslationType records in a database
+#  Exit Codes:
+#       0 = Successful completion
+#       1 = An error occurred
+#       2 = Usage error occured
+#  Assumes:
+#        - DLA standards are being followed for environment variable name
+#        - all config files are in the same directory as this script
+#  Implementation:
+#
+#  Notes:  None
+#
+###########################################################################
 
-#
-# Load SNP translations
-#
 cd `dirname $0`/..
-LOG=`pwd`/loadTrans.log
+LOG=`pwd`/loadTranslations.log
 rm -f ${LOG}
-
 date | tee -a ${LOG}
+
 #
 #  Verify the argument(s) to the shell script.
 #
-if [ $# -ne 0 ]
+doFxn=no
+doVar=no
+
+set -- `getopt fv $*`
+if [ $? != 0 ]
 then
-    echo ${Usage} | tee -a ${LOG}
-    exit 1
+    echo ${Usage}
+    exit 2
 fi
+
+for i in $*
+do
+    case $i in
+        -f) doFxn=yes; shift;;
+        -v) doVar=yes; shift;;
+        --) shift; break;;
+    esac
+done
 
 #
 #  Establish the configuration file names
 #
 CONFIG_COMMON=`pwd`/common.config.sh
 CONFIG_LOAD=`pwd`/dbsnpload.config
+CONFIG_VARCLASS=`pwd`/varClassTrans.config
+CONFIG_FXNCLASS=`pwd`/fxnClassTrans.config
 
 #
 #  Make sure the configuration files are readable.
@@ -38,11 +84,32 @@ then
     exit 1
 fi
 
+if [ ! -r ${CONFIG_VARCLASS} ]
+then
+    echo "Cannot read configuration file: ${CONFIG_VARCLASS}" | tee -a ${LOG}
+    exit 1
+fi
+
+if [ ! -r ${CONFIG_FXNCLASS} ]
+then
+    echo "Cannot read configuration file: ${CONFIG_FXNCLASS}" | tee -a ${LOG}
+    exit 1
+fi
+
 #
 # Source configuration files
 #
 . ${CONFIG_COMMON}
 . ${CONFIG_LOAD}
+
+# create translation output directory, if necessary
+TRANS_OUTPUTDIR=${OUTPUTDIR}/translationload
+
+if [ ! -d ${TRANS_OUTPUTDIR} ]
+then
+  echo "...creating translation output directory ${TRANS_OUTPUTDIR}"
+  mkdir -p ${TRANS_OUTPUTDIR}
+fi
 
 checkstatus ()
 {
@@ -62,19 +129,28 @@ checkstatus ()
 
 date | tee -a ${LOG_DIAG}
 
-echo "Creating varClass translation..." | tee -a ${LOG} ${LOG_DIAG}
-echo "${VARCLASS_TRANS_LOAD} ${MGD_DBSERVER} ${MGD_DBNAME} ${VARCLASS_TRANS_INPUT} ${VARCLASS_TRANS_LOAD_MODE} >> ${LOG_DIAG}  2>&1"
+if [ ${doVar} = "yes" ]
+then
+    # source variation class config
+    . ${CONFIG_VARCLASS}
 
-${VARCLASS_TRANS_LOAD} ${MGD_DBSERVER} ${MGD_DBNAME} ${VARCLASS_TRANS_INPUT} ${VARCLASS_TRANS_LOAD_MODE} >> ${LOG_DIAG}  2>&1
-STAT=$?
-msg="varClass translation load"
-checkstatus  ${STAT} ${msg}
+    echo "Creating varClass translation..." | tee -a ${LOG} ${LOG_DIAG}
+    ${TRANSLATION_LOAD} -S${MGD_DBSERVER} -D${MGD_DBNAME} -U${MGD_DBUSER} -P${MGD_DBPASSWORDFILE} -M${VARCLASS_TRANS_LOAD_MODE} -I${VARCLASS_TRANS_INPUT} -O${TRANS_OUTPUTDIR}
+    STAT=$?
+    msg="varClass translation load "
+    checkstatus  ${STAT} ${msg}
+fi
 
-echo "Creating fxnClass translation..." | tee -a ${LOG} ${LOG_DIAG}
-echo "${FXNCLASS_TRANS_LOAD} ${MGD_DBSERVER} ${MGD_DBNAME} ${FXNCLASS_TRANS_INPUT} ${FXNCLASS_TRANS_LOAD_MODE} >> ${LOG_DIAG}  2>&1"
-${FXNCLASS_TRANS_LOAD} ${MGD_DBSERVER} ${MGD_DBNAME} ${FXNCLASS_TRANS_INPUT} ${FXNCLASS_TRANS_LOAD_MODE} >> ${LOG_DIAG}  2>&1
-STAT=$?
-msg="fxnClass translation load"
-checkstatus  ${STAT} ${msg}
+if [ ${doFxn} = "yes" ]
+then
+    # source function class config        
+    . ${CONFIG_FXNCLASS}
+
+    echo "Creating fxnClass translation..." | tee -a ${LOG} ${LOG_DIAG}
+    ${TRANSLATION_LOAD} -S${MGD_DBSERVER} -D${MGD_DBNAME} -U${MGD_DBUSER} -P${MGD_DBPASSWORDFILE} -M${FXNCLASS_TRANS_LOAD_MODE} -I${FXNCLASS_TRANS_INPUT} -O${TRANS_OUTPUTDIR}
+    STAT=$?
+    msg="fxnClass translation load "
+    checkstatus  ${STAT} ${msg}
+fi
 
 date | tee -a ${LOG} ${LOG_DIAG}
