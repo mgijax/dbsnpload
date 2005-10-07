@@ -1,6 +1,6 @@
 #format: sh
 #
-#  Configuration for 
+#  Configuration for dbsnpload jobstream
 #
 ###########################################################################
 
@@ -202,18 +202,16 @@ DBSNP_TRANS_LOAD=${INSTALLDIR}/bin/loadTranslations.sh
 export TRANSLATION_LOAD DBSNP_TRANS_LOAD
 
 # varclass translation params (mode = full or preview)
-VARCLASS_TRANS_LOAD=${TRANSLATION_LOAD}/varClass.csh
 VARCLASS_TRANS_INPUT=${SNP_DATA_DIR}/varClass.goodbad
 VARCLASS_TRANS_LOAD_MODE=full
 
-export VARCLASS_TRANS_LOAD VARCLASS_TRANS_INPUT VARCLASS_TRANS_LOAD_MODE
+export VARCLASS_TRANS_INPUT VARCLASS_TRANS_LOAD_MODE
 
 # fxnclass translation params (mode = full or preview)
-FXNCLASS_TRANS_LOAD=${TRANSLATION_LOAD}/fxnClass.csh
 FXNCLASS_TRANS_INPUT=${SNP_DATA_DIR}/fxnClass.goodbad
 FXNCLASS_TRANS_LOAD_MODE=full
 
-export FXNCLASS_TRANS_LOAD FXNCLASS_TRANS_INPUT FXNCLASS_TRANS_LOAD_MODE
+export FXNCLASS_TRANS_INPUT FXNCLASS_TRANS_LOAD_MODE
 
 # snp translation load executable
 SNP_TRANS_LOAD=${INSTALLDIR}/bin/loadTranslations.sh
