@@ -517,7 +517,8 @@ public class DBSNPInputProcessor {
             try {
                 String handleName = handleNameLookup.lookup(popId);
                 String popName = popNameLookup.lookup(popId);
-                String qualifiedStrainName = handleName + "_" + popName + "_" + strain;
+                String qualifiedStrainName = handleName + "_" + popName + "_" + strain.trim();
+                //logger.logcInfo("DEBUG " + qualifiedStrainName, false);
                 strainKey = strainKeyLookup.lookup(qualifiedStrainName);
             }
             catch (KeyNotFoundException e) {
