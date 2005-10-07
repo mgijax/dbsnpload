@@ -187,7 +187,7 @@ public class SNPProcessor {
             ConfigException, SNPVocabResolverException {
         String varClass = null;
         // for testing
-        Integer varClassKey = new Integer(989898989);
+        Integer varClassKey = null;
 
         // mapping of length of allele to alleles with that length
         HashMap map = new HashMap();
@@ -312,7 +312,7 @@ public class SNPProcessor {
             if(radarState.getObjectType().equals(SNPLoaderConstants.OBJECTYPE_CSNP)) {
                 ACC_AccessionState mgdState = new ACC_AccessionState();
                 mgdState.setObjectKey(mgdConsensusSnpKey);
-                mgdState.setAccID(radarState.getAccID());
+                mgdState.setAccID("rs" + radarState.getAccID());
                 mgdState.setLogicalDBKey(ldbLookup.lookup(radarState.
                     getLogicalDB()));
                 mgdState.setMGITypeKey(mgiTypeLookup.lookup(radarState.
@@ -334,7 +334,7 @@ public class SNPProcessor {
                && radarSSKey.equals(radarState.getObjectKey())) {
                 ACC_AccessionState mgdState = new ACC_AccessionState();
                 mgdState.setObjectKey(mgdSSKey);
-                mgdState.setAccID(radarState.getAccID());
+                mgdState.setAccID("ss" + radarState.getAccID());
                 mgdState.setLogicalDBKey(ldbLookup.lookup(radarState.
                     getLogicalDB()));
                 mgdState.setMGITypeKey(mgiTypeLookup.lookup(radarState.
@@ -417,7 +417,7 @@ public class SNPProcessor {
                     " RS" + consensusSnpId, false);
             SNPVocabResolverException e1 = new
                 SNPVocabResolverException("SubHandle");
-            e1.bind("RS" + consensusSnpId + " varClass " + h);
+            e1.bind("RS" + consensusSnpId + " SubHandle" + h);
             throw e1;
         }
 
