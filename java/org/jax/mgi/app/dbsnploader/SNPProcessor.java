@@ -369,6 +369,8 @@ public class SNPProcessor {
        for (Iterator i = radarCoordinates.iterator(); i.hasNext(); ) {
            MGI_SNP_CoordinateDAO radarDao = (MGI_SNP_CoordinateDAO)i.next();
            MGI_SNP_CoordinateState radarState = radarDao.getState();
+           // prepend csId with 'rs'
+           coord.append("rs");
            coord.append(consensusSnpId);
            coord.append("\t");
            coord.append(radarState.getChromosome());
