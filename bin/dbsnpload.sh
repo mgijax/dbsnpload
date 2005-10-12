@@ -223,21 +223,21 @@ preload ${OUTPUTDIR}
 #
 cleanDir ${OUTPUTDIR} ${RPTDIR}
 
-# run variation class vocload?
-if [ ${doVar} = "yes" ]
-then
-    ${DBSNP_VOCLOAD} -v
-    STAT=$?
-    msg="dbsnp varClass vocabulary load "
-    checkstatus ${STAT} ${msg}
-fi
-
 # run fxn class vocload?
 if [ ${doFxn} = "yes" ]
 then
     ${DBSNP_VOCLOAD} -f
     STAT=$?
     msg="dbsnp fxnClass vocabulary load "
+    checkstatus ${STAT} ${msg}
+fi
+
+# run variation class vocload?
+if [ ${doVar} = "yes" ]
+then
+    ${DBSNP_VOCLOAD} -v
+    STAT=$?
+    msg="dbsnp varClass vocabulary load "
     checkstatus ${STAT} ${msg}
 fi
 
