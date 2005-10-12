@@ -195,8 +195,8 @@ export HANDLE_VOCAB_NAME
 export HANDLE_VOCAB_FILE_CREATOR INT_HANDLE_VOCAB_FILE HANDLE_VOCAB_FILE
 
 # translation load
-TRANSLATION_LOAD=/usr/local/mgi/live/dataload/translationload
-#TRANSLATION_LOAD=/home/sc/snp/translationload
+TRANSLATION_LOAD=/usr/local/mgi/live/dataload/translationload/translationload.py
+#TRANSLATION_LOAD=/home/sc/snp/translationload/translationload.py
 DBSNP_TRANS_LOAD=${INSTALLDIR}/bin/loadTranslations.sh
 
 export TRANSLATION_LOAD DBSNP_TRANS_LOAD
