@@ -1,6 +1,9 @@
 package org.jax.mgi.app.dbsnploader;
 
 import org.jax.mgi.dbs.SchemaConstants;
+import org.jax.mgi.dbs.mgd.LogicalDBConstants;
+import org.jax.mgi.dbs.mgd.VocabularyTypeConstants;
+import org.jax.mgi.dbs.mgd.MGITypeConstants;
 import org.jax.mgi.shr.cache.CacheException;
 import org.jax.mgi.shr.cache.FullCachedLookup;
 import org.jax.mgi.shr.cache.KeyNotFoundException;
@@ -67,11 +70,11 @@ public class HandleNameByPopIdLookup extends FullCachedLookup
     public String getFullInitQuery () {
         return new String("SELECT a.accid, v.term " +
                           "FROM ACC_Accession a, SNP_Population p, VOC_Term v " +
-                          "WHERE a._LogicalDB_key = 76 " +
-                          "and a._MGITYpe_key = 33 " +
-                          "and a._Object_key = p._Population_key " +
-                          "and v._Vocab_key = 50 " +
-                          "and p._SubHandle_key = v._Term_key");
+                          "WHERE a._LogicalDB_key =  " + LogicalDBConstants.SNPPOPULATION +
+                          " and a._MGITYpe_key =  " + MGITypeConstants.SNPPOPULATION +
+                          " and a._Object_key = p._Population_key " +
+                          "and v._Vocab_key = " + VocabularyTypeConstants.SUBHANDLE +
+                          " and p._SubHandle_key = v._Term_key");
     }
 
 

@@ -10,6 +10,9 @@ import org.jax.mgi.shr.dbutils.DBException;
 import org.jax.mgi.shr.dbutils.RowDataInterpreter;
 import org.jax.mgi.shr.dbutils.RowReference;
 import org.jax.mgi.shr.dbutils.SQLDataManagerFactory;
+import org.jax.mgi.dbs.mgd.LogicalDBConstants;
+import org.jax.mgi.dbs.mgd.MGITypeConstants;
+
 
 /**
  * @is An object that knows how to look up a MGI Type.
@@ -66,9 +69,9 @@ public class PopNameByPopIdLookup extends FullCachedLookup
     public String getFullInitQuery () {
         return new String("SELECT a.accid, p.name " +
                           "FROM ACC_Accession a, SNP_Population p " +
-                          "WHERE a._LogicalDB_key = 76 " +
-                          "and a._MGITYpe_key = 33 " +
-                          "and a._Object_key = p._Population_key");
+                          "WHERE a._LogicalDB_key =  " + LogicalDBConstants.SNPPOPULATION +
+                          " and a._MGITYpe_key = " + MGITypeConstants.SNPPOPULATION +
+                          " and a._Object_key = p._Population_key");
     }
 
     /**
