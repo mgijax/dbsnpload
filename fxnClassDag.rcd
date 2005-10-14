@@ -15,14 +15,16 @@
 #	10/12/2005	sc
 #	- new
 
-RUNTIME_DIR = "${OUTPUTDIR}/vocload/fxnClass"
+RUNTIME_DIR = /data/loads/dbsnp/dbsnpload/output/vocload/fxnClass
+SNP_DATA_DIR = /home/sc/snp/dbsnpload/data
+#SNP_DATA_DIR = /usr/local/mgi/live/dataload/dbsnpload/data
 
 # DAGs which are part of the vocabulary (for complex vocabularies)
 
 [
         NAME = SNP Marker Distance DAG
-        ABBREV = FXN
-        ONTOLOGY_FILE = SNP_DAG.ontology
+        ABBREV = SM
+        ONTOLOGY_FILE = ${SNP_DATA_DIR}/SNP_FXN_DAG.ontology
         LOAD_FILE = ${RUNTIME_DIR}/dag.fxn
 ]
 
