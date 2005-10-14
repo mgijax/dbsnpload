@@ -74,7 +74,7 @@ CONFIG_LOAD=`pwd`/dbsnpload.config
 #  Establish vocload config file names
 #
 
-FXNCLASS_VOCAB_CONFIG=`pwd`/fxnClassVocab.config
+FXNCLASS_VOCAB_CONFIG=`pwd`/fxnClassDag.config
 VARCLASS_VOCAB_CONFIG=`pwd`/varClassVocab.config
 HANDLE_VOCAB_CONFIG=`pwd`/subHandleVocab.config
 #
@@ -140,7 +140,7 @@ date | tee -a ${LOG_DIAG}
 if [ ${doFxn} = "yes" ]
 then
     echo "Creating fxnClass vocab..." | tee -a ${LOG} ${LOG_DIAG}
-    ${VOCSIMPLELOAD} ${FXNCLASS_VOCAB_CONFIG}
+    ${VOCDAGLOAD} ${FXNCLASS_VOCAB_CONFIG}
 
     ## DEBUG ##
     #. /home/sc/snp/vocload/Configuration
