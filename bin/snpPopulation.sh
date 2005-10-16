@@ -11,6 +11,9 @@
 # 1. loads SNP_Population and
 # 2. creates accession objects to associate a popid
 #     with each SNP_Population
+# Note: were are not dropping ACC_Accession indexes or updating
+#       statistics since there are so few population ids (code
+#       is commented out below.
 
 cd `dirname $0`/..
 
