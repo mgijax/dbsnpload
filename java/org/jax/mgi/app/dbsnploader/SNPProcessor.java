@@ -23,6 +23,7 @@ import org.jax.mgi.dbs.mgd.LogicalDBConstants;
 import org.jax.mgi.dbs.mgd.MGITypeConstants;
 import org.jax.mgi.dbs.mgd.AccessionLib;
 import org.jax.mgi.dbs.mgd.VocabularyTypeConstants;
+import org.jax.mgi.dbs.mgd.AccessionLib;
 
 import java.util.Vector;
 import java.util.Iterator;
@@ -311,14 +312,25 @@ public class SNPProcessor {
             MGI_SNP_AccessionState radarState = radarDao.getState();
             if(radarState.getObjectType().equals(SNPLoaderConstants.OBJECTYPE_CSNP)) {
                 ACC_AccessionState mgdState = new ACC_AccessionState();
-                mgdState.setObjectKey(mgdConsensusSnpKey);
-                mgdState.setAccID("rs" + radarState.getAccID());
+                // get accid and prepend with CS prefix
+                String accId = SNPLoaderConstants.PREFIX_CSNP + radarState.getAccID();
+                mgdState.setAccID(SNPLoaderConstants.PREFIX_CSNP + radarState.getAccID());
+                // split 'accId' into prefixPart and numericPart
+                Vector splitAccession = AccessionLib.splitAccID(accId);
+                mgdState.setPrefixPart((String)splitAccession.get(0));
+                mgdState.setNumericPart((Integer)splitAccession.get(1));
+                // set logicalDB
                 mgdState.setLogicalDBKey(ldbLookup.lookup(radarState.
                     getLogicalDB()));
+                // set the objectKey
+                mgdState.setObjectKey(mgdConsensusSnpKey);
+                // set mgiTypeKey
                 mgdState.setMGITypeKey(mgiTypeLookup.lookup(radarState.
                     getObjectType()));
+                // set private and preferred
                 mgdState.setPrivateVal(radarState.getPrivateVal());
                 mgdState.setPreferred(Boolean.TRUE);
+                // set the state in the SNP object
                 snp.setAccession(mgdState);
             }
         }
@@ -333,14 +345,31 @@ public class SNPProcessor {
             if(radarState.getObjectType().equals(SNPLoaderConstants.OBJECTYPE_SSNP)
                && radarSSKey.equals(radarState.getObjectKey())) {
                 ACC_AccessionState mgdState = new ACC_AccessionState();
+                // get the logicalDBKey for the accId (either SubSNP or SubmitterSnp)
+                // and set accId accordingly
+                Integer logicalDBKey = ldbLookup.lookup(radarState.
+                    getLogicalDB());
+                // we need to prepend the SS ids with SS prefix (but not the submitter ids)
+                String accId = radarState.getAccID();
+                if(logicalDBKey.equals(new Integer(LogicalDBConstants.SUBSNP ))) {
+                    accId = SNPLoaderConstants.PREFIX_SSNP + accId;
+                }
+                mgdState.setAccID(accId);
+                // split 'accId' into prefixPart and numericPart
+                Vector splitAccession = AccessionLib.splitAccID(accId);
+                mgdState.setPrefixPart((String)splitAccession.get(0));
+                mgdState.setNumericPart((Integer)splitAccession.get(1));
+                // set logicalDB
+                mgdState.setLogicalDBKey(logicalDBKey);
+                // set the objectKey
                 mgdState.setObjectKey(mgdSSKey);
-                mgdState.setAccID("ss" + radarState.getAccID());
-                mgdState.setLogicalDBKey(ldbLookup.lookup(radarState.
-                    getLogicalDB()));
+                // set the mgiTypeKey
                 mgdState.setMGITypeKey(mgiTypeLookup.lookup(radarState.
                     getObjectType()));
+                // set private a preferred
                 mgdState.setPrivateVal(radarState.getPrivateVal());
                 mgdState.setPreferred(Boolean.TRUE);
+                // set the state in the SNP object
                 snp.setAccession(mgdState);
             }
         }
