@@ -26,6 +26,7 @@ import db
 import mgi_utils
 import loadlib
 import string
+import accessionlib
 
 NL = '\n'
 DL = '|'
@@ -211,10 +212,11 @@ def createBCP():
 def createAccession(accid, objectKey, ldbKey, mgiTypeKey):
     global acckey
     acckey = acckey + 1
+    prefixpart, numericpart = accessionlib.split_accnum(accid)
     accBCP.write(str(acckey) + DL + \
 	str(accid) + DL + \
-	"" + DL + \
-	"" + DL + \
+	str(prefixpart) + DL + \
+	str(numericpart) + DL + \
 	str(ldbKey) + DL + \
 	str(objectKey) + DL + \
 	str(mgiTypeKey) + DL + \
