@@ -357,8 +357,14 @@ public class SNPProcessor {
                 mgdState.setAccID(accId);
                 // split 'accId' into prefixPart and numericPart
                 Vector splitAccession = AccessionLib.splitAccID(accId);
-                mgdState.setPrefixPart((String)splitAccession.get(0));
-                mgdState.setNumericPart((Integer)splitAccession.get(1));
+		String prefixPart = (String)splitAccession.get(0);
+		Integer numericPart = (Integer)splitAccession.get(1);
+		// if this is a submitter snpId then don't set prefix part
+		if(logicalDBKey.equals(new Integer(LogicalDBConstants.SUBMITTERSNP ))) {
+		    prefixPart = null;
+		}
+                mgdState.setPrefixPart(prefixPart);
+                mgdState.setNumericPart(numericPart);
                 // set logicalDB
                 mgdState.setLogicalDBKey(logicalDBKey);
                 // set the objectKey
