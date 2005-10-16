@@ -23,6 +23,10 @@ public class SNPLoaderConstants {
         public static final String OBJECTYPE_SSNP = "Sub SNP";
         //public static final String OBJECTYPE_SMARKER = "MGI_SNP_Marker";
 
+        // accession id prefixes
+        public static final String PREFIX_CSNP = "rs";
+        public static final String PREFIX_SSNP = "ss";
+
         // LogicalDB values
         public static final String LDB_CSNP = "RefSNP";
         public static final String LDB_SSNP = "SubSNP";
