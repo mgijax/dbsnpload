@@ -175,8 +175,11 @@ VOCLOAD=/usr/local/mgi/live/dataload/vocload
 VOCSIMPLELOAD=${VOCLOAD}/runSimpleFullLoadNoArchive.sh
 POPULATION_LOAD=${INSTALLDIR}/bin/snpPopulation.sh
 DBSNP_VOCLOAD=${INSTALLDIR}/bin/loadVoc.sh
+VOCDAGLOAD=${VOCLOAD}/runDAGFullLoad.sh
+#VOCDAGLOAD=${VOCLOAD}/runDAGIncLoad.sh
 
 export VOCLOAD VOCSIMPLELOAD POPULATION_LOAD DBSNP_VOCLOAD
+export VOCDAGLOAD
 
 # vocload handle vocab parameters
 HANDLE_VOCAB_NAME="SNP Submitter Handle"
