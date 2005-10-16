@@ -1,3 +1,21 @@
+TAG: dbsnpload-3-4-0-3
+DATE: 10/15/2005
+STAFF: sc
+RELEASE: 3rd dev build
+CHANGES:
+1) removed old translation config files that were renamed
+2) dbsnpload.sh - reordered vocloads to create new vocab keys in correct order
+3) SNPProcessor.java - prepend rsId and ssId with rs and ss respectively
+		- prepend rsId with 'rs' for coordload input file
+                - add prefixPart and NumericPart to ACC_Accession
+4) PopNameByPopIdLookup.java, HandleNameByPopIdLookup.java 
+    - updated to use constants rather than hardcoded keys
+5) rmvd simple fxnClass vocab configfile and datafile; replaced with DAG version
+6) loadVoc.sh - updated to use DAG vocload for fxnClass
+7) dbsnpload.config - added VOCDAGLOAD
+8) snpPopulation.py - added numericapart, prefixpart to ACC_Accession
+9) SNPLoaderConstants.java - added constatns for csnp and ssnp prefixes
+
 TAG: dbsnpload-3-4-0-2
 TAG: dbsnpload-3-4-2
 DATE: 10/07/2005
