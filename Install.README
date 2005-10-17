@@ -1,7 +1,10 @@
 To Install dbsnpload:
 
 1) cp dbsnpload.config.default dbsnpload.config
-and edit as necessary
+   and edit as necessary. 
+   
+   If you change the dbsnpload.config value for RUNTIME_DIR or SNP_DATA_DIR 
+   you must also change it in fxnClassDag.rcd
 
 2) DLAInstall common.config.sh dbsnpload.config
 
