@@ -216,7 +216,7 @@ checkstatus ()
 #
 # createArchive including OUTPUTDIR, startLog, getConfigEnv, get job key
 #
-preload ${OUTPUTDIR}
+preload 
 
 #
 # rm all files/dirs from OUTPUTDIR and RPTDIR
