@@ -214,22 +214,22 @@ checkstatus ()
 ##################################################################
 
 #
-# createArchive including OUTPUTDIR, startLog, getConfigEnv, get job key
+# createArchive, startLog, getConfigEnv, get job key
 #
 preload 
 
 #
 # rm all files/dirs from OUTPUTDIR and RPTDIR
 #
-cleanDir ${OUTPUTDIR} ${RPTDIR}
+#cleanDir ${OUTPUTDIR} ${RPTDIR}
 
 # run fxn class vocload?
 if [ ${doFxn} = "yes" ]
 then
     ${DBSNP_VOCLOAD} -f
     STAT=$?
-    msg="dbsnp fxnClass vocabulary load "
-    checkstatus ${STAT} ${msg}
+    msg="dbsnp fxnClass vocabulary load"
+    checkstatus ${STAT} "${msg}"
 fi
 
 # run variation class vocload?
@@ -237,23 +237,23 @@ if [ ${doVar} = "yes" ]
 then
     ${DBSNP_VOCLOAD} -v
     STAT=$?
-    msg="dbsnp varClass vocabulary load "
-    checkstatus ${STAT} ${msg}
+    msg="dbsnp varClass vocabulary load"
+    checkstatus ${STAT} "${msg}"
 fi
 
 # always run submitter handle vocload
 ${DBSNP_VOCLOAD} -h
 STAT=$?
-msg="dbsnp subHandle vocabulary load "
-checkstatus ${STAT} ${msg}
+msg="dbsnp subHandle vocabulary load"
+checkstatus ${STAT} "${msg}"
 
 # run variation class translation load?
 if [ ${doVar} = "yes" ]
 then
     ${DBSNP_TRANS_LOAD} -v
     STAT=$?
-    msg="dbsnp varClass translation load "
-    checkstatus ${STAT} ${msg}
+    msg="dbsnp varClass translation load"
+    checkstatus ${STAT} "${msg}"
 fi
 
 # run fxn class translation load?
@@ -261,39 +261,39 @@ if [ ${doFxn} = "yes" ]
 then
     ${DBSNP_TRANS_LOAD} -f
     STAT=$?
-    msg="dbsnp fxnClass translation load "
-    checkstatus ${STAT} ${msg}
+    msg="dbsnp fxnClass translation load"
+    checkstatus ${STAT} "${msg}"
 fi
 
 echo "running population load"
 ${POPULATION_LOAD}
 STAT=$?
-msg=" population load "
-checkstatus ${STAT} ${msg}
+msg="dbsnp population load"
+checkstatus ${STAT} "${msg}"
 
 echo "running dbsnp load"
 runsnpload
 STAT=$?
-msg="dbsnp load "
-checkstatus ${STAT} ${msg}
+msg="dbsnp load"
+checkstatus ${STAT} "${msg}"
 
 echo "running snp coordinate load"
 runcoordload
 STAT=$?
-msg="snp coordload "
-checkstatus  ${STAT} ${msg}
+msg="dbsnp coordload"
+checkstatus  ${STAT} "${msg}"
 
 echo "running ${SNP_COORD_CACHE_LOAD}"
 ${SNP_COORD_CACHE_LOAD}
 STAT=$?
-msg="snp coord cache load "
-checkstatus  ${STAT} ${msg}
+msg="dbsnp coord cache load"
+checkstatus  ${STAT} "${msg}"
 
 echo "running ${SNP_MARKER_CACHE_LOAD}"
 ${SNP_MARKER_CACHE_LOAD}
 STAT=$?
-msg="snp coord cache load "
-checkstatus  ${STAT} ${msg}
+msg="dbsnp marker cache load"
+checkstatus  ${STAT} "${msg}"
 
 # run postload cleanup and email logs
 #
