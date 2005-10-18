@@ -1,3 +1,17 @@
+TAG: dbsnpload-3-4-0-5 
+DATE: 10/18/2005
+STAFF: sc
+RELEASE: preparing for alpha
+CHANGES:
+1) dbsnpload.sh - removed archiving of OUTPUTDIR (param to preload)
+2) Install.README - added instructions for keeping config files in sync
+3) fxnClassDag.config - updated to use environ vars set by the caller
+   bin/loadVoc.sh
+4) fxnClassDag.rcd - toggled to production SNP_DATA_DIR path
+5) subHandleVocab.config and varClassVocab.config - updated ARCHIVE_DIR 
+   from vocload directory to OUTPUTDIR
+6) dbsnpload.sh - commented out cleanDir; fixed messages to LOG_PROC
+
 TAG: dbsnpload-3-4-0-4
 DATE: 10/16/2005
 STAFF: sc
