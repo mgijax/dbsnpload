@@ -68,7 +68,6 @@ checkstatus ()
     if [ $1 -ne 0 ]
     then
         echo "$2 Failed. Return status: $1" >> ${LOG_PROC}
-        shutDown
         exit 1
     fi
     echo "$2 completed successfully" >> ${LOG_PROC}
@@ -81,10 +80,10 @@ echo "creating population input file in ${POP_FILE}" | tee -a ${LOG_DIAG}
 /usr/bin/cat ${GENO_SNP_INFILEDIR}/*.xml | grep "<Population" | cut -f2-4 | sort | uniq > ${POP_FILE}
 
 echo "creating population bcp file"
-${INSTALLDIR}/bin/snpPopulation.py | tee -a ${LOG_DIAG}
+${INSTALLDIR}/bin/snpPopulation.py 
 STAT=$?
 msg="snpPopulation.py "
-checkstatus ${STAT} ${msg}
+checkstatus ${STAT} "${msg}"
 
 # Allow bcp into database and truncate POP_TABLE
 echo "truncating ${POP_TABLE}"
