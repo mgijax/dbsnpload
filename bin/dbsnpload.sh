@@ -78,7 +78,7 @@ do
     case $i in
         -f) doFxn=yes; shift;;
         -v) doVar=yes; shift;;
-        *) echo "Neither fxnClass nor varClass vocab selected to be loaded"; break;;
+        --) shift; break;;
     esac
 done
 
