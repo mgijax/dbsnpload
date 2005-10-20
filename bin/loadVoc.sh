@@ -141,16 +141,6 @@ if [ ${doFxn} = "yes" ]
 then
     echo "Creating fxnClass vocab..." | tee -a ${LOG} ${LOG_DIAG}
     ${VOCDAGLOAD} ${FXNCLASS_VOCAB_CONFIG}
-
-    ## DEBUG ##
-    #. /home/sc/snp/vocload/Configuration
-    #DAG_ROOT_ID=""
-    #export DAG_ROOT_ID
-    #. /home/sc/snp/dbsnpload/fxnClassVocab.config
-
-    #/home/sc/snp/vocload/simpleLoad.py -f -l testLog.txt /home/sc/snp/vocload/simple.rcd /home/sc/snp/dbsnpload/data/fxnClass.in
-    ## END DEBUG ##
-
     STAT=$?
     msg="fxnClass vocab load"
     checkstatus  ${STAT} "${msg}"
@@ -178,6 +168,9 @@ then
     # WI tab WI
     # where WI is the term name AND the accession id
     ${HANDLE_VOCAB_FILE_CREATOR}
+    STAT=$?
+    msg="subHandle vocab file creator"
+    checkstatus  ${STAT} "${msg}"
 
     echo "Creating subHandle vocab ..." | tee -a ${LOG} ${LOG_DIAG}
     ${VOCSIMPLELOAD} ${HANDLE_VOCAB_CONFIG}
