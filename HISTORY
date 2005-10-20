@@ -1,3 +1,11 @@
+TAG: dbsnpload-3-4-0-8
+DATE: 10/20/2005
+STAFF: sc
+RELEASE: preparing for alpha
+CHANGES:
+1) dbsnpload.config.default - added DSQUERY and MGD so snpPopulation.py
+   can run from cron (needed by loadlib.py)
+
 TAG: dbsnpload-3-4-0-7
 TAG: dbsnpload-3-4-0-6
 TAG: dbsnpload-3-4-0-5 
