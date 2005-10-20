@@ -6,6 +6,9 @@
 #
 # Create vocload input file for submitter handle
 #
+# Uses environment variables to determine Server and Database
+# (DSQUERY and MGD).
+#
 # Usage:
 #	snpSubHandle.py
 #
@@ -20,14 +23,12 @@ import sys
 import os
 import db
 import mgi_utils
-import loadlib
 import string
 
 NL = '\n'
 DL = '|'
 TAB = '\t'
 userKey = 0
-loaddate = loadlib.loaddate
 
 # submitter handle vocab input file, created then run
 handleFileName = os.environ['HANDLE_VOCAB_FILE']
@@ -46,8 +47,7 @@ def createVocabFile():
 #
 # Main Routine
 #
-
-userKey = loadlib.verifyUser(os.environ['MGD_DBUSER'], 1, None)
+print "MGD_DBUSER %s" % os.environ['MGD_DBUSER']
 
 print '%s' % mgi_utils.date()
 createVocabFile()
