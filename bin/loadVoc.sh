@@ -153,7 +153,7 @@ then
 
     STAT=$?
     msg="fxnClass vocab load"
-    checkstatus  ${STAT} ${msg}
+    checkstatus  ${STAT} "${msg}"
 fi
 
 if [ ${doVar} = "yes" ]
@@ -162,7 +162,7 @@ then
     ${VOCSIMPLELOAD} ${VARCLASS_VOCAB_CONFIG}
     STAT=$?
     msg="varClass vocab load"
-    checkstatus  ${STAT} ${msg}
+    checkstatus  ${STAT} "${msg}"
 fi
 
 if [ ${doHandle} = "yes" ]
@@ -183,6 +183,6 @@ then
     ${VOCSIMPLELOAD} ${HANDLE_VOCAB_CONFIG}
     STAT=$?
     msg="subHandle vocab load"
-    checkstatus  ${STAT} ${msg}
+    checkstatus  ${STAT} "${msg}"
 fi
 date | tee -a ${LOG} ${LOG_DIAG}

@@ -138,7 +138,7 @@ then
     ${TRANSLATION_LOAD} -S${MGD_DBSERVER} -D${MGD_DBNAME} -U${MGD_DBUSER} -P${MGD_DBPASSWORDFILE} -M${VARCLASS_TRANS_LOAD_MODE} -I${VARCLASS_TRANS_INPUT} -O${TRANS_OUTPUTDIR}
     STAT=$?
     msg="varClass translation load "
-    checkstatus  ${STAT} ${msg}
+    checkstatus  ${STAT} "${msg}"
 fi
 
 if [ ${doFxn} = "yes" ]
@@ -150,7 +150,7 @@ then
     ${TRANSLATION_LOAD} -S${MGD_DBSERVER} -D${MGD_DBNAME} -U${MGD_DBUSER} -P${MGD_DBPASSWORDFILE} -M${FXNCLASS_TRANS_LOAD_MODE} -I${FXNCLASS_TRANS_INPUT} -O${TRANS_OUTPUTDIR}
     STAT=$?
     msg="fxnClass translation load "
-    checkstatus  ${STAT} ${msg}
+    checkstatus  ${STAT} "${msg}"
 fi
 
 date | tee -a ${LOG} ${LOG_DIAG}
