@@ -157,7 +157,7 @@ fi
 
 if [ ${doHandle} = "yes" ]
 then
-    echo "Creating subHandle vocab input file..." | tee -a ${LOG} ${LOG_DIAG}
+    echo "Creating subHandle vocab intermediate file..." | tee -a ${LOG} ${LOG_DIAG}
     # transforms: <NSE-ss_handle>WI</NSE-ss_handle>
     # into: WI
     /usr/bin/cat ${NSE_SNP_INFILEDIR}/*.xml | grep "<NSE-ss_handle>" | cut -d'>' -f2 | cut -d'<' -f1 | sort | uniq > ${INT_HANDLE_VOCAB_FILE}
@@ -167,6 +167,7 @@ then
     # file looks like:
     # WI tab WI
     # where WI is the term name AND the accession id
+    echo "Creating subHandle vocab input file..." | tee -a ${LOG} ${LOG_DIAG}
     ${HANDLE_VOCAB_FILE_CREATOR}
     STAT=$?
     msg="subHandle vocab file creator"
