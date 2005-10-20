@@ -8,7 +8,7 @@
 # ACC_Accession (associate popids with SNP_Population objects)
 #
 # Uses environment variables to determine Server and Database
-# (DSQUERY, MGD, and RADAR_DBNAME).
+# (DSQUERY, MGD).
 #
 # Usage:
 #	snpPopulation.py
@@ -41,10 +41,6 @@ loaddate = loadlib.loaddate
 snpPopLdbKey = 0
 snpPopmgiTypeKey = 0
 
-# to create ACC_Accession for handles
-#hdlLdbKey = 0
-#hdlmgiTypeKey = 0
-
 # current max+1 _Accession_key
 acckey = 0
 
@@ -56,19 +52,14 @@ handleVocabKey = 0
 handleKeyLookup = {}
 
 # bcp file objects
-print "%s/%s.bcp" % (outputdir, popTable)
 popBCP = open('%s/%s.bcp' % (outputdir, popTable), 'w')
 accBCP = open('%s/%s.pop.bcp' % (outputdir, accTable), 'w')
 
-# submitter handle vocab input file, created then run
-#handleFile = open(os.environ['HANDLE_VOCAB_FILE'], 'w')
 def setup():
 	# resolve logicalDB and MGIType
 	# get the max accession key
 	global snpPopLdbKey
 	global snpPopmgiTypeKey
-	#global hdlLdbKey
-	#global hdlmgiTypeKey 
 	global acckey
 	global handleVocabKey
 	global handleKeyLookup
@@ -78,19 +69,8 @@ def setup():
         user = os.environ['MGD_DBUSER']
         password = string.strip(open(os.environ['MGD_DBPASSWORDFILE'], 'r').readline())
         db.set_sqlLogin(user, password, server, mgdDB)
-        #print "accKey %s" % acckey
-        print "%s, %s, %s, %s" % (server, mgdDB, user, password)
 
 	cmds = []
-	#cmds.append('select max(_Accession_key) ' + \
-        #       'from ACC_Accession')
-	#results = db.sql(cmds, 'auto')
-	#acckey = results[0][0]['']
-	#snpPopLdbKey = 76
-	#snpPopmgiTypeKey = 32 
-	#handleVocabKey = 47
-	#hdlLdbKey = 77
-	#hdlmgiTypeKey = 13
 	cmds.append('select _LogicalDB_key ' + \
 		'from ACC_LogicalDB ' + \
 		'where name = "%s" ' % os.environ['POP_LOGICALDB_NAME'])
@@ -102,12 +82,6 @@ def setup():
 	cmds.append('select _Vocab_key ' + \
 		'from VOC_Vocab ' + \
 		'where name = "%s" ' % os.environ['HANDLE_VOCAB_NAME'])
-#	cmds.append('select _LogicalDB_key ' + \
-#                'from ACC_LogicalDB ' + \
-#                'where name = "%s" ' % os.environ['HANDLE_LOGICALDB_NAME'])
-#        cmds.append('select _MGIType_key ' + \
-#                'from ACC_MGIType ' + \
-#                'where name = "%s" ' % os.environ['HANDLE_MGITYPE_NAME'])
 	results = db.sql(cmds, 'auto')
         snpPopLdbKey = results[0][0]['_LogicalDB_key']
 	snpPopmgiTypeKey = results[1][0]['_MGIType_key']
@@ -128,8 +102,6 @@ def createHandleLookup():
 	'where _Vocab_key = %s' % handleVocabKey)
     results = db.sql(cmds, 'auto')
     for r in results[0]:
-	#print r['term']
-	#print r['_Term_key']
 	handleKeyLookup[r['term']] = r['_Term_key']
 
 def deleteAccessions(mgiTypeKey, ldbKey):
@@ -149,8 +121,8 @@ def deleteAccessions(mgiTypeKey, ldbKey):
     results = db.sql(cmds, 'auto')
 
 def createBCP():
-	print 'Creating %s/%s.bcp...%s' % (outputdir, popTable, mgi_utils.date())
-	print 'and  %s/%s.bcp...%s' % (outputdir, accTable, mgi_utils.date())
+	print 'Creating %s/%s.bcp' % (outputdir, popTable)
+	print 'and  %s/%s.bcp' % (outputdir, accTable)
 	inFile = open(os.environ['POP_FILE'], 'r')
 	primaryKey = 0
 	
@@ -158,10 +130,8 @@ def createBCP():
 	# line looks like:
 	# <Population popId="1064" handle="ROCHEBIO" locPopId="RPAMM">
 	while line:
-	    #print line
 	    # remove <>
 	    line = line[1:-1]
-	    #print line	
 	    tokens = string.split(line)
 	    popName = ''
 	    handle = ''
@@ -171,38 +141,26 @@ def createBCP():
 		if string.find(token, '=') != -1:
 			attrs= string.split(token, '=')
 			key = string.strip(attrs[0])
-			#print key
 			# remove quotes around value
 			value = string.strip(attrs[1][1:-1])
-			#print value
 			if key == 'popId':
 			    popId = value
 			elif key == 'handle':
                             handle = value
 			elif key == 'locPopId':
 			    popName = value
-	    #print 'popName: %s' % popName
-	    #print 'handle: %s' % handle
-	    #print 'popId: %s' % popId
 	    if handleKeyLookup.has_key(handle):
     	        handleKey = handleKeyLookup[handle]
-	    #print 'handleKey: %s' % handleKey
 	    if popName == '' or handle == '' or popId == '' or handleKey == '':
 		sys.exit("Not all tokens present on line %s" % line)
 	    primaryKey = primaryKey + 1
-	    #print 'primaryKey: %s' % primaryKey
 	    bcpLine = str(primaryKey) + DL + \
 		str(handleKey) + DL + \
                 str(popName) + DL + \
                 str(userKey) + DL + str(userKey) + DL + \
                 loaddate + DL + loaddate + NL
-	    #print bcpLine
 	    popBCP.write(bcpLine)
-	    #handleFile.write("%s%s%s%s%s%s%s%s%s" % (handle, TAB, handle, 
-		#TAB, TAB, TAB, TAB, TAB, NL)) 
 	    createAccession(popId, primaryKey, snpPopLdbKey, snpPopmgiTypeKey) 
-	    # following now being done via vocload
-	    #createAccession(handle, handleKey, hdlLdbKey, hdlmgiTypeKey)
 	    line = string.strip(inFile.readline())
 
 	popBCP.close()
@@ -234,9 +192,6 @@ print '%s' % mgi_utils.date()
 setup()
 print 'deleting population accessions'
 deleteAccessions(snpPopmgiTypeKey, snpPopLdbKey)
-# following now being done via vocload
-#print 'deleting handle accessions'
-#deleteAccessions(hdlmgiTypeKey, hdlLdbKey)
 createBCP()
 print '%s' % mgi_utils.date()
 
