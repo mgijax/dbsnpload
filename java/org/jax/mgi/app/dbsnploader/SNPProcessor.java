@@ -24,6 +24,7 @@ import org.jax.mgi.dbs.mgd.MGITypeConstants;
 import org.jax.mgi.dbs.mgd.AccessionLib;
 import org.jax.mgi.dbs.mgd.VocabularyTypeConstants;
 import org.jax.mgi.dbs.mgd.AccessionLib;
+import org.jax.mgi.dbs.mgd.MGISetConstants;
 
 import java.util.Vector;
 import java.util.Iterator;
@@ -590,7 +591,7 @@ public class SNPProcessor {
             MGI_SetMemberState state = new MGI_SetMemberState();
             state.setObjectKey(mgdStrainKey);
             state.setSequenceNum(new Integer(1));
-            state.setSetKey(new Integer(1023));
+            state.setSetKey( new Integer(MGISetConstants.SNPSTRAIN) );
             snp.setSetMember(state);
         }
     }
