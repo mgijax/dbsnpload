@@ -158,7 +158,7 @@ public class DBSNPLoader extends DLALoader {
 
         for (Iterator i = chrList.iterator(); i.hasNext(); ) {
             String chr = ((String)i.next()).trim();
-            logger.logdDebug("Processing chr " + chr);
+            logger.logdInfo("Processing chr " + chr, true);
             nseInterpreter.loadChromosome(chr);
             DBSNPInput input = (DBSNPInput) nseInterpreter.interpret();
             //logger.logDebug(input.getRsId() + "\t" + ((DBSNPNseInput)input).getSubSNPs().toString());
