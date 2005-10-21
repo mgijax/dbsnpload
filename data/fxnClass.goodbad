@@ -6,3 +6,4 @@
 	Locus-Region	locus-region	dbsnp_load
 	mRNA-UTR	mrna-utr	dbsnp_load
 	Splice-Site	splice-site	dbsnp_load
+	Contig-Reference	reference	dbsnp_load
