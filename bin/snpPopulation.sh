@@ -64,22 +64,23 @@ fi
 
 # snpPopulation log
 POP_LOG=${LOGDIR}/snpPopulation.log
+touch {POP_LOG}
 
 checkstatus ()
 {
 
     if [ $1 -ne 0 ]
     then
-        echo "$2 Failed. Return status: $1" >> ${LOG} ${POP_LOG}
+        echo "$2 Failed. Return status: $1" >> ${POP_LOG}
         exit 1
     fi
-    echo "$2 completed successfully" >> ${LOG} ${POP_LOG}
+    echo "$2 completed successfully" >> ${POP_LOG}
 
 }
 
 date | tee -a ${LOG} ${POP_LOG}
 
-echo "creating population input file in ${POP_FILE}" | tee -a ${LOG} ${POP_LOG}
+echo "creating population input file in ${POP_FILE}" | tee -a ${POP_LOG}
 /usr/bin/cat ${GENO_SNP_INFILEDIR}/*.xml | grep "<Population" | cut -f2-4 | sort | uniq > ${POP_FILE}
 
 echo "creating population bcp file"
@@ -90,32 +91,32 @@ checkstatus ${STAT} "${msg}"
 
 # Allow bcp into database and truncate POP_TABLE
 echo "truncating ${POP_TABLE}"
-${MGIDBUTILSDIR}/bin/turnonbulkcopy.csh ${MGD_DBSERVER} ${MGD_DBNAME} | tee -a ${LOG} ${POP_LOG}
-${MGD_DBSCHEMADIR}/table/${POP_TABLE}_truncate.object | tee -a ${LOG} ${POP_LOG}
+${MGIDBUTILSDIR}/bin/turnonbulkcopy.csh ${MGD_DBSERVER} ${MGD_DBNAME} | tee -a ${POP_LOG}
+${MGD_DBSCHEMADIR}/table/${POP_TABLE}_truncate.object | tee -a ${POP_LOG}
 
 
 echo "dropping indexes on ${POP_TABLE}" 
-${MGD_DBSCHEMADIR}/index/${POP_TABLE}_drop.object | tee -a ${LOG} ${POP_LOG}
+${MGD_DBSCHEMADIR}/index/${POP_TABLE}_drop.object | tee -a ${POP_LOG}
 
 echo "bcp'ing data into ${POP_TABLE}"
-cat ${MGD_DBPASSWORDFILE} | bcp ${MGD_DBNAME}..${POP_TABLE} in ${OUTPUTDIR}/${POP_TABLE}.bcp -c -t\| -S${MGD_DBSERVER} -U${MGD_DBUSER} | tee -a ${LOG} ${POP_LOG}
+cat ${MGD_DBPASSWORDFILE} | bcp ${MGD_DBNAME}..${POP_TABLE} in ${OUTPUTDIR}/${POP_TABLE}.bcp -c -t\| -S${MGD_DBSERVER} -U${MGD_DBUSER} | tee -a  ${POP_LOG}
 
 echo "creating indexes on ${POP_TABLE}"
-${MGD_DBSCHEMADIR}/index/${POP_TABLE}_create.object | tee -a ${LOG} ${POP_LOG}
+${MGD_DBSCHEMADIR}/index/${POP_TABLE}_create.object | tee -a ${POP_LOG}
 
 echo "updating statistics on ${POP_TABLE}"
-${MGIDBUTILSDIR}/bin/updateStatistics.csh ${MGD_DBSERVER} ${MGD_DBNAME} ${POP_TABLE} | tee -a ${LOG} ${POP_LOG}
+${MGIDBUTILSDIR}/bin/updateStatistics.csh ${MGD_DBSERVER} ${MGD_DBNAME} ${POP_TABLE} | tee -a ${POP_LOG}
 
 #echo "dropping indexes on ${ACC_TABLE}"
-#${MGD_DBSCHEMADIR}/index/${ACC_TABLE}_drop.object | tee -a ${LOG} ${POP_LOG}
+#${MGD_DBSCHEMADIR}/index/${ACC_TABLE}_drop.object | tee -a ${POP_LOG}
 
 echo "bcp'ing data into ${ACC_TABLE}"
-cat ${MGD_DBPASSWORDFILE} | bcp ${MGD_DBNAME}..${ACC_TABLE} in ${OUTPUTDIR}/${ACC_TABLE}.pop.bcp -c -t \| -S${MGD_DBSERVER} -U${MGD_DBUSER} | tee -a ${LOG} ${POP_LOG}
+cat ${MGD_DBPASSWORDFILE} | bcp ${MGD_DBNAME}..${ACC_TABLE} in ${OUTPUTDIR}/${ACC_TABLE}.pop.bcp -c -t \| -S${MGD_DBSERVER} -U${MGD_DBUSER} | tee -a ${POP_LOG}
 
 #echo "creating indexes on ${ACC_TABLE}"
-#${MGD_DBSCHEMADIR}/index/${ACC_TABLE}_create.object | tee -a ${LOG} ${POP_LOG}
+#${MGD_DBSCHEMADIR}/index/${ACC_TABLE}_create.object | tee -a  ${POP_LOG}
 
 #echo "updating statistics on ${ACC_TABLE}"
-#${MGIDBUTILSDIR}/bin/updateStatistics.csh ${MGD_DBSERVER} ${MGD_DBNAME} ${ACC_TABLE} | tee - a ${LOG} ${POP_LOG}
+#${MGIDBUTILSDIR}/bin/updateStatistics.csh ${MGD_DBSERVER} ${MGD_DBNAME} ${ACC_TABLE} | tee - a ${POP_LOG}
 
 date | tee -a ${LOG}  ${POP_LOG}
