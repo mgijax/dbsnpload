@@ -116,6 +116,9 @@ fi
 . ${CONFIG_COMMON}
 . ${CONFIG_LOAD}
 
+# loadVoc log
+VOC_LOG=${LOGDIR}/loadVoc.log
+
 #
 # function that reports status given a status ($1) and a process name ($2)
 #
@@ -124,10 +127,10 @@ checkstatus ()
 
     if [ $1 -ne 0 ]
     then
-        echo "$2 Failed. Return status: $1" | tee -a ${LOG_PROC} ${LOG_DIAG}
+        echo "$2 Failed. Return status: $1" | tee -a ${LOG} ${VOC_LOG}
         exit 1
     fi
-    echo "$2 completed successfully" | tee -a ${LOG_PROC} ${LOG_DIAG}
+    echo "$2 completed successfully" | tee -a ${LOG} ${VOC_LOG}
 
 }
 
@@ -135,11 +138,11 @@ checkstatus ()
 # main
 #
 
-date | tee -a ${LOG_DIAG}
+date | tee -a ${LOG} ${VOC_LOG}
 
 if [ ${doFxn} = "yes" ]
 then
-    echo "Creating fxnClass vocab..." | tee -a ${LOG} ${LOG_DIAG}
+    echo "Creating fxnClass vocab..." | tee -a ${LOG} ${VOC_LOG}
     ${VOCDAGLOAD} ${FXNCLASS_VOCAB_CONFIG}
     STAT=$?
     msg="fxnClass vocab load"
@@ -148,7 +151,7 @@ fi
 
 if [ ${doVar} = "yes" ]
 then
-    echo "Creating varClass vocab..." | tee -a ${LOG} ${LOG_DIAG}
+    echo "Creating varClass vocab..." | tee -a ${LOG} ${VOC_LOG}
     ${VOCSIMPLELOAD} ${VARCLASS_VOCAB_CONFIG}
     STAT=$?
     msg="varClass vocab load"
@@ -157,7 +160,7 @@ fi
 
 if [ ${doHandle} = "yes" ]
 then
-    echo "Creating subHandle vocab intermediate file..." | tee -a ${LOG} ${LOG_DIAG}
+    echo "Creating subHandle vocab intermediate file..." | tee -a ${LOG} ${VOC_LOG}
     # transforms: <NSE-ss_handle>WI</NSE-ss_handle>
     # into: WI
     /usr/bin/cat ${NSE_SNP_INFILEDIR}/*.xml | grep "<NSE-ss_handle>" | cut -d'>' -f2 | cut -d'<' -f1 | sort | uniq > ${INT_HANDLE_VOCAB_FILE}
@@ -167,16 +170,16 @@ then
     # file looks like:
     # WI tab WI
     # where WI is the term name AND the accession id
-    echo "Creating subHandle vocab input file..." | tee -a ${LOG} ${LOG_DIAG}
+    echo "Creating subHandle vocab input file..." | tee -a ${LOG} ${VOC_LOG}
     ${HANDLE_VOCAB_FILE_CREATOR}
     STAT=$?
     msg="subHandle vocab file creator"
     checkstatus  ${STAT} "${msg}"
 
-    echo "Creating subHandle vocab ..." | tee -a ${LOG} ${LOG_DIAG}
+    echo "Creating subHandle vocab ..." | tee -a ${LOG} ${VOC_LOG}
     ${VOCSIMPLELOAD} ${HANDLE_VOCAB_CONFIG}
     STAT=$?
     msg="subHandle vocab load"
     checkstatus  ${STAT} "${msg}"
 fi
-date | tee -a ${LOG} ${LOG_DIAG}
+date | tee -a ${LOG} ${VOC_LOG}
