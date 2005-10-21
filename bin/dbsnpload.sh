@@ -201,11 +201,11 @@ checkstatus ()
 
     if [ $1 -ne 0 ]
     then
-        echo "$2 Failed. Return status: $1" >> ${LOG_PROC}
+        echo "$2 Failed. Return status: $1" >> ${LOG_PROC} ${LOG_DIAG}
         shutDown
         exit 1
     fi
-    echo "$2 completed successfully" >> ${LOG_PROC}
+    echo "$2 completed successfully" >> ${LOG_PROC} ${LOG_DIAG}
 
 }
 
