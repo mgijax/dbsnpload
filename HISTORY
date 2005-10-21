@@ -1,3 +1,18 @@
+TAG: dbsnpload-3-4-0-9
+DATE: 10/21/2005
+STAFF: sc
+RELEASE: alpha
+CHANGES:
+1) DBSNPLoader.java - log processing of ds chr to diag log as Info instead of 
+   Debug
+2) SNPProcessor.java use constant for SNP Strain MGI_Set._Set_key
+3) dbsnpload.sh - log success failure to diag (as well as proc) log
+4) loadTranslations.sh - log to new trans log in output directory instead of 
+   LOG_DIAG - we may run this outside of the dbsnpload
+5) loadVoc.sh and snpPopulation.sh - new logs for each.
+6) ./data/fxnClass.goodbad - defect 418 - added reference translation
+7) dbsnpload.config.default - updated  COORD_TYPE to "SNP"
+
 TAG: dbsnpload-3-4-0-8
 DATE: 10/20/2005
 STAFF: sc
@@ -69,6 +84,7 @@ CHANGES:
    capitalization
 7) loadVoc.sh and loadTranslations.sh and dbsnpload.sh - 
     added -v, -f params, comments, general cleanup
+8) dbsnpload.config.default - updated COORD_TYPE to 'SNP'
 
 TAG: dbsnpload-3-4-0-1
 TAG: dbsnpload-3-4-0
