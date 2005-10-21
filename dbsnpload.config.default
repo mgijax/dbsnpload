@@ -288,7 +288,7 @@ COORD_PROCESSOR=org.jax.mgi.dbs.mgd.loads.Coord.ChromosomeCoordMapProcessor
 export COORD_DLA_LOADER COORD_INTERPRETER COORD_PROCESSOR
 
 # coordinate map type
-COORD_TYPE=Assembly
+COORD_TYPE=SNP
 
 # the coordinate map units
 COORD_UNITS="base pair"
