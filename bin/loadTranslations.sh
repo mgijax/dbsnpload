@@ -111,15 +111,18 @@ then
   mkdir -p ${TRANS_OUTPUTDIR}
 fi
 
+# diagnostic log for translations
+TRANS_LOG=${LOGDIR}/loadTranslations.log
+
 checkstatus ()
 {
 
     if [ $1 -ne 0 ]
     then
-        echo "$2 Failed. Return status: $1" | tee -a  ${LOG_PROC} ${LOG_DIAG}
+        echo "$2 Failed. Return status: $1" | tee -a  ${LOG} ${TRANS_LOG}
         exit 1
     fi
-    echo "$2 completed successfully" | tee -a  ${LOG_PROC} ${LOG_DIAG}
+    echo "$2 completed successfully" | tee -a  ${LOG} ${TRANS_LOG}
 
 }
 
@@ -127,14 +130,14 @@ checkstatus ()
 # main
 #
 
-date | tee -a ${LOG_DIAG}
+date | tee -a ${LOG} ${TRANS_LOG}
 
 if [ ${doVar} = "yes" ]
 then
     # source variation class config
     . ${CONFIG_VARCLASS}
 
-    echo "Creating varClass translation..." | tee -a ${LOG} ${LOG_DIAG}
+    echo "Creating varClass translation..." | tee -a ${LOG} ${TRANS_LOG}
     ${TRANSLATION_LOAD} -S${MGD_DBSERVER} -D${MGD_DBNAME} -U${MGD_DBUSER} -P${MGD_DBPASSWORDFILE} -M${VARCLASS_TRANS_LOAD_MODE} -I${VARCLASS_TRANS_INPUT} -O${TRANS_OUTPUTDIR}
     STAT=$?
     msg="varClass translation load "
@@ -146,11 +149,11 @@ then
     # source function class config        
     . ${CONFIG_FXNCLASS}
 
-    echo "Creating fxnClass translation..." | tee -a ${LOG} ${LOG_DIAG}
+    echo "Creating fxnClass translation..." | tee -a ${LOG} ${TRANS_LOG}
     ${TRANSLATION_LOAD} -S${MGD_DBSERVER} -D${MGD_DBNAME} -U${MGD_DBUSER} -P${MGD_DBPASSWORDFILE} -M${FXNCLASS_TRANS_LOAD_MODE} -I${FXNCLASS_TRANS_INPUT} -O${TRANS_OUTPUTDIR}
     STAT=$?
     msg="fxnClass translation load "
     checkstatus  ${STAT} "${msg}"
 fi
 
-date | tee -a ${LOG} ${LOG_DIAG}
+date | tee -a ${LOG} ${TRANS_LOG}
