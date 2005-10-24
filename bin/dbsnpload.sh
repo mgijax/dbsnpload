@@ -295,6 +295,12 @@ STAT=$?
 msg="dbsnp marker cache load"
 checkstatus  ${STAT} "${msg}"
 
+echo "running snp strain order update"
+${STRAIN_ORDER_LOAD}
+STAT=$?
+msg="snp strain order update"
+checkstatus  ${STAT} "${msg}"
+
 # run postload cleanup and email logs
 #
 shutDown
