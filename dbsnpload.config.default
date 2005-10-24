@@ -342,6 +342,9 @@ export SNP_CACHELOAD_DIR COORD_CACHE_LOAD SNP_MARKER_LOAD
 # snp strain configuration
 #
 
+# strain order update script
+STRAIN_ORDER_LOAD=${INSTALLDIR}/bin/updateSnpStrainOrder.sh
+
 # copy of the set of snp strains and keys used in updating
 SNP_STRAIN_FILE=${LOGDIR}/snpStrainsInMGI.log
 
