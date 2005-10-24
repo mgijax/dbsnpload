@@ -338,6 +338,28 @@ SNP_MARKER_CACHE_LOAD=${SNP_CACHELOAD_DIR}/snpmarker.csh
 
 export SNP_CACHELOAD_DIR COORD_CACHE_LOAD SNP_MARKER_LOAD
 
+#
+# snp strain configuration
+#
+
+# copy of the set of snp strains and keys used in updating
+SNP_STRAIN_FILE=${LOGDIR}/snpStrainsInMGI.log
+
+# strain ordering input file
+MGI_STRAINORDER_FILE=${SNP_DATA_DIR}/mgiSnpStrainOrder.txt
+
+# diagnostic log for strain order updates
+LOG_STRAIN=${LOGDIR}/updateSnpStrainOrder.log
+
+# discrepancy file
+LOG_DISCREP=${LOGDIR}/snpStrainOrderDiscrepancy.log
+
+# snp strain set name
+SNP_STRAIN_SET_NAME="SNP Strains"
+
+export SNP_STRAIN_FILE MGI_STRAINORDER_FILE LOG_STRAIN
+export LOG_DISCREP SNP_STRAIN_SET_NAME
+
 # SQL STREAM
 # this overrides the default BCP_Inline_Stream
 DLA_DB_PREFIX=MGD
@@ -381,7 +403,7 @@ MGD_BCP_TRUNCATE_LOG=true
 MGD_BCP_DROP_INDEXES=true
 MGD_BCP_RECORD_STAMPING=false
 MGD_BCP_AUTO_FLUSH=false
-MGD_BCP_OK_TO_OVERWRITE=false
+MGD_BCP_OK_TO_OVERWRITE=true
 
 export MGD_BCP_PATH MGD_BCP_PREVENT_EXECUTE MGD_BCP_TRUNCATE_LOG
 export MGD_BCP_DROP_INDEXES MGD_BCP_RECORD_STAMPING MGD_BCP_AUTO_FLUSH
