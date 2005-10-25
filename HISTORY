@@ -1,3 +1,13 @@
+TAG: dbsnpload-3-4-0-10
+DATE: 10/25/2005
+STAFF: sc
+RELEASE: beta
+CHANGES:
+1) added snp strain ordering scripts
+2) dbsnpload.config.default - added snp ordering config, update MGD_BCP_OK_TO_OVERWRITE=true
+3) dbsnpload.sh - added call to snp strain ordering script
+4) data/SNP_FXN_DAG.ontology - changed reference to Contig-Reference
+
 TAG: dbsnpload-3-4-0-9
 DATE: 10/21/2005
 STAFF: sc
