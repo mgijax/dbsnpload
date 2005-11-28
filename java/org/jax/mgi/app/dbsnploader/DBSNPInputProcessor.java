@@ -277,7 +277,7 @@ public class DBSNPInputProcessor {
             // loader can decide (via configuration?) behaviour when there
             // are no strain alleles for an rs - log and go on to the next
             // snp or fatal error.
-            logger.logcInfo("No alleles for RS" + rsId, false);
+            logger.logcInfo("No alleles for RS" + rsId, false);a
             SNPNoStrainAlleleException e = new
                 SNPNoStrainAlleleException();
             e.bind(rsId);

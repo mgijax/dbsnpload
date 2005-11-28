@@ -1,3 +1,12 @@
+TAG: dbsnpload-build125-1
+DATE: 11/28/2005
+STAFF: sc
+RELEASE:
+CHANGES:
+1) removed old SAX parser classes
+2) data/fxnClass.goodbad - update badname for build 125
+3) data/varClass.goodbad - update badname for build 125
+
 TAG: dbsnpload-build125-BP
 DATE: 11/01/2005
 STAFF: sc

@@ -44,8 +44,9 @@ public class SNPLoaderConstants {
         public static final String GENO_REVERSE_ORIENT = "rev";
         // orientation values from NSE file
         public static final String NSE_FORWARD = "forward";
-        public static final String NSE_SS_REVERSE = "reversed";
-        public static final String NSE_RS_REVERSE = "reverse";
+        public static final String NSE_REVERSE = "reverse";
+        //public static final String NSE_SS_REVERSE = "reverse";
+        //public static final String NSE_RS_REVERSE = "reverse";
         // variation class constants
         public static final String VARCLASS_NAMED = "named";
         public static final String VARCLASS_INDEL = "in-del";

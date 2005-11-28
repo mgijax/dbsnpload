@@ -148,6 +148,8 @@ public class SNPProcessor {
         String dbsnpVarClass = radarState.getVariationClass();
         Integer varClassKey = resolveCSVarClass(dbsnpVarClass, orderedAlleleSummary);
         mgdState.setVarClassKey(varClassKey);
+        mgdState.setBuildCreated(radarState.getBuildCreated());
+        mgdState.setBuildUpdated(radarState.getBuildUpdated());
        /* try {
             mgdState.setVarClassKey(varClassLookup.lookup(radarState.getVariationClass()));
         } catch (KeyNotFoundException e) {
@@ -420,7 +422,7 @@ public class SNPProcessor {
            if(orient.equals(SNPLoaderConstants.NSE_FORWARD)){
               translatedOrient = "f";
            }
-           else if (orient.equals(SNPLoaderConstants.NSE_RS_REVERSE)){
+           else if (orient.equals(SNPLoaderConstants.NSE_REVERSE)){
                translatedOrient = "r";
            }
            else {
@@ -478,7 +480,7 @@ public class SNPProcessor {
            if(orient.equals(SNPLoaderConstants.NSE_FORWARD)){
                translatedOrient = "f";
            }
-           else if (orient.equals(SNPLoaderConstants.NSE_SS_REVERSE)){
+           else if (orient.equals(SNPLoaderConstants.NSE_REVERSE)){
                translatedOrient = "r";
            }
            else {
