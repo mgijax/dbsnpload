@@ -6,6 +6,43 @@ CHANGES:
 1) removed old SAX parser classes
 2) data/fxnClass.goodbad - update badname for build 125
 3) data/varClass.goodbad - update badname for build 125
+4) dbsnpload.config.default - added SNP_CHROMOSOMES_TOLOAD
+5) bin/loadVoc.sh - update the tag in the grep statement to find handles
+6) Allele.java - rmeoved gtyFlag1 attribute, not using it
+7) DBSNPInputProcessor.java - removed analysis code, updated for build 125
+8) DBSNPLoader.java - updated for build 125 mainly using 3 *InputDataFile 
+   objects 2 for the genotype file 1 for the nse file, each has its own 
+   interpreter and using a StAX parser.
+9) DBSNPLoaderCfg.java - added getChromosomesToLoad()
+10) DBSNPNseInput.java - no longer extends DBSNPInput, added rsId attribute
+11) DBSNPNseSS.java - removed validation status attribute
+12) SNPLoaderConstants.java - removed separate constants for SS and RS 
+    reverse orientation, build 125 uses same value
+13) SNPProcessor - updated for build 125
+14) new classes:
+    * DBSNPGenotypeIndividualInput.java - data object for the Individual
+      portion of the genotype files
+    * DBSNPGenotypeIndividualInputFile.java - InputFile object that encaps
+      the start/end of a 'Individual' record in the genotype input files and 
+      has an interpreter to which transforms a record into a
+      DBSNPGenotypeIndividualInput
+    * DBSNPGenotypeRefSNPInput.java - data object for the strain allele 
+      information for each refsnp in the genotype files
+    * DBSNPGenotypeRefSNPInputFile.java - InputFile objec that encaps
+      the start/end of a 'RefSNP; record in the genotype input files and has an 
+      interpreter which transforms a record into a
+      DBSNPGenotypeRefSNPInput
+    * DBSNPNseInputFile.java - InputFile object that encaps the start/end of a
+      'RefSNP' record in the NSE input file files
+    * DBSNPNseRS.java - data object representing an RS in the NSE input file,
+      the attributes of this class had been attributes of DBSNPNseInput directly
+      ; pulled out for easier processing after we added the created and updated
+      build attributes.
+    * SNPMultiBL6ChrException.java - new exception indicating multiple Chr BL6
+      coordinates found for a given refsnp
+    * SNPRepeatException.java - new exception indicating another copy of a 
+      refsnp record found in the input.
+
 
 TAG: dbsnpload-build125-BP
 DATE: 11/01/2005
