@@ -14,8 +14,6 @@ class DBSNPNseSS {
     private String ssVarClass;
     // SS orientation to RS
     private String ssOrientToRS;
-    // SS Validation status
-    String ssValidStatus;
     // true if exemplar ss
     private Boolean isExemplar = Boolean.FALSE;
     // dbsnp ss observed alleles; a summary of the ss alleles
@@ -51,9 +49,7 @@ class DBSNPNseSS {
     public void setSSOrientToRS(String o) {
         ssOrientToRS = o;
     }
-    public void setSSValidStatus(String s) {
-        ssValidStatus = s;
-    }
+
     public void setIsExemplar(Boolean i) {
        isExemplar = i;
     }
@@ -77,9 +73,6 @@ class DBSNPNseSS {
     }
     public String getSSOrientToRS() {
         return ssOrientToRS;
-     }
-     public String getSSValidStatus() {
-         return ssValidStatus;
      }
      public Boolean getIsExemplar() {
           return isExemplar;
