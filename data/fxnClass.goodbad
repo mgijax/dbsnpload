@@ -1,7 +1,7 @@
-	Coding	coding	dbsnp_load
-	Coding-NonSynonymous	coding-nonsynon 	dbsnp_load
-	Coding-Synonymous	coding-synon	dbsnp_load
-	Coding-Exception	exception	dbsnp_load
+	Coding	coding-unknown	dbsnp_load
+	Coding-NonSynonymous	coding-nonsynonymous 	dbsnp_load
+	Coding-Synonymous	coding-synonymous	dbsnp_load
+	Coding-Exception	coding-exception	dbsnp_load
 	Intron	intron	dbsnp_load
 	Locus-Region	locus-region	dbsnp_load
 	mRNA-UTR	mrna-utr	dbsnp_load
