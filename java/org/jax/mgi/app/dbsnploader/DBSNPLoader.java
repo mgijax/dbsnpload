@@ -17,6 +17,7 @@ import org.jax.mgi.dbs.mgd.lookup.LogicalDBLookup;
 import org.jax.mgi.dbs.mgd.MGITypeConstants;
 import org.jax.mgi.dbs.mgd.LogicalDBConstants;
 import org.jax.mgi.dbs.mgd.AccessionLib;
+import org.jax.mgi.shr.ioutils.XMLDataIterator;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -25,19 +26,9 @@ import java.util.Vector;
 import java.util.Iterator;
 import java.util.HashSet;
 import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 public class DBSNPLoader extends DLALoader {
-    // Gets SNP records from the genotype input
-
-
-    // Gets SNP records from the NSE input
-
-
-    // Gets SNP records from the genotype input
-
-    private DBSNPInterpreter genoInterpreter;
-    private DBSNPInterpreter nseInterpreter;
-
 
     // the SQLStream used for loading data
     private SQLStream radarStream;
@@ -54,12 +45,18 @@ public class DBSNPLoader extends DLALoader {
     // current number of rs with no BL6 coordinates
     private int rsWithNoBL6Ctr;
 
+    // current number of rs with multiple BL6 chromosomes
+    private int rsMultiBL6ChrCtr;
+
     // current number of rs with no allele summary (means no strain resolved or
     // all alleles are 'N'
     private int rsWithNoAlleleSummaryCtr;
 
-    // rs with unresolvable vocabularies
+    // current number of rs with unresolvable vocabularies
     private int rsWithVocabResolverExceptionCtr;
+
+    // current number of rs repeated in input
+    private int rsRepeatExceptionCtr;
 
     // list of chromosomes to parse
     private ArrayList chrList;
@@ -67,40 +64,38 @@ public class DBSNPLoader extends DLALoader {
     // writer for CoordLoad input file
     private BufferedWriter coordWriter;
 
-    // configurator
+    //load configurator
     private DBSNPLoaderCfg loadCfg;
-
+    // configurator for genotype file configuration
+    private DBSNPLoaderCfg genoConfig;
+    // configurator for nse file configuration
+    private DBSNPLoaderCfg nseConfig;;
     // SNP exception factory
     private SNPLoaderExceptionFactory snpEFactory;
 
-
+    // file path separator
+    private static final String PATH_SEPARATOR = System.getProperty("file.separator");;
     /**
      * Initializes instance variables
      * @effects instance variables will be instantiated
      * @throws MGIException if errors occur during initialization
      */
     protected void initialize() throws MGIException {
-        // get configurators for each input file
-        DBSNPLoaderCfg genoConfig = new DBSNPLoaderCfg("GENO");
-        DBSNPLoaderCfg nseConfig = new DBSNPLoaderCfg("NSE");
-
-        // create interpreters for each input file
-        genoInterpreter = new DBSNPInterpreter(genoConfig);
-        nseInterpreter = new DBSNPInterpreter(nseConfig);
-
-        // The list of chromosomes for iterating thru Chr files
-        chrList = new ArrayList();
-
-        for (int i = 1; i < 20; i++) {
-            chrList.add(String.valueOf(i));
-        }
-        chrList.add("X");
-        chrList.add("Multi");
-
-        //chrList.add("1");
+        // configurator for the load
         loadCfg = new DBSNPLoaderCfg();
+        // configurators for each input file
+        genoConfig = new DBSNPLoaderCfg("GENO");
+        nseConfig = new DBSNPLoaderCfg("NSE");
 
-       // for creating coordload input file
+        // create list of chromosomes for iterating thru Chr files
+        String chromosomes = loadCfg.getChromosomesToLoad();
+        StringTokenizer chrTokenizer = new StringTokenizer(chromosomes, ",");
+        chrList = new ArrayList();
+        while (chrTokenizer.hasMoreTokens()) {
+            chrList.add( ( (String) chrTokenizer.nextToken()).trim());
+        }
+
+        // writer for creating coordload input file
         try {
             coordWriter = new BufferedWriter(new FileWriter(
                 loadCfg.getCoordFilename()));
@@ -111,14 +106,20 @@ public class DBSNPLoader extends DLALoader {
 
         // rename the stream for clarity - the DLA thinks of the radar database as qc.
         radarStream = qcStream;
-        dbsnpProcessor = new DBSNPInputProcessor(radarStream, loadStream, coordWriter);
+        dbsnpProcessor = new DBSNPInputProcessor(radarStream, loadStream,
+                                                 coordWriter);
         snpEFactory = new SNPLoaderExceptionFactory();
 
+
+
+        // initialize all counters
         snpCtr = 0;
         rsWithNoAllelesCtr = 0;
         rsWithNoBL6Ctr = 0;
+        rsMultiBL6ChrCtr = 0;
         rsWithNoAlleleSummaryCtr = 0;
         rsWithVocabResolverExceptionCtr = 0;
+        rsRepeatExceptionCtr = 0;
     }
 
     /**
@@ -132,39 +133,63 @@ public class DBSNPLoader extends DLALoader {
         if(loadCfg.getOkToDeleteAccessions().equals(Boolean.TRUE)) {
             deleteAccessions();
         }
-        // create the genotype lookup
-        for (Iterator i = chrList.iterator(); i.hasNext(); ) {
-            String chr = ((String)i.next()).trim();
-            logger.logdInfo("creating the genotype lookup for chr " + chr, false);
-            genoInterpreter.loadChromosome(chr);
-            DBSNPInput input = (DBSNPInput) genoInterpreter.interpret();
-            while (input != null) {
-                dbsnpProcessor.processInput(input);
-                input = (DBSNPInput)genoInterpreter.interpret();
-            }
-        }
     }
 
     /**
-     * Performs the DBSNP database load into the RADAR
-     * @effects database records created within the RADAR
-     * database. If stream is a BCP stream, creates bcp files which may be
+     * Performs the DBSNP database load
+     * @effects database records created
+     * If stream is a BCP stream, creates bcp files which may be
      * temporary or persistent depending on configuration
      * @throws MGIException thrown if a fatal error occurs while performing the
      * load.
      */
     protected void run()  throws MGIException {
-        // interpret/process chromosome files one at a time
-
+        /**
+         * process chromosome files one at a time
+         */
         for (Iterator i = chrList.iterator(); i.hasNext(); ) {
+            // encourage the garbage collector
+            System.gc();
+
             String chr = ((String)i.next()).trim();
             logger.logdInfo("Processing chr " + chr, true);
-            nseInterpreter.loadChromosome(chr);
-            DBSNPInput input = (DBSNPInput) nseInterpreter.interpret();
-            //logger.logDebug(input.getRsId() + "\t" + ((DBSNPNseInput)input).getSubSNPs().toString());
-            while (input != null) {
+            /**
+             * process the genotype file for the Individual data
+             */
+            String genotypeFilename = genoConfig.getInfileDir()  +
+                PATH_SEPARATOR +
+                genoConfig.getInfilePrefix() + chr +
+                genoConfig.getInfileSuffix();
+            XMLDataIterator indivIterator =
+                new DBSNPGenotypeIndividualInputFile(genotypeFilename).getIterator();
+            while(indivIterator.hasNext() ) {
+                //DBSNPInput indivInput = (DBSNPInput)indivIterator.next();
+                dbsnpProcessor.processGenoIndivInput((DBSNPGenotypeIndividualInput)indivIterator.next());
+            }
+            /**
+             * process the genotype file for RefSNP data
+             */
+            System.out.println("processing genotype file " + genotypeFilename);
+            XMLDataIterator genoRefSNPIterator = new DBSNPGenotypeRefSNPInputFile(
+                 genotypeFilename, dbsnpProcessor.getIndividualMap()).getIterator();
+            while (genoRefSNPIterator.hasNext()) {
+                dbsnpProcessor.processGenoRefSNPInput((DBSNPGenotypeRefSNPInput) genoRefSNPIterator.next());
+            }
+
+            /**
+             * process the NSE file
+             */
+            String nseFilename = nseConfig.getInfileDir()  +
+                PATH_SEPARATOR +
+                nseConfig.getInfilePrefix() + chr +
+                nseConfig.getInfileSuffix();
+            System.out.println("processing NSE file " + nseFilename);
+            XMLDataIterator it = new DBSNPNseInputFile(nseFilename).getIterator();
+            while (it.hasNext()) {
+                DBSNPNseInput nseInput = (DBSNPNseInput)it.next();
                 try {
-                    dbsnpProcessor.processInput(input);
+                    logger.logdDebug("Processing " + nseInput.getRS().getRsId());
+                    dbsnpProcessor.processInput(nseInput);
                 }
                 catch (SNPNoStrainAlleleException e) {
                    // logger.logdInfo("No StrainAlleles: " + input.getRsId(), true);
@@ -173,14 +198,18 @@ public class DBSNPLoader extends DLALoader {
                 catch (SNPNoBL6Exception e) {
                     rsWithNoBL6Ctr++;
                 }
+                catch (SNPMultiBL6ChrException e) {
+                    rsMultiBL6ChrCtr++;
+                }
                 catch (SNPNoConsensusAlleleSummaryException e) {
                     rsWithNoAlleleSummaryCtr++;
                 }
                 catch (SNPVocabResolverException e) {
                     rsWithVocabResolverExceptionCtr++;
-
                 }
-                input = (DBSNPInput) nseInterpreter.interpret();
+                catch (SNPRepeatException e) {
+                    rsRepeatExceptionCtr++;
+                }
                 snpCtr++;
             }
         }
@@ -193,6 +222,7 @@ public class DBSNPLoader extends DLALoader {
      */
     protected void postprocess() throws MGIException
     {
+
         try {
             coordWriter.close();
         } catch (IOException e) {
@@ -218,10 +248,14 @@ public class DBSNPLoader extends DLALoader {
                         rsWithNoAllelesCtr, false);
         logger.logdInfo("Total RefSnps with no BL6 coordinates: " +
                         rsWithNoBL6Ctr, false);
+        logger.logdInfo("Total RefSnps with multi chromosome BL6 coordinates: " +
+                        rsMultiBL6ChrCtr, false);
         logger.logdInfo("Total RefSnps with no ConsensusSnpAlleleSummary: " +
                         rsWithNoAlleleSummaryCtr, false);
         logger.logdInfo("Total RefSnps with Vocab resolving errors: " +
                         rsWithVocabResolverExceptionCtr, false);
+        logger.logdInfo("Total RefSnp records repeated in the input (can be multiple per RefSnp): " +
+                        rsRepeatExceptionCtr, false);
         for (Iterator i = dbsnpProcessor.getProcessedReport().iterator(); i.hasNext(); ) {
             logger.logdInfo((String)i.next(), false);
         }
