@@ -102,15 +102,31 @@ public class DBSNPLoaderCfg extends Configurator {
         return getConfigString("JOBKEY");
     }
     /**
-     * Gets the coordload filename
+     * Gets the dbsnpload coordload filename (output of dbsnpload, input for
+     *   coordload)
      * @return the coordload filename
-     * @throws ConfigException if "COORD_L" not found by the Configurator
+     * @throws ConfigException if "COORD_OUTPUT_FILE" not found by the Configurator
      */
     public String getCoordFilename() throws ConfigException {
         return getConfigString("COORD_OUTPUT_FILE");
     }
+    /**
+     * If true, deleted all SNP accession Ids.
+     * @return whether to deleted SNP accession ids
+     * @throws ConfigException if "SNP_OK_TO_DELETE_ACCESSIONS" not found by the Configurator
+     */
 
     public Boolean getOkToDeleteAccessions() throws ConfigException {
         return getConfigBoolean("SNP_OK_TO_DELETE_ACCESSIONS", Boolean.FALSE);
     }
+    /**
+     * get list of chromomes to load.
+     * @return list of chromosomes
+     * @throws ConfigException if "SNP_CHROMOSOMES_TOLOAD" not found by the Configurator
+     */
+
+    public String getChromosomesToLoad() throws ConfigException {
+        return getConfigString("SNP_CHROMOSOMES_TOLOAD");
+    }
+
 }
