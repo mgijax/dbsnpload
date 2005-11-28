@@ -171,7 +171,10 @@ export DLA_TRUNCATE_LOAD_TABLES DLA_TRUNCATE_QC_TABLES SNP_OK_TO_DELETE_ACCESSIO
 # stored with the dbsnpload product 
 SNP_DATA_DIR=${INSTALLDIR}/data
 
-export SNP_DATA_DIR
+# list of chromosomes to load, comma delimited
+SNP_CHROMOSOMES_TOLOAD="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,X"
+
+export SNP_DATA_DIR SNP_CHROMOSOMES_TOLOAD
 
 #
 # parameters for creating populations 
