@@ -31,19 +31,7 @@ public class AlleleOrderer {
 
             return ret;
         }
-        /**
-          * @param args the command line arguments
-          */
-         /*
-         public static void main(String[] args) {
-             // TODO code application logic here
 
-             String in = "-/GC/CA/TAA/CGG/T/A/AAAAAAA";
-             AlleleOrderer myApp = new AlleleOrderer();
-             String out = myApp.order(in);
-             System.out.println(in);
-             System.out.println(out);
-         }*/
     class CustomComparator implements Comparator {
         /**
          * Value that will contain the information about the order of the
