@@ -164,8 +164,7 @@ then
     echo "Creating subHandle vocab intermediate file..." | tee -a ${VOC_LOG}
     # transforms: <NSE-ss_handle>WI</NSE-ss_handle>
     # into: WI
-    /usr/bin/cat ${NSE_SNP_INFILEDIR}/*.xml | grep "<NSE-ss_handle>" | cut -d'>' -f2 | cut -d'<' -f1 | sort | uniq > ${INT_HANDLE_VOCAB_FILE}
-
+    /usr/bin/cat ${NSE_SNP_INFILEDIR}/*.xml | grep "<Ss" | cut -d" " -f11 | cut -d= -f2 | cut -d'"' -f2 | sort | uniq > ${INT_HANDLE_VOCAB_FILE}
     # creates subHandle vocab input file which will create
     # accession records for the vocab 
     # file looks like:
