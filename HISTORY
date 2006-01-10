@@ -1,3 +1,11 @@
+TAG: dbsnpload-build125-2
+DATE: 01/09/2006
+STAFF: sc
+RELEASE:
+CHANGES: 
+1) DBSNPLoader.java - added deleteStrains() method
+2) added class/method headers
+
 TAG: dbsnpload-build125-1
 DATE: 11/28/2005
 STAFF: sc
