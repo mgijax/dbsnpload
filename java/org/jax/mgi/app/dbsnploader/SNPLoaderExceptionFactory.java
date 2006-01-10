@@ -5,12 +5,11 @@ package org.jax.mgi.app.dbsnploader;
 
 import org.jax.mgi.shr.exception.ExceptionFactory;
     /**
-     * An ExceptionFactory for SeqloaderExceptions
-     * @has a hashmap of predefined SeqloaderExceptions stored by a name key
-     * @does looks up SeqloaderExceptions by name
+     * An ExceptionFactory for SNPLoaderExceptions
+     * @has a hashmap of predefined SNPLoaderExceptions stored by a name key
+     * @does looks up SNPLoaderExceptions by name
      * @company The Jackson Laboratory
-     * @author M Walker
-     * @version 1.0
+     * @author sc
      */
 
 public class SNPLoaderExceptionFactory
@@ -73,6 +72,17 @@ public class SNPLoaderExceptionFactory
             false));
     }
 
+
+        /**
+         * Database Error deleting dbsnp Strain Set
+         */
+        public static final String SNPDeleteStrainSetErr =
+            "org.jax.mgi.shr.dla.seqloader.SNPDeleteStrainSetErr";
+        static {
+            exceptionsMap.put(SNPDeleteStrainSetErr, new SNPLoaderException(
+                "Database Error deleting SNP Strain Set",
+                false));
+        }
 
 }
 // $Log

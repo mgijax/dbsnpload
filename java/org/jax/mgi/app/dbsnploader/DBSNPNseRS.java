@@ -2,6 +2,16 @@ package org.jax.mgi.app.dbsnploader;
 
 import java.util.HashMap;
 
+/**
+ *
+ * is an object that
+ * @has
+ * @does
+ * @company Jackson Laboratory
+ * @author sc
+ *
+ */
+
 class DBSNPNseRS {
 
     // RS id

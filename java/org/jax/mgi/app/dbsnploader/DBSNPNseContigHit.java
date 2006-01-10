@@ -2,6 +2,16 @@ package org.jax.mgi.app.dbsnploader;
 
 import java.util.Vector;
 
+/**
+ *
+ * is an object that
+ * @has
+ * @does
+ * @company Jackson Laboratory
+ * @author sc
+ *
+ */
+
 public class DBSNPNseContigHit{
 
     // the chromosome on which this coordinate is found

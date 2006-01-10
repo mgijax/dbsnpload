@@ -1,20 +1,24 @@
 package org.jax.mgi.app.dbsnploader;
 
 public class SNPLoaderConstants {
-    /**
+/**
 * An object that contains constant definitions for SNP loaders.
 * @has
 *   <UL>
 *   <LI> Constant definitions for:
 *   <UL>
-*       <LI> characters, e.g. tab
-*       <LI> SNP objects type
+     *  <LI> SNP objects type
+     *  <LI>accession id prefixex
+     *  <LI>logicalDB values
+     *  <LI>assemblies
+     *  <LI>orientation
+     *  <LI> function class
+     *  <LI> variation class
 *   </UL>
 *   </UL>
 * @does Nothing
 * @company The Jackson Laboratory
 * @author sc
-* @version 1.0
 */
 
 

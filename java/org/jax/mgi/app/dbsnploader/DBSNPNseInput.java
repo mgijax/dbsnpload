@@ -4,6 +4,16 @@ import java.util.HashMap;
 import java.util.Vector;
 import java.util.Iterator;
 
+/**
+ *
+ * is an object that
+ * @has
+ * @does
+ * @company Jackson Laboratory
+ * @author sc
+ *
+ */
+
 class DBSNPNseInput {
     // the RS object
     private DBSNPNseRS rs;

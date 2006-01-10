@@ -3,7 +3,6 @@ package org.jax.mgi.app.dbsnploader;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-
 import org.jax.mgi.shr.ioutils.InputXMLDataFile;
 import org.jax.mgi.shr.ioutils.XMLDataIterator;
 import org.jax.mgi.shr.ioutils.XMLDataInterpreter;
@@ -13,9 +12,9 @@ import org.jax.mgi.shr.ioutils.InterpretException;
 import org.jax.mgi.shr.config.ConfigException;
 
 /**
- * A Representation of the DBSNP Genotype file
+ * A Representation of the DBSNP NSE file
  * @has a pointer to the input file
- * @does provides an itertator to iterate over dbSNP records
+ * @does provides an iterator to iterate over dbSNP records
  * in the input file
  * @company The Jackson Laboratory
  * @author sc

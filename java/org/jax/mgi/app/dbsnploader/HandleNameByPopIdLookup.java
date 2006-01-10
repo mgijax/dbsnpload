@@ -15,15 +15,11 @@ import org.jax.mgi.shr.dbutils.RowReference;
 import org.jax.mgi.shr.dbutils.SQLDataManagerFactory;
 
 /**
- * @is An object that knows how to look Handle Name given a Population Id
+ * @is An object that knows how to look up Handle Name given a Population Id
  * @has Nothing
- * @does
- *   <UL>
- *   <LI> Provides a method to look up a Handle Name given a Population Id
- *   </UL>
+ * @does Provides a method to look up a Handle Name given a Population Id
  * @company The Jackson Laboratory
  * @author sc
- * @version 1.0
  */
 
 public class HandleNameByPopIdLookup extends FullCachedLookup

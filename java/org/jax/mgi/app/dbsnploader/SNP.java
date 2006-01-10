@@ -13,30 +13,15 @@ import org.jax.mgi.shr.dla.log.DLALoggingException;
 import org.jax.mgi.dbs.mgd.MGITypeConstants;
 import org.jax.mgi.dbs.mgd.MGD;;
 
-    /**
-     * An object that manages a set of DAOs representing a sequence.
-     * @has
-     *   <UL>
-     *   <LI>SEQ_SequenceDAO
-     *   <LI>ACC_AccessionDAO's for its primary seqid and any 2ndary seqids
-     *   <LI>MGI_ReferenceAssocDAO's for any references associated with the sequence
-     *   <LI>SEQ_SourceAssocDAO's for sources associated with the sequence
-     *   <LI>Knows if its SEQ_SequenceDAO exists in MGI or is a new sequence
-     *   <LI>If the SEQ_SequenceDAO exists in MGI, knows if its state has changed
-     *   </UL>
-     * @does
-     *   <UL>
-     *   <LI>creates DAO objects for Sequence, primary and 2ndary seqids,
-     *       reference association(s) and source association(s).
-     *   <LI>Updates a sequence and adds new reference associations in a database
-     *   <LI>Adds a sequence, its seqids, reference and source associations to
-     *       a database
-     *   <LI>Provides methods to get *copies only* of States for each of its DAO's
-     *   </UL>
-     * @company The Jackson Laboratory
-     * @author sc
-     * @version 1.0
-     */
+/**
+ *
+ * is an object that
+ * @has
+ * @does
+ * @company Jackson Laboratory
+ * @author sc
+ *
+ */
 
 public class SNP {
 

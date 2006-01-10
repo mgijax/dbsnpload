@@ -35,6 +35,16 @@ import java.util.StringTokenizer;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
+/**
+ *
+ * is an object that
+ * @has
+ * @does
+ * @company Jackson Laboratory
+ * @author sc
+ *
+ */
+
 public class SNPProcessor {
     private MGITypeLookup mgiTypeLookup;
     private LogicalDBLookup ldbLookup;
@@ -363,9 +373,10 @@ public class SNPProcessor {
 		String prefixPart = (String)splitAccession.get(0);
 		Integer numericPart = (Integer)splitAccession.get(1);
 		// if this is a submitter snpId then don't set prefix part
-		if(logicalDBKey.equals(new Integer(LogicalDBConstants.SUBMITTERSNP ))) {
-		    prefixPart = null;
-		}
+		//if(logicalDBKey.equals(new Integer(LogicalDBConstants.SUBMITTERSNP ))) {
+		//    prefixPart = null;
+		//}
+        // ACc_Accession.prefixPart varchar(30) as of 3.41
                 mgdState.setPrefixPart(prefixPart);
                 mgdState.setNumericPart(numericPart);
                 // set logicalDB
@@ -533,6 +544,9 @@ public class SNPProcessor {
             Integer strainKey1 = (Integer)i.next();
             String  allele1 = (String)strainAlleles.get(strainKey1);
             //logger.logcInfo("Str1: " + strainKey1 + " allelel: " + allele1, false);
+            // remove this strain from the map so as to compare it's allele to all the rest
+            // this is a one way comparison. given map = {1:A, 2:A, 3:B}, compare
+            // 1 to 2 (A to A), 1 to 3 (A to B), 2 to 3 (A to B)
             compareTo.remove(strainKey1);
             for(Iterator j = compareTo.keySet().iterator(); j.hasNext();) {
                 SNP_Strain_CacheState state = new SNP_Strain_CacheState();

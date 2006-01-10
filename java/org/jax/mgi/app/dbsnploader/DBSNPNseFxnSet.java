@@ -1,5 +1,15 @@
 package org.jax.mgi.app.dbsnploader;
 
+/**
+ *
+ * is an object that
+ * @has
+ * @does
+ * @company Jackson Laboratory
+ * @author sc
+ *
+ */
+
 public class DBSNPNseFxnSet {
     String locusId;
     String fxnClass;

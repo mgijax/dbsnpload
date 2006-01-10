@@ -16,24 +16,15 @@ import org.jax.mgi.shr.dbutils.InterpretException;
 import org.jax.mgi.shr.exception.MGIException;
 
 /**
- * @is An object that knows how to query the MGI_SNP tables and
- *     interpret the results set to build SNP objects.
+ *
+ * is an object that
  * @has
- *   <UL>
- *   <LI> A RowDataIterator that will get the next IMAGEAssociation object each
- *        time the next() method is called.
- *   <LI> An interpreter object (inner class) that knows how to build
- *        IMAGEAssociation objects from the results set.
- *   </UL>
  * @does
- *   <UL>
- *   <LI> Provides a method to determine if there is another IMAGEAssociation
- *        object available.
- *   <LI> Provides a method to get the next available IMAGEAssociation object.
- *   </UL>
- * @company The Jackson Laboratory
- * @author dbm
+ * @company Jackson Laboratory
+ * @author sc
+ *
  */
+
 
 public class SNPLoadIterator{
     private DLALogger logger;

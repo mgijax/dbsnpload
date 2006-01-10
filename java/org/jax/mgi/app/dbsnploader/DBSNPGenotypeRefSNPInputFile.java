@@ -12,24 +12,25 @@ import org.jax.mgi.shr.ioutils.IOUException;
 import org.jax.mgi.shr.ioutils.InterpretException;
 import org.jax.mgi.shr.config.ConfigException;
 import org.jax.mgi.shr.stringutil.StringLib;
+
 /**
- * A Representation of the DBSNP Genotype file
+ * is a Representation of RefSnp strain alleles from the DBSNP Genotype input file
  * @has a pointer to the input file
- * @does provides an itertator to iterate over dbSNP genotype records
+ * @does provides an iterator to iterate over dbSNP genotype RefSnp records
  * in the input file
  * @company The Jackson Laboratory
  * @author sc
  */
-
-
 public class DBSNPGenotypeRefSNPInputFile extends InputXMLDataFile {
     private String TAG =  "SnpInfo";
     private String filename = null;
     HashMap strainMap;
 
     /**
-     * constructor which takes the name of the input file as an argument
+     * constructor which takes the name of the input file and a dbsnp
+     * strain id to strain mapping as arguments
      * @param filename the name of the input file
+     * @param map mapping of dbsnp strain id to strain name
      * @throws ConfigException thrown if there is an error accessing
      * the configuration
      * @throws IOUException thrown if there is an error accessing the
@@ -44,8 +45,8 @@ public class DBSNPGenotypeRefSNPInputFile extends InputXMLDataFile {
 
     /**
      * get the iterator for this file
-     * @return an XMLDataIterator instance which provideds iteration over
-     * dbSNP genotype records in the file
+     * @return an XMLDataIterator instance which provides iteration over
+     * dbSNP genotype RefSnp records in the file
      */
     public XMLDataIterator getIterator()
     {
@@ -53,10 +54,10 @@ public class DBSNPGenotypeRefSNPInputFile extends InputXMLDataFile {
     }
 
     /**
-     * The XMLDataInterpreter for interpreting records of DBSNP genotype file
+     * The XMLDataInterpreter for interpreting 'SnpInfo' records of a DBSNP genotype file
      * @has nothing
-     * @does implements the XMLDataInterpreter interface to interpret genotype
-     * xml input file creating DBSNPGenotypeInput objects
+     * @does implements the XMLDataInterpreter interface to interpret RefSnp info in
+     * a DBSNP genotype input file creating DBSNPGenotypeRefSnpInput objects
      * @company The Jackson Laboratory
      * @author sc
      */
@@ -65,35 +66,67 @@ public class DBSNPGenotypeRefSNPInputFile extends InputXMLDataFile {
         implements XMLDataInterpreter
     {
         /**
-         * interprets the xml input as a DBSNPGenoty[eInput instance
+         * interprets the xml input as a DBSNPGenotypeRefSnpInput instance
          * @param it the XMLTagIterator from which to obtain the xml data used
-         * to create the DBSNPGenotypeInput instance
-         * @return the newly created DBSNPGenotypeInput object
-         * @throws InterpretException thrown if there is an error during
-         * interpreteration
-         */
+         * to create the DBSNPGenotypeRefSnpInput object
+         * @return the newly created DBSNPGenotypeRefSnpInput object
+         * @throws InterpretException thrown if there is an error when
+         * interpreting
+	   * @note
+	   * example XML (there can be multi 'ByPop' nested within
+       * each 'SsInfo' tag
+       * <SnpInfo rsId="2020458">
+              <SnpLoc genomicAssembly="0:C57BL/6J" chrom="1" start="172997799"
+                           locType="2" rsOrientToChrom="fwd"/>
+                   <SsInfo ssId="1565680" locSnpId="ERO23-241e3r_1"
+                           ssOrientToRs="fwd">
+                     <ByPop popId="542" hwProb="0.0025" hwChi2="10"
+                                        hwDf="1" sampleSize="20">
+                        <AlleleFreq allele="T" freq="0.1"/>
+                        <AlleleFreq allele="C" freq="0.9"/>
+                        <GTypeFreq gtype="C/C" freq="0.9"/>
+                        <GTypeFreq gtype="T/T" freq="0.1"/>
+                        <GTypeByInd gtype="C/C" indId="2921"/>
+                        <GTypeByInd gtype="C/C" indId="2922"/>
+                        <GTypeByInd gtype="C/C" indId="2917"/>
+                        <GTypeByInd gtype="C/C" indId="2926"/>
+                        <GTypeByInd gtype="C/C" indId="4460"/>
+                        <GTypeByInd gtype="C/C" indId="4461"/>
+                        <GTypeByInd gtype="C/C" indId="2918"/>
+                        <GTypeByInd gtype="C/C" indId="2920"/>
+                        <GTypeByInd gtype="T/T" indId="4465"/>
+                        <GTypeByInd gtype="C/C" indId="4466"/>
+                      </ByPop>
+                    </SsInfo>
+                    <GTypeFreq gtype="C/C" freq="0.9"/>
+                    <GTypeFreq gtype="T/T" freq="0.1"/>
+        * </SnpInfo>
+        */
+
         public Object interpret(XMLTagIterator it) throws InterpretException {
 
-            // the current rs object
+            // the current input object
             DBSNPGenotypeRefSNPInput currentInput = null;
 
             // current ssid for this rs
             String currentSSId = null;
 
-            // current orientation of the ss to the RS flanking sequence
+            // orientation of the current ss to the RS flanking sequence
             String currentSSOrientToRS = null;
 
             // The current strain id
             String currentStrainId = null;
 
-            // currentStrainId converted to dbSNP id
+            // currentStrainId converted to strain name (or JAX registry id)
             String currentConvertedStrainId = null;
 
             // allele for currentStrainId
             Allele currentAllele = null;
 
-            // Vector of DBSNPGenotypePopulation objects for the current SS
+            // set of DBSNPGenotypePopulation objects for the current SS
             Vector currentSSPopulationVector = new Vector();
+
+		// current population of the current SS
             DBSNPGenotypePopulation currentPopulation = null;
 
             try {
@@ -102,39 +135,6 @@ public class DBSNPGenotypeRefSNPInputFile extends InputXMLDataFile {
 
                     String[] atts = it.getAttributeNames();
                     int attsCt = it.getAttributeCount();
-                    /**
-                     * remaining parsing is RS/SS
-                     *
-                     * example XML (ther can be multi 'ByPop' nested within
-                     * each 'SsInfo' tag
-                     * <SnpInfo rsId="2020458">
-                             <SnpLoc genomicAssembly="0:C57BL/6J" chrom="1"
-                         start="172997799" locType="2" rsOrientToChrom="fwd"/>
-                             <SsInfo ssId="1565680" locSnpId="ERO23-241e3r_1"
-                                   ssOrientToRs="fwd">
-                                 <ByPop popId="542" hwProb="0.0025" hwChi2="10"
-                                        hwDf="1" sampleSize="20">
-                                     <AlleleFreq allele="T" freq="0.1"/>
-                                     <AlleleFreq allele="C" freq="0.9"/>
-                                     <GTypeFreq gtype="C/C" freq="0.9"/>
-                                     <GTypeFreq gtype="T/T" freq="0.1"/>
-                                     <GTypeByInd gtype="C/C" indId="2921"/>
-                                     <GTypeByInd gtype="C/C" indId="2922"/>
-                                     <GTypeByInd gtype="C/C" indId="2917"/>
-                                     <GTypeByInd gtype="C/C" indId="2926"/>
-                                     <GTypeByInd gtype="C/C" indId="4460"/>
-                                     <GTypeByInd gtype="C/C" indId="4461"/>
-                                     <GTypeByInd gtype="C/C" indId="2918"/>
-                                     <GTypeByInd gtype="C/C" indId="2920"/>
-                                     <GTypeByInd gtype="T/T" indId="4465"/>
-                                     <GTypeByInd gtype="C/C" indId="4466"/>
-                                 </ByPop>
-                             </SsInfo>
-                             <GTypeFreq gtype="C/C" freq="0.9"/>
-                             <GTypeFreq gtype="T/T" freq="0.1"/>
-                     * </SnpInfo>
-                     */
-
                     // first tag of the RS record
                     if (it.getTagName().equals("SnpInfo")) {
                         // create the input object for the record and set rsId
@@ -163,14 +163,14 @@ public class DBSNPGenotypeRefSNPInputFile extends InputXMLDataFile {
                     }
                     // Beginning of a Population
                     else if (it.getTagName().equals("ByPop")) {
-                        // add the population vector to the input object; if there
-                        // are multi populations, this will be done again; this
-                        // should be done when we detect the 'SsInfo' end tag;
-                        // can't do it at the 'SsInfo' start tag because we haven't
-                        // got the ssId yet
+                        // add the population vector for the current ss
+			//  to the input object
                         currentInput.addPopulation(currentSSId,
                             currentSSPopulationVector);
                         for (int i = 0; i < attsCt; i++) {
+			    // when we find the popId attribute, create a new
+			    // population adding it to the current SS population
+			    // vector and set the popId
                             if (atts[i] != null && atts[i].equals("popId")) {
                                 currentPopulation = new DBSNPGenotypePopulation();
                                 currentSSPopulationVector.add(currentPopulation);
@@ -182,7 +182,8 @@ public class DBSNPGenotypeRefSNPInputFile extends InputXMLDataFile {
                     // beginning of a strain allele
                     else if (it.getTagName().equals("GTypeByInd")) {
                         for (int i = 0; i < attsCt; i++) {
-                            // create an Allele ("A/A" becomes "A") and set its orientation
+                            // create an Allele ("A/A" becomes "A") and set
+			    // its orientation
                             if (atts[i] != null && atts[i].equals("gtype")) {
                                 String allele = it.getAttributeValue(i);
                                 ArrayList a = StringLib.split(allele, "/");
@@ -195,12 +196,12 @@ public class DBSNPGenotypeRefSNPInputFile extends InputXMLDataFile {
                             else if (atts[i] != null && atts[i].equals("indId")) {
                                 currentStrainId = it.getAttributeValue(i);
                                 if (strainMap.containsKey(currentStrainId)) {
-                                    // set converted strain and its allele into the strain allele map
+                                    // set converted strain and its allele
+				    // into the strain allele map
                                     currentConvertedStrainId = (String)
                                         strainMap.get(currentStrainId);
                                     currentPopulation.addStrainAlleles(
                                         currentConvertedStrainId, currentAllele);
-
                                 }
                             }
                         }

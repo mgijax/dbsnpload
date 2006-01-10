@@ -3,7 +3,6 @@ package org.jax.mgi.app.dbsnploader;
 import java.util.Vector;
 import java.util.HashMap;
 import java.util.ArrayList;
-
 import org.jax.mgi.shr.ioutils.InputXMLDataFile;
 import org.jax.mgi.shr.ioutils.XMLDataIterator;
 import org.jax.mgi.shr.ioutils.XMLDataInterpreter;
@@ -12,16 +11,16 @@ import org.jax.mgi.shr.ioutils.IOUException;
 import org.jax.mgi.shr.ioutils.InterpretException;
 import org.jax.mgi.shr.config.ConfigException;
 import org.jax.mgi.shr.stringutil.StringLib;
+
 /**
- * A Representation of the DBSNP Genotype file
+ * is a Representation of the 'Individuals' (strains and their ids)
+ * from the DBSNP Genotype input file
  * @has a pointer to the input file
- * @does provides an itertator to iterate over dbSNP genotype records
+ * @does provides an iterator to iterate over dbSNP genotype Individual records
  * in the input file
  * @company The Jackson Laboratory
  * @author sc
  */
-
-
 public class DBSNPGenotypeIndividualInputFile extends InputXMLDataFile {
     private String TAG =  "Individual";
     private String filename = null;
@@ -42,8 +41,8 @@ public class DBSNPGenotypeIndividualInputFile extends InputXMLDataFile {
 
     /**
      * get the iterator for this file
-     * @return an XMLDataIterator instance which provideds iteration over
-     * dbSNP genotype records in the file
+     * @return an XMLDataIterator instance which provides iteration over
+     * dbSNP genotype Individual records in the file
      */
     public XMLDataIterator getIterator()
     {
@@ -51,10 +50,10 @@ public class DBSNPGenotypeIndividualInputFile extends InputXMLDataFile {
     }
 
     /**
-     * The XMLDataInterpreter for interpreting records of DBSNP genotype file
+     * The XMLDataInterpreter for interpreting 'Individual' records of a DBSNP genotype file
      * @has nothing
-     * @does implements the XMLDataInterpreter interface to interpret genotype
-     * xml input file creating DBSNPGenotypeInput objects
+     * @does implements the XMLDataInterpreter interface to interpret Individuals
+     * in the dbsnp genotype input file creating DBSNPGenotypeIndividualInput objects
      * @company The Jackson Laboratory
      * @author sc
      */
@@ -63,14 +62,14 @@ public class DBSNPGenotypeIndividualInputFile extends InputXMLDataFile {
         implements XMLDataInterpreter
     {
         /**
-         * interprets the xml input as a DBSNPGenoty[eInput instance
-         * @param it the XMLTagIterator from which to obtain the xml data used
-         * to create the DBSNPGenotypeInput instance
-         * @return the newly created DBSNPGenotypeInput object
-         * @throws InterpretException thrown if there is an error during
-         * interpreteration
-         *
-         * 'Individual' and SourceInfo tags are found at the top of
+         * interprets the xml input as a DBSNPGenotypeIndividualInput instance
+         * @param it - the XMLTagIterator from which to obtain the xml data used
+         * to create the DBSNPGenotypeIndividualInput instance
+         * @return the newly created DBSNPGenotypeIndividualInput object
+         * @throws InterpretException thrown if there is an error when
+         * interpreting
+         * @note
+         * 'Individual' and 'SourceInfo' tags are found at the top of
          * each genotype file. Load a mapping of the dbSNP strain id
          * to the strain. Note that the strain could be either a strain
          * name or a JAX registry id
@@ -103,7 +102,7 @@ public class DBSNPGenotypeIndividualInputFile extends InputXMLDataFile {
                 while (it.getState() != it.TAG_END) {
                     String[] atts = it.getAttributeNames();
                     int attsCt = it.getAttributeCount();
-                    //System.out.println(it.getTagName());
+                    // get the dbsnp Individual (strain) id
                     if (it.getTagName().equals("Individual")) {
                         currentInput = new DBSNPGenotypeIndividualInput();
                         for (int i = 0; i < attsCt; i++) {
@@ -113,6 +112,7 @@ public class DBSNPGenotypeIndividualInputFile extends InputXMLDataFile {
                             }
                         }
                     }
+			  // get the strain name (or JAX registry id)
                     else if (it.getTagName().equals("SourceInfo")) {
                         for (int i = 0; i < attsCt; i++) {
                             // get the strain which maps to the strainId
@@ -124,7 +124,6 @@ public class DBSNPGenotypeIndividualInputFile extends InputXMLDataFile {
                     it.nextTag();
                 }
             }
-
             catch (IOUException e) {
                 throw new InterpretException("Cannot read data from xml", e);
             }

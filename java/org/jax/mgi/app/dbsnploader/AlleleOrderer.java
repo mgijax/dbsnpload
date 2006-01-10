@@ -3,35 +3,57 @@ package org.jax.mgi.app.dbsnploader;
 import java.util.Arrays;
 import java.util.Comparator;
 
+/**
+ *
+ * is an object that orders a '/' delimited string of alleles
+ * @has a Comparator which encapsulates the ordering rules.
+ * @does orders a string of alleles
+ * @company Jackson Laboratory
+ * @author sc
+ *
+ */
+
 public class AlleleOrderer {
 
-        /** Creates a new instance of Test */
-        public AlleleOrderer() {
-        }
+    /**
+     * default constructor
+     */
+    public AlleleOrderer() {
+    }
 
-        public String order(String in) {
-            String ret = "";
-            String patternStr = "/";
+    /**
+     * orders a '/' delimited string of alleles
+     * @param in - a string of alleles separated by '/'
+     * @return ordered string of alleles separated by '/'
+     */
+    public String order(String in) {
+        String ret = "";
+        String patternStr = "/";
 
-            try {
-               String[] arr = in.split(patternStr);
-               Arrays.sort(arr, new CustomComparator(false));
+            String[] arr = in.split(patternStr);
+            Arrays.sort(arr, new CustomComparator(false));
 
-               for (int i = 0; i < arr.length; i++) {
-                   ret += arr[i];
+            for (int i = 0; i < arr.length; i++) {
+                ret += arr[i];
 
-                   if (i != (arr.length - 1)) {
-                       ret += "/";
-                   }
-               }
-
-            } catch (Exception e) {
-                // ignore for now
+                if (i != (arr.length - 1)) {
+                    ret += "/";
+                }
             }
 
-            return ret;
-        }
+        return ret;
+    }
 
+
+    /**
+     *
+     * is an object that compares two objects for >, <, =
+     * @has boolean if true reverse the comparison
+     * @does orders a string of alleles
+     * @company Jackson Laboratory
+     * @author sc
+     *
+     */
     class CustomComparator implements Comparator {
         /**
          * Value that will contain the information about the order of the
@@ -40,18 +62,21 @@ public class AlleleOrderer {
         private boolean rev;
 
         /**
-         * Constructor class for CustomComparator.
-         * <br>
-         * Example:
-         * <br>
-         * <code>Arrays.sort(pArray, new CustomComparator(rev));<code>
+         * constructor
+         * @param r true if order in reverse
          */
         public CustomComparator(boolean r) {
             this.rev = r;
         }
 
         /**
-         * Implementation of the compare method.
+         * determines whether two objects are <, >, or = to each other
+         * equal sized nucleotide values (-, A, C, T, G) use ascii value to determine
+         * <,=,>
+         * shorter allele strings are < longer allele strings
+         * @param pObj1
+         * @param pObj2
+         * @return -1 if s1 < s2, 0 if s1 = s2, 1 if s1 > s2
          */
         public int compare(Object pObj1, Object pObj2) {
             String s1 = (String)pObj1;
@@ -85,13 +110,7 @@ public class AlleleOrderer {
             else {
                 ret = s1.compareTo(s2);
             }
-
-
             return rev ? (-1 * ret) : ret;
         }
-
-
     }
-
-
 }

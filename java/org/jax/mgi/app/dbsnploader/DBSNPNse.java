@@ -17,24 +17,15 @@ import org.jax.mgi.dbs.mgd.MGITypeConstants;
 import org.jax.mgi.dbs.mgd.MGD;
 import org.jax.mgi.shr.dla.loader.seq.*;
 
-    /**
-     * An object that manages a set of DAOs representing a dbSNP RS
-     * input file.
-     * @has
-     *   <UL>
-     *   <LI>
-     *   <LI>
-     *   </UL>
-     * @does
-     *   <UL>
-     *   <LI>creates DAO objects for
-     *   <LI>Adds a ----- to a database
-     *   <LI>Provides methods to get *copies only* of States for each of its DAO's
-     *   </UL>
-     * @company The Jackson Laboratory
-     * @author sc
-     * @version 1.0
-     */
+/**
+ *
+ * is an object that manages a set of DAOs representing a dbSNP RS
+ * @has
+ * @does
+ * @company Jackson Laboratory
+ * @author sc
+ *
+ */
 
 public class DBSNPNse {
 

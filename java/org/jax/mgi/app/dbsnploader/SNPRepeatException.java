@@ -6,14 +6,11 @@ package org.jax.mgi.app.dbsnploader;
 import org.jax.mgi.shr.exception.MGIException;
 
     /**
-     * An MGIException thrown when there are multiple BL6 chromosomes for
-     * an RS
-     * @has an exception message, a data related indicator and a parent
-     * exception which can be null.
+     * An MGIException thrown when there are repeated RefSNPs in the input
+     * @has an exception message
      * @does nothing
      * @company Jackson Laboratory
      * @author sc
-     * @version 1.0
      */
 
     public class SNPRepeatException extends MGIException {
