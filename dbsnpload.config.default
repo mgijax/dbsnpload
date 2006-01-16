@@ -2,7 +2,6 @@
 #
 #  Configuration for dbsnpload jobstream
 #
-#
 ###########################################################################
 
 ###########################################################################
@@ -13,21 +12,8 @@
 
 #  Installation directory for the DBSNP Data Provider load
 INSTALLDIR=/usr/local/mgi/live/dataload/dbsnpload
-#INSTALLDIR=/home/sc/snp/dbsnpload
 
 export INSTALLDIR 
-
-###########################################################################
-# 
-# Python settings
-#
-###########################################################################
-SYBASE=/opt/sybase/12.5
-PYTHONPATH=/usr/local/mgi/live/lib/python
-PATH=.:$PATH:/usr/bin:$SYBASE/ASE-12_5/bin:$SYBASE/OCS-12_5/bin:/usr/java/bin
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SYBASE/OCS-12_5/lib
-
-export SYBASE PYTHONPATH PATH LD_LIBRARY_PATH
 
 ###########################################################################
 #
@@ -38,13 +24,10 @@ export SYBASE PYTHONPATH PATH LD_LIBRARY_PATH
 # MGD Connection parameters 
 
 MGD_DBSERVER=PROD_MGI
-#MGD_DBSERVER=DEV1_MGI
 
 MGD_DBURL=shire.informatics.jax.org:4100
-#MGD_DBURL=rohan.informatics.jax.org:4101
 
 MGD_DBNAME=mgd
-#MGD_DBNAME=mgd_sc
 
 MGD_DBUSER=mgd_dbo
 MGD_DBPASSWORDFILE=${MGIDBUTILSDIR}/.mgd_dbo_password
@@ -62,13 +45,10 @@ export DSQUERY MGD
 
 # RADAR Connection parameters 
 RADAR_DBSERVER=PROD_MGI
-#RADAR_DBSERVER=DEV1_MGI
 
 RADAR_DBURL=shire.informatics.jax.org:4100
-#RADAR_DBURL=rohan.informatics.jax.org:4101
 
 RADAR_DBNAME=radar
-#RADAR_DBNAME=radar_release
 
 RADAR_DBUSER=mgd_dbo
 RADAR_DBPASSWORDFILE=${MGIDBUTILSDIR}/.mgd_dbo_password
@@ -89,9 +69,7 @@ export RADAR_DBPASSWORDFILE RADAR_DBSCHEMADIR
 # need memory from the parent process (2G max given to a process by the op sys)
 JAVARUNTIMEOPTS="-Xms1500m -Xmx1500m"
 
-#JAVA_LIB=/home/sc/snp/lib_java_dla-tr7081/classes:/home/sc/snp/lib_java_core-tr7081/classes:/home/sc/snp/lib_java_dbsmgd-tr7081/classes:/home/sc/snp/lib_java_dbsrdr-snp/classes
-
-JAVA_LIB=/usr/local/mgi/live/lib/java/lib_java_core/core.jar:/usr/local/mgi/live/lib/java/lib_java_dbsmgd/dbsmgd.jar:/usr/local/mgi/live/lib/java/lib_java_dbsrdr/dbsrdr.jar:/usr/local/mgi/live/lib/java/lib_java_dla/dla.jar:
+JAVA_LIB=${JAVAPATH}/lib_java_core/core.jar:${JAVAPATH}/lib_java_dbsmgd/dbsmgd.jar:${JAVAPATH}/java/lib_java_dbsrdr/dbsrdr.jar:${JAVAPATH}/lib_java_dla/dla.jar
 
 CLASSPATH=.:/usr/local/java1.4/lib/xercesImpl.jar:${INSTALLDIR}/classes:${JAVA_LIB}:${COMMON_CLASSPATH}
 
@@ -105,8 +83,6 @@ export JAVARUNTIMEOPTS JAVA_LIB CLASSPATH
 
 # Full path the the logs, reports, and archive directories
 FILEDIR=/data/loads/dbsnp/dbsnpload
-# this FILEDIR for running from JBuilder
-#FILEDIR=/net/mtdoom/vol/rohan/data/loads/dbsnp/dbsnpload
 
 LOGDIR=${FILEDIR}/logs
 RPTDIR=${FILEDIR}/reports
@@ -121,8 +97,6 @@ export FILEDIR LOGDIR RPTDIR ARCHIVEDIR OUTPUTDIR
 
 # input file directories
 INPUTDIR=/data/downloads/ftp.ncbi.nih.gov/snp/mouse
-# this INPUTDIR for running from JBuilder
-#INPUTDIR=/net/mtdoom/vol/rohan/data/downloads/ftp.ncbi.nih.gov/snp/mouse
 
 # directory for the genotype xml input file
 GENO_SNP_INFILEDIR=${INPUTDIR}/genotype
@@ -172,10 +146,12 @@ export DLA_TRUNCATE_LOAD_TABLES DLA_TRUNCATE_QC_TABLES SNP_OK_TO_DELETE_ACCESSIO
 # stored with the dbsnpload product 
 SNP_DATA_DIR=${INSTALLDIR}/data
 
+export SNP_DATA_DIR
+
 # list of chromosomes to load, comma delimited
 SNP_CHROMOSOMES_TOLOAD="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,X"
 
-export SNP_DATA_DIR SNP_CHROMOSOMES_TOLOAD
+export SNP_CHROMOSOMES_TOLOAD
 
 #
 # parameters for creating populations 
@@ -207,7 +183,6 @@ export POP_TABLE ACC_TABLE
 
 # vocload product directory
 VOCLOAD=/usr/local/mgi/live/dataload/vocload
-#VOCLOAD=/home/sc/snp/vocload-snp
 
 # dbsnpload wrapper to run any/all vocabularies
 DBSNP_VOCLOAD=${INSTALLDIR}/bin/loadVoc.sh
@@ -249,7 +224,6 @@ export HANDLE_VOCAB_FILE_CREATOR INT_HANDLE_VOCAB_FILE HANDLE_VOCAB_FILE
 
 # translation load
 TRANSLATION_LOAD=/usr/local/mgi/live/dataload/translationload/translationload.py
-#TRANSLATION_LOAD=/home/sc/snp/translationload/translationload.py
 
 # dbsnpload wrapper to run  any/all translation loads (fxnClass, varClass)
 DBSNP_TRANS_LOAD=${INSTALLDIR}/bin/loadTranslations.sh
@@ -310,12 +284,12 @@ COORD_LOGICALDB="RefSNP"
 COORD_ORGANISM="mouse, laboratory"
 
 # version of the coordinate load
-COORD_VERSION="NCBI dbSNP Build 124"
+COORD_VERSION="NCBI dbSNP Build 125"
 
 export COORD_LOGICALDB COORD_ORGANISM COORD_VERSION
 
 # coordinate map collection to which this load belongs
-COORD_COLLECTION_NAME="NCBI dbSNP Build 124"
+COORD_COLLECTION_NAME="NCBI dbSNP Build 125"
 
 # abbreviation for the coordinate collection
 # if no value assigned will be same as COORD_COLLECTION
@@ -332,7 +306,6 @@ export COORD_COLLECTION_NAME COORD_COLLECTION_ABBREV COORD_FEATURE_MGITYPE
 
 # snpcacheload product dir
 SNP_CACHELOAD_DIR=/usr/local/mgi/live/dbutils/snpcacheload
-#SNP_CACHELOAD_DIR=/home/sc/snp/snpcacheload
 
 # snp coordinate cache load
 SNP_COORD_CACHE_LOAD=${SNP_CACHELOAD_DIR}/snpcoord.csh
