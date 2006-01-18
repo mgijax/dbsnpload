@@ -69,9 +69,9 @@ export RADAR_DBPASSWORDFILE RADAR_DBSCHEMADIR
 # need memory from the parent process (2G max given to a process by the op sys)
 JAVARUNTIMEOPTS="-Xms1500m -Xmx1500m"
 
-JAVA_LIB=${JAVAPATH}/lib_java_core/core.jar:${JAVAPATH}/lib_java_dbsmgd/dbsmgd.jar:${JAVAPATH}/java/lib_java_dbsrdr/dbsrdr.jar:${JAVAPATH}/lib_java_dla/dla.jar
+JAVA_LIB=${JAVAPATH}/lib_java_core/core.jar:${JAVAPATH}/lib_java_dbsmgd/dbsmgd.jar:${JAVAPATH}/java/lib_java_dbsrdr/dbsrdr.jar:${JAVAPATH}/lib_java_dla/dla.jar:/usr/local/java/lib/jsr173_1.0_api.jar:/usr/local/java/lib/jsr173_1.0_ri.jar
 
-CLASSPATH=.:/usr/local/java1.4/lib/xercesImpl.jar:${INSTALLDIR}/classes:${JAVA_LIB}:${COMMON_CLASSPATH}
+CLASSPATH=.:${INSTALLDIR}/classes:${JAVA_LIB}:${COMMON_CLASSPATH}
 
 export JAVARUNTIMEOPTS JAVA_LIB CLASSPATH
 
@@ -128,7 +128,7 @@ export GENO_SNP_PARSER NSE_SNP_PARSER
 export DLA_LOADER DLA_START
 
 # The list of MGD tables for the load to truncate
-DLA_TRUNCATE_LOAD_TABLES=SNP_ConsensusSnp,SNP_ConsensusSnp_StrainAllele,SNP_Flank,SNP_Strain_Cache,SNP_SubSnp,SNP_SubSnp_StrainAllele
+DLA_TRUNCATE_LOAD_TABLES=SNP_ConsensusSnp,SNP_ConsensusSnp_StrainAllele,SNP_Flank,SNP_SubSnp,SNP_SubSnp_StrainAllele
 
 # The list of RADAR tables for the load to truncate
 DLA_TRUNCATE_QC_TABLES=MGI_SNP_Accession,MGI_SNP_ConsensusSNP,MGI_SNP_Coordinate,MGI_SNP_Flank,MGI_SNP_Marker,MGI_SNP_StrainAllele,MGI_SNP_SubSNP
