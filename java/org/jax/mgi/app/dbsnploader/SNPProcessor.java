@@ -532,43 +532,8 @@ public class SNPProcessor {
                 strainAlleles.put(strainKey, allele);
             }
         }
-        if (strainAlleles.size() > 0) {
-            processStrainCache(mgdCSKey, strainAlleles);
-        }
     }
-    private void processStrainCache(Integer mgdCSKey, HashMap strainAlleles) {
 
-        HashMap compareTo = new HashMap(strainAlleles);
-        //logger.logcInfo("strainAlleles.size() " + strainAlleles.size(), false);
-        for (Iterator i = strainAlleles.keySet().iterator(); i.hasNext(); ) {
-            Integer strainKey1 = (Integer)i.next();
-            String  allele1 = (String)strainAlleles.get(strainKey1);
-            //logger.logcInfo("Str1: " + strainKey1 + " allelel: " + allele1, false);
-            // remove this strain from the map so as to compare it's allele to all the rest
-            // this is a one way comparison. given map = {1:A, 2:A, 3:B}, compare
-            // 1 to 2 (A to A), 1 to 3 (A to B), 2 to 3 (A to B)
-            compareTo.remove(strainKey1);
-            for(Iterator j = compareTo.keySet().iterator(); j.hasNext();) {
-                SNP_Strain_CacheState state = new SNP_Strain_CacheState();
-                Boolean isSame = Boolean.FALSE;
-                Integer strainKey2 = (Integer)j.next();
-                String allele2 = (String)strainAlleles.get(strainKey2);
-                //System.out.println("Str2: " + strainKey2 + " allelel2: " + allele2);
-                if(allele1.equals("?") || allele2.equals("?")) {
-                    isSame = Boolean.FALSE;
-                }
-                else if(allele1.equals(allele2)) {
-                    isSame = Boolean.TRUE;
-                }
-                //System.out.println("isSame: " + isSame);
-                state.setConsensusSnpKey(mgdCSKey);
-                state.setIsSame(isSame);
-                state.setStrainKey1(strainKey1);
-                state.setStrainKey2(strainKey2);
-                snp.setStrainCache(state);
-            }
-        }
-    }
    // radarStrAlleleDAOs is the vector of radar strain allele daos for this consensusSNP
    // it includes cs and ss strain alleles
   private void processSubSnpStrainAllele(Integer mgdSSKey, Integer radarSSKey,
