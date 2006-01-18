@@ -575,7 +575,7 @@ public class DBSNPInputProcessor {
             Integer strainKey = (Integer) i.next();
             HashMap alleles = (HashMap) csAlleleMap.get(strainKey);
 
-            // DEBUG
+            /* DEBUG
             if (alleles.size() > 2) {
                 logger.logcInfo("RS" + rsId + " has > 2 alleles for strainKey " +
                                 strainKey, false);
@@ -585,7 +585,7 @@ public class DBSNPInputProcessor {
                                     alleles.get(allele), false);
                 }
             }
-            // END DEBUG
+            // END DEBUG*/
 	    //
             // iterate thru the alleles
             for (Iterator j = alleles.keySet().iterator(); j.hasNext(); ) {
@@ -682,6 +682,7 @@ public class DBSNPInputProcessor {
 		// create the new strain name
                 String qualifiedStrainName = handleName + "_" + popName + "_" +
                     strain.trim();
+                //logger.logcInfo("Looking up strain: " + qualifiedStrainName, false);
                 // lookup the new strain name
                 strainKey = strainKeyLookup.lookup(qualifiedStrainName);
             }
@@ -1099,11 +1100,11 @@ public class DBSNPInputProcessor {
 
         // throw an exception if > 1 BL6 chromosome
         if (bl6ChrSet.size() > 1) {
-            logger.logcInfo("RS" + rsId + " has " + bl6ChrSet.size() +
+           /* logger.logcInfo("RS" + rsId + " has " + bl6ChrSet.size() +
                             " chromosomes", false);
             for (Iterator j = bl6ChrSet.iterator(); j.hasNext(); ) {
                 logger.logcInfo( (String) j.next(), false);
-            }
+            }*/
 
             SNPMultiBL6ChrException e = new
                 SNPMultiBL6ChrException();
