@@ -1,3 +1,23 @@
+dbsnpload-tr7392-1
+DATE: 01/18/2006
+STAFF: sc
+RELEASE:
+CHANGES:
+1) dbsnpload.config.default - added StAX jar file to JAVA_LIB
+    removed SNP_Strain_Cache from DLA_TRUNCATE_LOAD_TABLES
+2) bin/snpPopulation.py - removed created/modified from 
+   bcp file
+3) DBSNPInputProcessor.java - removed some debug statements
+4) SNP.java - removed SNP_Strain_Cache attributes and 
+   sending to stream
+5) SNPProcessor.java - removed method and call to processStrainCache
+
+TAG: dbsnpload-tr7392-BP
+DATE: 01/16/2006
+STAFF: sc
+RELEASE:
+CHANGES: Branch point tag made from dbsnpload-build125-2 tag
+
 TAG: dbsnpload-build125-2
 DATE: 01/09/2006
 STAFF: sc
