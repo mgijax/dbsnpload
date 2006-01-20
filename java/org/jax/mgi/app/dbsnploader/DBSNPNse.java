@@ -281,13 +281,14 @@ public class DBSNPNse {
      * @effects Performs database Inserts, updates, and deletes.
      * @throws DBException if error inserting, updating, or deleting in the database
      */
-
+    // Shoe Horn release TR7392 inserts only MGI_SNP_Marker and MGI_SNP_Accession
+    // objects
     public void sendToStream() throws DBException {
         Iterator i;
         // insert the RS
-        stream.insert(rsDAO);
+        //stream.insert(rsDAO);
         // insert SS
-        Set keys = ssMap.keySet();
+/*      Set keys = ssMap.keySet();
         for (i = keys.iterator(); i.hasNext(); ) {
             stream.insert( (MGI_SNP_SubSNPDAO)ssMap.get(i.next()));
         }
@@ -296,26 +297,31 @@ public class DBSNPNse {
         while (i.hasNext()) {
             stream.insert( (MGI_SNP_StrainAlleleDAO) i.next());
         }
+*/
         // insert accession ids
         i = accVector.iterator();
         while (i.hasNext()) {
             stream.insert( (MGI_SNP_AccessionDAO) i.next());
         }
+/*
         // insert flanking sequences
         i = flankVector.iterator();
         while (i.hasNext()) {
             stream.insert( (MGI_SNP_FlankDAO) i.next());
         }
+*/
         // insert marker associations
         i = markerVector.iterator();
         while (i.hasNext()) {
             stream.insert( (MGI_SNP_MarkerDAO) i.next());
         }
+/*
         // insert coordinates
         i = coordVector.iterator();
         while (i.hasNext()) {
             stream.insert( (MGI_SNP_CoordinateDAO) i.next());
         }
+*/
     }
 }
 
