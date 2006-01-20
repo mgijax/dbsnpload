@@ -1,3 +1,14 @@
+dbsnpload-tr7392-2
+DATE: 01/20/2006
+STAFF: sc
+RELEASE: MGI3.43 dev build
+CHANGES:
+1) DBSNPInputProcessor - tr7299 consensus allele isConflict 
+   determination
+2) DBSNPNse - comment out loading all radar tables except
+   MGI_SNP_Marker and MGI_SNP_Accession
+3) mgiSnpStrainOrder.txt - added 4 new strains
+
 dbsnpload-tr7392-1
 DATE: 01/18/2006
 STAFF: sc
