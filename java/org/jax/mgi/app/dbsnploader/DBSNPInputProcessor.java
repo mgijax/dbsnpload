@@ -208,12 +208,12 @@ public class DBSNPInputProcessor {
     public void processGenoRefSNPInput(DBSNPGenotypeRefSNPInput input) throws
         MGIException {
 
-	// get the rs id
+        // get the rs id
         rsId = ( (DBSNPGenotypeRefSNPInput) input).getRsId();
-	// get the ss population(s) for this rs
+        // get the ss population(s) for this rs
         HashMap ssPopulations = ( (DBSNPGenotypeRefSNPInput) input).
             getSSPopulationsForRs();
-	// map the rsId to the ss population(s)
+        // map the rsId to the ss population(s)
         rsPopulationsBySS.put(rsId, ssPopulations);
     }
 
@@ -238,7 +238,7 @@ public class DBSNPInputProcessor {
         }
         rsIdSet.add(rsId);
 
-	// get the raw data objects from the DBSNPNseInput object
+        // get the raw data objects from the DBSNPNseInput object
         Vector subSNPs = ( (DBSNPNseInput) input).getSubSNPs();
         Vector flank3Prime = ( (DBSNPNseInput) input).get3PrimeFlank();
         Vector flank5Prime = ( (DBSNPNseInput) input).get5PrimeFlank();
@@ -260,7 +260,7 @@ public class DBSNPInputProcessor {
         }
 
         // create a radar Consensus SNP DAO; we do this first to get its key
-	// in order to create other objects
+        // in order to create other objects
         Integer consensusKey = processConsensusSnp(rs);
 
         // create radar coordinate and marker DAOs; do this first because
@@ -279,11 +279,11 @@ public class DBSNPInputProcessor {
          * 3) radar population DAOs
          * 4) radar strain allele DAOs for each population's strain alleles
          */
-	// removed below for build 125
+        // removed below for build 125
         // current number of ss that have a population
         //int ssWithPopulationCt = 0;
 
-	// for each SubSnp:
+        // for each SubSnp:
         for (Iterator i = subSNPs.iterator(); i.hasNext(); ) {
             DBSNPNseSS ss = (DBSNPNseSS) i.next();
             //logger.logdDebug("Getting populations for SS" + ss.getSSId());
@@ -300,9 +300,9 @@ public class DBSNPInputProcessor {
                 continue;
             }
 
-	    // removed this for build 125
+            // removed this for build 125
             // We don't want to load RS in the genotype file for which none
-	    // of theSS have a population. RS13476574 is an example
+            // of theSS have a population. RS13476574 is an example
             /*
             if (popsForSSVector.size() > 0) {
                 ssWithPopulationCt++;
@@ -311,9 +311,9 @@ public class DBSNPInputProcessor {
 	    // create radar SubSnp DAO returning its key
             Integer ssKey = processSS(consensusKey, ss);
 
-	    // for each population
+            // for each population
             for (Iterator j = popsForSSVector.iterator(); j.hasNext(); ) {
-		// create radar StrainAllele DAOs
+                // create radar StrainAllele DAOs
                 processSSStrainAlleles(ssKey, ss.getSSId(),
                                        (DBSNPGenotypePopulation) j.next());
             }
@@ -356,11 +356,11 @@ public class DBSNPInputProcessor {
         // send rsId just for debug
         processConsensusAlleles(consensusKey, currentSSPopulationMap, rsId);
 
-	// if we have gotten this far, we have a complete DBSNPNse object
-	// send it to its radar stream
+        // if we have gotten this far, we have a complete DBSNPNse object
+        // send it to its radar stream
         dbSNPNse.sendToStream();
 
-	// increment the counter
+        // increment the counter
         addCtr++;
 
         // create mgd DAOs
@@ -432,7 +432,7 @@ public class DBSNPInputProcessor {
                                          HashMap ssPopulationMap,
                                          String rsId)
         throws DBException, ConfigException, TranslationException,
-			      CacheException,
+			      CacheException, MGIException,
 			      SNPNoConsensusAlleleSummaryException {
 
         //  map strain to alleles and count of each allele
@@ -559,8 +559,116 @@ public class DBSNPInputProcessor {
      * @throws ConfigException
      */
     private void createConsensusAlleles(Integer csKey, HashMap csAlleleMap)
-	    throws DBException, ConfigException {
+	    throws DBException, ConfigException, MGIException {
+        for (Iterator i = csAlleleMap.keySet().iterator(); i.hasNext(); ) {
+            // the consensus allele determined thus far
+            String currentConsensusAllele = "";
 
+            // true if there is a conflict determining the consensus allele
+            Boolean isConflict = null;
+
+            // get the next strain for which to determine consensus allele
+            Integer strainKey = (Integer) i.next();
+
+            //get the set of alleles for this strain
+            HashMap alleles = (HashMap) csAlleleMap.get(strainKey);
+
+            /**
+             * if we have only one allele there is no conflict determining the
+             * consensus. However if the allele is "N" we set the consensusAllele
+             * to '?'
+             */
+            if (alleles.size() == 1) {
+                String allele = (String)alleles.keySet().iterator().next();
+                if(allele.equals("N")) {
+                    currentConsensusAllele = "?";
+                }
+                else {
+                    currentConsensusAllele = allele;
+                }
+                // consensus allele determined without using a majority
+                isConflict = Boolean.FALSE;
+            }
+            else {
+                // remove 'N' allele (if it exists) from consideration
+                alleles.remove("N");
+                /**
+                 * if we have only one allele now then we removed a 'N' allele
+                 * and we have no conflict; we don't care about 'N' when determining
+                 * conflict
+                 */
+                if (alleles.size() == 1) {
+                    String allele = (String) alleles.keySet().iterator().next();
+                    currentConsensusAllele = allele;
+                    // consensus allele determined without using a majority
+                    isConflict = Boolean.FALSE;
+                }
+                /**
+                 * we have > 1 allele which means we have a conflict
+                 * now determine whether we have a majority and if not set
+                 * consensusAllele to '?'
+                 */
+                else {
+                    // consensus allele deterimined by majority rule
+                    isConflict = Boolean.TRUE;
+
+                    // the count of instances of the current allele
+                    int currentCt = 0;
+
+                    // true  if current comparison of allele counts are not equal
+                    Boolean isMajority = null;
+
+                    // iterate thru the alleles of this strain
+                    for (Iterator j = alleles.keySet().iterator(); j.hasNext(); ) {
+                        // get an allele for this strain
+                        String allele = (String) j.next();
+
+                        // get number of instances of this allele
+                        int count = ( (Integer) alleles.get(allele)).intValue();
+
+                            /** if currentCt < count, the currentConsensusAllele was
+                         * determined by majority
+                             * if we have 2 alleles e.g. A, T that each have 1 instance
+                         * we do not have a majority therefore no consensus
+                         * if we have 2 alleles A=2, T=1 A is consensus allele
+                         */
+                        if (currentCt < count) {
+                            currentCt = count;
+                            currentConsensusAllele = allele;
+                            isMajority = Boolean.TRUE;
+                        }
+                        else if (currentCt == count) {
+                            isMajority = Boolean.FALSE;
+                        }
+                    }
+                    if (isMajority == null) {
+
+                        throw new MGIException(
+                            "ERROR determining consensus allele for " +
+                            "rs" + rsId + " isMajority == null");
+                    }
+                    // if there is no majority we assign a "?" to the consensus allele
+                    if (isMajority.equals(Boolean.FALSE)) {
+                        currentConsensusAllele = "?";
+                    }
+                }
+            }
+            if (isConflict == null) {
+                    throw new MGIException("ERROR determining consensus allele for " +
+                                     "rs" + rsId + " isConflict == null");
+            }
+            // now create the consensus allele
+            MGI_SNP_StrainAlleleState state = new MGI_SNP_StrainAlleleState();
+            state.setObjectKey(csKey);
+            state.setObjectType(SNPLoaderConstants.OBJECTYPE_CSNP);
+            state.setJobStreamKey(jobStreamKey);
+            state.setMgdStrainKey(strainKey);
+            state.setAllele(currentConsensusAllele);
+            state.setIsConflict(isConflict);
+            dbSNPNse.addStrainAllele(state);
+        }
+
+/* BEGIN OLD CODE
         // iterate thru the strainKeys
         for (Iterator i = csAlleleMap.keySet().iterator(); i.hasNext(); ) {
             // the consensus allele determined thus far
@@ -575,7 +683,7 @@ public class DBSNPInputProcessor {
             Integer strainKey = (Integer) i.next();
             HashMap alleles = (HashMap) csAlleleMap.get(strainKey);
 
-            /* DEBUG
+             //DEBUG
             if (alleles.size() > 2) {
                 logger.logcInfo("RS" + rsId + " has > 2 alleles for strainKey " +
                                 strainKey, false);
@@ -585,7 +693,7 @@ public class DBSNPInputProcessor {
                                     alleles.get(allele), false);
                 }
             }
-            // END DEBUG*/
+            // END DEBUG
 	    //
             // iterate thru the alleles
             for (Iterator j = alleles.keySet().iterator(); j.hasNext(); ) {
@@ -635,6 +743,7 @@ public class DBSNPInputProcessor {
             state.setJobStreamKey(jobStreamKey);
             dbSNPNse.addStrainAllele(state);
         }
+        END OLD CODE */
     }
 
     /**
