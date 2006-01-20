@@ -289,7 +289,7 @@ COORD_VERSION="NCBI dbSNP Build 125"
 export COORD_LOGICALDB COORD_ORGANISM COORD_VERSION
 
 # coordinate map collection to which this load belongs
-COORD_COLLECTION_NAME="NCBI dbSNP Build 125"
+COORD_COLLECTION_NAME="NCBI dbSNP Build 124"
 
 # abbreviation for the coordinate collection
 # if no value assigned will be same as COORD_COLLECTION
