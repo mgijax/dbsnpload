@@ -52,9 +52,9 @@ public class SNPLoaderConstants {
         //public static final String NSE_SS_REVERSE = "reverse";
         //public static final String NSE_RS_REVERSE = "reverse";
         // variation class constants
-        public static final String VARCLASS_NAMED = "named";
+        public static final String VARCLASS_NAMED = "named-locus";
         public static final String VARCLASS_INDEL = "in-del";
         public static final String VARCLASS_SNP = "snp";
-        public static final String VARCLASS_MNP = "mnp";
+        public static final String VARCLASS_MNP = "multinucleotide-polymorphism";
         public static final String VARCLASS_MIXED = "mixed";
     }
