@@ -1,3 +1,11 @@
+TAG: dbsnpload-tr7392-4
+DATE: 02/07/2006
+STAFF: sc
+RELEASE: MGI3.43 alpha
+CHANGES:
+1) Defect#569 - DBSNPInputProcessor.java - don't load
+   refsnps with missing BL6 coordinates
+
 TAG: dbsnpload-tr7392-3
 DATE: 02/01/2006
 STAFF: sc
