@@ -1095,8 +1095,11 @@ public class DBSNPInputProcessor {
                                     String rsId) throws DBException,
         ConfigException, SNPNoBL6Exception, SNPMultiBL6ChrException {
 
-	// true if this RefSNP has a BL6 coordinate
+        // true if this RefSNP has a BL6 MapLoc
         boolean bl6Flag = false;
+
+        // true if this RefSNP has a  BL6 MapLoc with no coordinate value
+        boolean bl6NoCoordFlag = false;
 
         // the set of chromosomes on BL6 assembly for this RS
         HashSet bl6ChrSet = new HashSet();
@@ -1112,8 +1115,6 @@ public class DBSNPInputProcessor {
             if (!assembly.equals(SNPLoaderConstants.DBSNP_BL6)) {
                 continue;
             }
-            // we've got at least one BL6, flag it.
-            bl6Flag = true;
 
 	    // get the chromosome on which this contig hit is found
             String chromosome = cHit.getChromosome();
@@ -1132,18 +1133,16 @@ public class DBSNPInputProcessor {
                 // get the start coordinate
                 Double startCoord = mloc.getStartCoord();
 
-                // START build 125 DEBUG
-                // report missing BL6 coordinate
- 		// when we get here we already know we have a BL6 coordinate ...
-		// shouldn't have to test for BL6
-                if (startCoord == null) {
-                    if (assembly.equals(SNPLoaderConstants.DBSNP_BL6)) {
-                        logger.logcInfo("RS" + rsId +
-                                        " has null startcoord for assembly " +
-                                        assembly +
-                                        " chromosome " + chromosome, false);
-                        continue;
-                    }
+                // when we get here we know we are looking at BL6
+                // if there is a coordinate, flag it
+                if (startCoord != null) {
+                    bl6Flag = true;
+                }
+                // flag the fact therre is at least one BL6 MapLoc where coordinate
+                // is null
+                else {
+                    bl6NoCoordFlag = true;
+                    continue;
                 }
                 // END build 125 DEBUG
                 // set the coordinate attributes
@@ -1160,9 +1159,9 @@ public class DBSNPInputProcessor {
                 // now get the fxnSets and create the Marker objects
                 Vector fxnSets = mloc.getFxnSets();
 
-		// the distinct set of fxn classes. contains string composed of
-		// chromosome + coord + locusId + fxnClass +
-		// nucleotideId + proteinId
+                // the distinct set of fxn classes. contains string composed of
+                // chromosome + coord + locusId + fxnClass +
+                // nucleotideId + proteinId
                 HashSet fxnSetSet = new HashSet();
 
                 // iterate over the FxnSets
@@ -1199,14 +1198,6 @@ public class DBSNPInputProcessor {
             }
         }
 
-        // throw an exception if no BL6
-        if (bl6Flag != true) {
-            SNPNoBL6Exception e = new
-                SNPNoBL6Exception();
-            e.bind("rsId=" + rsId);
-            throw e;
-        }
-
         // throw an exception if > 1 BL6 chromosome
         if (bl6ChrSet.size() > 1) {
            /* logger.logcInfo("RS" + rsId + " has " + bl6ChrSet.size() +
@@ -1220,6 +1211,20 @@ public class DBSNPInputProcessor {
             e.bind("rsId=" + rsId);
             throw e;
         }
+        // log that there is a BL6 MapLoc w/o a coordinate value
+        if(bl6NoCoordFlag == true) {
+            logger.logcInfo("RS" + rsId +
+                            " has at least one null BL6 startcoord ", false);
+        }
+        // throw an exception if no BL6 coordinates for this rs,
+        // we don't want to load this rs
+        if (bl6Flag == false) {
+            SNPNoBL6Exception e = new
+                SNPNoBL6Exception();
+            e.bind("rsId=" + rsId);
+            throw e;
+        }
+
     }
 }
 
