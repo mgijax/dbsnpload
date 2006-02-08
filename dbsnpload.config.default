@@ -136,7 +136,11 @@ DLA_TRUNCATE_QC_TABLES=MGI_SNP_Accession,MGI_SNP_ConsensusSNP,MGI_SNP_Coordinate
 # Ok to delete dbsnpload Accessions
 SNP_OK_TO_DELETE_ACCESSIONS=true
 
-export DLA_TRUNCATE_LOAD_TABLES DLA_TRUNCATE_QC_TABLES SNP_OK_TO_DELETE_ACCESSIONS
+# Ok to delete dbsnp strain set
+SNP_OK_TO_DELETE_STRAINSET=true
+
+export DLA_TRUNCATE_LOAD_TABLES DLA_TRUNCATE_QC_TABLES 
+export SNP_OK_TO_DELETE_ACCESSIONS SNP_OK_TO_DELETE_STRAINSET
 
 #
 # population, vocabulary, and translation load parameters 
