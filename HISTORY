@@ -1,3 +1,13 @@
+TAG: dbsnpload-tr7392-6
+DATE: 02/08/2006
+STAFF: sc
+RELEASE: MGI3.43 beta
+CHANGES:
+1) DBSNPInputProcessor - add 1 to startCoord as input is now zero based
+2)DBSNPNseInputFile.java - added reporting when physMapStr different
+  than physMapInt + 1
+3) dbsnpload.config.default - fixed typo in JAVA_LIB
+
 TAG: dbsnpload-tr7392-5
 DATE: 02/08/2006
 STAFF: sc
