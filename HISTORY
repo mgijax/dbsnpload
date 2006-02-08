@@ -1,3 +1,10 @@
+TAG: dbsnpload-tr7392-5
+DATE: 02/08/2006
+STAFF: sc
+RELEASE: MGI3.43 alpha
+CHANGES:
+1) dbsnpload.config.default - added SNP_OK_TO_DELETE_STRAINSET
+
 TAG: dbsnpload-tr7392-4
 DATE: 02/07/2006
 STAFF: sc
