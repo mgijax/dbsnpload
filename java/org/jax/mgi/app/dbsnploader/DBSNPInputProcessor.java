@@ -1138,7 +1138,7 @@ public class DBSNPInputProcessor {
                 if (startCoord != null) {
                     bl6Flag = true;
                 }
-                // flag the fact therre is at least one BL6 MapLoc where coordinate
+                // flag that there is at least one BL6 MapLoc where coordinate
                 // is null
                 else {
                     bl6NoCoordFlag = true;
@@ -1185,6 +1185,8 @@ public class DBSNPInputProcessor {
                     mState.setEntrezGeneId(locusId);
                     mState.setFxnClass(fxnClass);
                     mState.setChromosome(chromosome);
+                    // dbSNP xml files now 0 based - need to add 1
+                    startCoord = new Double (startCoord.intValue() + 1);
                     mState.setStartCoord(startCoord);
                     mState.setRefseqNucleotide(fSet.getNucleotideId());
                     mState.setRefseqProtein(fSet.getProteinId());
