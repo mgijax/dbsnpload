@@ -30,10 +30,13 @@ A
 A/He
 A/HeJ
 AKR
+AVZ/Ms
 B10.D2-H2<d>
 B10.D2-Hc<0> H2<d> H2-T18<c>/oSnJ
 BALB/c
 BALB/cBy
+BALB/cUcsd 
+BFM/2Ms
 BLG2/Ms
 BTBR T<+> tf/J
 BUB
@@ -71,6 +74,7 @@ NZB/BlN
 NZW/Lac
 NZW/LacJ
 PERA
+PGN2/Ms
 PWD/Ph
 PWD/PhJ
 RIIIS/J
