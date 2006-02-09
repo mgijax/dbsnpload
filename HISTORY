@@ -1,3 +1,9 @@
+TAG: dbsnpload-tr7392-7
+DATE: 02/09/2006
+STAFF: sc
+RELEASE: MGI3.43 beta
+CHANGES:
+1) DBSNPInputProcessor - moved incrementing of the startCoord to the proper place
 TAG: dbsnpload-tr7392-6
 DATE: 02/08/2006
 STAFF: sc
