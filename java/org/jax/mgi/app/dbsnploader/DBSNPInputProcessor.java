@@ -1145,6 +1145,9 @@ public class DBSNPInputProcessor {
                     continue;
                 }
                 // END build 125 DEBUG
+                // dbSNP xml files now 0 based - need to add 1
+                startCoord = new Double (startCoord.intValue() + 1);
+
                 // set the coordinate attributes
                 MGI_SNP_CoordinateState cState = new MGI_SNP_CoordinateState();
                 cState.setAssembly(assembly);
@@ -1185,8 +1188,6 @@ public class DBSNPInputProcessor {
                     mState.setEntrezGeneId(locusId);
                     mState.setFxnClass(fxnClass);
                     mState.setChromosome(chromosome);
-                    // dbSNP xml files now 0 based - need to add 1
-                    startCoord = new Double (startCoord.intValue() + 1);
                     mState.setStartCoord(startCoord);
                     mState.setRefseqNucleotide(fSet.getNucleotideId());
                     mState.setRefseqProtein(fSet.getProteinId());
