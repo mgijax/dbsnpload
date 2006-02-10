@@ -1,3 +1,10 @@
+TAG: dbsnpload-3-4-3-2
+DATE: 02/10/2006
+STAFF: sc
+RELEASE: MGI3.43
+CHANGES: removed several old class files from the trunk that did not get
+  removed  during the merge.
+
 TAG: dbsnpload-3-4-3-1
 DATE: 02/10/2006
 STAFF: sc
