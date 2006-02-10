@@ -15,15 +15,11 @@ import org.jax.mgi.dbs.mgd.MGITypeConstants;
 
 
 /**
- * @is An object that knows how to look up a MGI Type.
- * @has Nothing
+ * @is An object
+ * @has
  * @does
- *   <UL>
- *   <LI> Provides a method to look up a MGI Type.
- *   </UL>
  * @company The Jackson Laboratory
- * @author dbm
- * @version 1.0
+ * @author sc
  */
 
 public class PopNameByPopIdLookup extends FullCachedLookup

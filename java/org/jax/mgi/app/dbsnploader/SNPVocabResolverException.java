@@ -6,14 +6,11 @@ package org.jax.mgi.app.dbsnploader;
 import org.jax.mgi.shr.exception.MGIException;
 
     /**
-     * An MGIException thrown when there are no strain alleles in the genotype
-     * file for this rs
-     * @has an exception message, a data related indicator and a parent
-     * exception which can be null.
+     * An MGIException thrown when cannot resolve a vocabulary term for a SNP
+     * @has an exception message
      * @does nothing
      * @company Jackson Laboratory
      * @author sc
-     * @version 1.0
      */
 
     public class SNPVocabResolverException extends MGIException {

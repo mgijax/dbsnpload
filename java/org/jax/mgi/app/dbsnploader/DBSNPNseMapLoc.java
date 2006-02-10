@@ -2,6 +2,16 @@ package org.jax.mgi.app.dbsnploader;
 
 import java.util.Vector;
 
+/**
+ *
+ * is an object that
+ * @has
+ * @does
+ * @company Jackson Laboratory
+ * @author sc
+ *
+ */
+
 public class DBSNPNseMapLoc{
     // the RS orientation to the chromosome
     private String rsOrientToChr;

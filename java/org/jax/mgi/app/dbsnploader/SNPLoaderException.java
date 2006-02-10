@@ -12,7 +12,6 @@ import org.jax.mgi.shr.exception.MGIException;
  * @does nothing
  * @company Jackson Laboratory
  * @author sc
- * @version 1.0
  */
 
 public class SNPLoaderException extends MGIException {

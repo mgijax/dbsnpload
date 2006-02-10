@@ -6,17 +6,17 @@ package org.jax.mgi.app.dbsnploader;
 import org.jax.mgi.shr.exception.MGIException;
 
     /**
-     * An MGIException thrown when a SNP has no C57BL/6J coordinates
+     * An MGIException thrown when there are multiple BL6 chromosomes for
+     * an RS
      * @has an exception message
      * @does nothing
      * @company Jackson Laboratory
      * @author sc
-     * @version 1.0
      */
 
-    public class SNPNoBL6Exception extends MGIException {
-        public SNPNoBL6Exception() {
-            super("No C57BL/6J coordinates for ??", false);
+    public class SNPMultiBL6ChrException extends MGIException {
+        public SNPMultiBL6ChrException() {
+            super("Multiple BL6 chromosomes for ??", false);
         }
     }
 

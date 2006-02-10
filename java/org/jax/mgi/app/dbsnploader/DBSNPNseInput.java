@@ -4,9 +4,20 @@ import java.util.HashMap;
 import java.util.Vector;
 import java.util.Iterator;
 
-class DBSNPNseInput extends DBSNPInput{
-    // RS variation class
-    private String rsVarClass;
+/**
+ *
+ * is an object that
+ * @has
+ * @does
+ * @company Jackson Laboratory
+ * @author sc
+ *
+ */
+
+class DBSNPNseInput {
+    // the RS object
+    private DBSNPNseRS rs;
+    private String rsId;
     // set of DBSNPNseSS objects
     private Vector subSNPs;
     //private HashMap subSNPs;
@@ -30,9 +41,13 @@ class DBSNPNseInput extends DBSNPInput{
     /******************
      * Set methods
      *****************/
-    // set the RS variation class
-    public void setRSVarClass(String rsVar) {
-        rsVarClass = rsVar;
+    // Add RS object
+    public void setRS(DBSNPNseRS r ){
+        rs = r;
+        rsId = r.getRsId();
+    }
+    public void setRsId(String r) {
+        rsId = r;
     }
     // Add a SS object
     public void addSS(DBSNPNseSS s) {
@@ -54,10 +69,13 @@ class DBSNPNseInput extends DBSNPInput{
     /******************
      * Get methods
      *****************/
-    // get the RS variation class
-    public String getRSVarClass() {
-        return rsVarClass;    }
-
+    // get the RS object
+    public DBSNPNseRS getRS() {
+        return rs;
+    }
+    public String getRsId() {
+        return rsId;
+    }
     // get the SS objects for this RS
     public Vector getSubSNPs() {
         return subSNPs;

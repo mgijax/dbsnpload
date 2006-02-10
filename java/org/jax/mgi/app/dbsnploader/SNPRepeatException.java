@@ -6,17 +6,16 @@ package org.jax.mgi.app.dbsnploader;
 import org.jax.mgi.shr.exception.MGIException;
 
     /**
-     * An MGIException thrown when a SNP has no C57BL/6J coordinates
+     * An MGIException thrown when there are repeated RefSNPs in the input
      * @has an exception message
      * @does nothing
      * @company Jackson Laboratory
      * @author sc
-     * @version 1.0
      */
 
-    public class SNPNoBL6Exception extends MGIException {
-        public SNPNoBL6Exception() {
-            super("No C57BL/6J coordinates for ??", false);
+    public class SNPRepeatException extends MGIException {
+        public SNPRepeatException() {
+            super("SNP Repeated in input ??", false);
         }
     }
 

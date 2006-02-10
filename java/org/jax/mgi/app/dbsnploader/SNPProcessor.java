@@ -35,6 +35,16 @@ import java.util.StringTokenizer;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
+/**
+ *
+ * is an object that
+ * @has
+ * @does
+ * @company Jackson Laboratory
+ * @author sc
+ *
+ */
+
 public class SNPProcessor {
     private MGITypeLookup mgiTypeLookup;
     private LogicalDBLookup ldbLookup;
@@ -148,6 +158,8 @@ public class SNPProcessor {
         String dbsnpVarClass = radarState.getVariationClass();
         Integer varClassKey = resolveCSVarClass(dbsnpVarClass, orderedAlleleSummary);
         mgdState.setVarClassKey(varClassKey);
+        mgdState.setBuildCreated(radarState.getBuildCreated());
+        mgdState.setBuildUpdated(radarState.getBuildUpdated());
        /* try {
             mgdState.setVarClassKey(varClassLookup.lookup(radarState.getVariationClass()));
         } catch (KeyNotFoundException e) {
@@ -361,9 +373,10 @@ public class SNPProcessor {
 		String prefixPart = (String)splitAccession.get(0);
 		Integer numericPart = (Integer)splitAccession.get(1);
 		// if this is a submitter snpId then don't set prefix part
-		if(logicalDBKey.equals(new Integer(LogicalDBConstants.SUBMITTERSNP ))) {
-		    prefixPart = null;
-		}
+		//if(logicalDBKey.equals(new Integer(LogicalDBConstants.SUBMITTERSNP ))) {
+		//    prefixPart = null;
+		//}
+        // ACc_Accession.prefixPart varchar(30) as of 3.41
                 mgdState.setPrefixPart(prefixPart);
                 mgdState.setNumericPart(numericPart);
                 // set logicalDB
@@ -420,7 +433,7 @@ public class SNPProcessor {
            if(orient.equals(SNPLoaderConstants.NSE_FORWARD)){
               translatedOrient = "f";
            }
-           else if (orient.equals(SNPLoaderConstants.NSE_RS_REVERSE)){
+           else if (orient.equals(SNPLoaderConstants.NSE_REVERSE)){
                translatedOrient = "r";
            }
            else {
@@ -478,7 +491,7 @@ public class SNPProcessor {
            if(orient.equals(SNPLoaderConstants.NSE_FORWARD)){
                translatedOrient = "f";
            }
-           else if (orient.equals(SNPLoaderConstants.NSE_SS_REVERSE)){
+           else if (orient.equals(SNPLoaderConstants.NSE_REVERSE)){
                translatedOrient = "r";
            }
            else {
@@ -519,40 +532,8 @@ public class SNPProcessor {
                 strainAlleles.put(strainKey, allele);
             }
         }
-        if (strainAlleles.size() > 0) {
-            processStrainCache(mgdCSKey, strainAlleles);
-        }
     }
-    private void processStrainCache(Integer mgdCSKey, HashMap strainAlleles) {
 
-        HashMap compareTo = new HashMap(strainAlleles);
-        //logger.logcInfo("strainAlleles.size() " + strainAlleles.size(), false);
-        for (Iterator i = strainAlleles.keySet().iterator(); i.hasNext(); ) {
-            Integer strainKey1 = (Integer)i.next();
-            String  allele1 = (String)strainAlleles.get(strainKey1);
-            //logger.logcInfo("Str1: " + strainKey1 + " allelel: " + allele1, false);
-            compareTo.remove(strainKey1);
-            for(Iterator j = compareTo.keySet().iterator(); j.hasNext();) {
-                SNP_Strain_CacheState state = new SNP_Strain_CacheState();
-                Boolean isSame = Boolean.FALSE;
-                Integer strainKey2 = (Integer)j.next();
-                String allele2 = (String)strainAlleles.get(strainKey2);
-                //System.out.println("Str2: " + strainKey2 + " allelel2: " + allele2);
-                if(allele1.equals("?") || allele2.equals("?")) {
-                    isSame = Boolean.FALSE;
-                }
-                else if(allele1.equals(allele2)) {
-                    isSame = Boolean.TRUE;
-                }
-                //System.out.println("isSame: " + isSame);
-                state.setConsensusSnpKey(mgdCSKey);
-                state.setIsSame(isSame);
-                state.setStrainKey1(strainKey1);
-                state.setStrainKey2(strainKey2);
-                snp.setStrainCache(state);
-            }
-        }
-    }
    // radarStrAlleleDAOs is the vector of radar strain allele daos for this consensusSNP
    // it includes cs and ss strain alleles
   private void processSubSnpStrainAllele(Integer mgdSSKey, Integer radarSSKey,

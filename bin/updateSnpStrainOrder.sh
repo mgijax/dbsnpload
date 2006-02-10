@@ -81,7 +81,7 @@ date | tee ${LOG_STRAIN}
 
 
 echo "updating strain order..." | tee -a ${LOG_STRAIN}
-${INSTALLDIR}/bin/updateSnpStrainOrder.py
+${INSTALLDIR}/bin/updateSnpStrainOrder.py | tee -a ${LOG_STRAIN}
 STAT=$?
 msg="snp strain order update"
 checkstatus  ${STAT} "${msg}"

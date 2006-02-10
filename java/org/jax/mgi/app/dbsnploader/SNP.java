@@ -13,30 +13,15 @@ import org.jax.mgi.shr.dla.log.DLALoggingException;
 import org.jax.mgi.dbs.mgd.MGITypeConstants;
 import org.jax.mgi.dbs.mgd.MGD;;
 
-    /**
-     * An object that manages a set of DAOs representing a sequence.
-     * @has
-     *   <UL>
-     *   <LI>SEQ_SequenceDAO
-     *   <LI>ACC_AccessionDAO's for its primary seqid and any 2ndary seqids
-     *   <LI>MGI_ReferenceAssocDAO's for any references associated with the sequence
-     *   <LI>SEQ_SourceAssocDAO's for sources associated with the sequence
-     *   <LI>Knows if its SEQ_SequenceDAO exists in MGI or is a new sequence
-     *   <LI>If the SEQ_SequenceDAO exists in MGI, knows if its state has changed
-     *   </UL>
-     * @does
-     *   <UL>
-     *   <LI>creates DAO objects for Sequence, primary and 2ndary seqids,
-     *       reference association(s) and source association(s).
-     *   <LI>Updates a sequence and adds new reference associations in a database
-     *   <LI>Adds a sequence, its seqids, reference and source associations to
-     *       a database
-     *   <LI>Provides methods to get *copies only* of States for each of its DAO's
-     *   </UL>
-     * @company The Jackson Laboratory
-     * @author sc
-     * @version 1.0
-     */
+/**
+ *
+ * is an object that
+ * @has
+ * @does
+ * @company Jackson Laboratory
+ * @author sc
+ *
+ */
 
 public class SNP {
 
@@ -59,9 +44,6 @@ public class SNP {
         // the consensus and SubSNP strain allele DAO's
         private Vector csStrainAlleles = new Vector();
         private Vector ssStrainAlleles = new Vector();
-
-        // The SNP_Strain_CacheDAOs for this SNP
-        private Vector strainCache = new Vector();
 
         // new SNP Strain MGI_SetMemberDAOs representing strains we haven't yet
         // created a set member for in the load
@@ -110,9 +92,6 @@ public class SNP {
             ssStrainAlleles.add(new SNP_SubSnp_StrainAlleleDAO(state));
         }
 
-        public void setStrainCache(SNP_Strain_CacheState state) {
-            strainCache.add(new SNP_Strain_CacheDAO(state));
-        }
         public void setSetMember(MGI_SetMemberState state)
             throws ConfigException, DBException{
             setMember.add(new MGI_SetMemberDAO(state));
@@ -155,13 +134,8 @@ public class SNP {
             for (i = ssStrainAlleles.iterator(); i.hasNext(); ) {
                 stream.insert((SNP_SubSnp_StrainAlleleDAO)i.next());
             }
-            for( i = strainCache.iterator(); i.hasNext(); ) {
-                stream.insert((SNP_Strain_CacheDAO)i.next());
-            }
             for (i = setMember.iterator(); i.hasNext();) {
                 stream.insert((MGI_SetMemberDAO)i.next());
             }
-
         }
-
     }
