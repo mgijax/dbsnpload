@@ -187,6 +187,11 @@ public class DBSNPLoader extends DLALoader {
 
 	    // get the next chromosome
             String chr = ((String)i.next()).trim();
+            logger.logdInfo("Processing chr " + chr, true);
+            logger.logdInfo("Free memory: " + Runtime.getRuntime().freeMemory(), false);
+            /**
+             * process the genotype file for the Individual data
+             */
             logger.logdDebug("Processing chr " + chr + ". Free memory: " +  Runtime.getRuntime().freeMemory());
 
             // create the genotype filename for this chromosome
@@ -197,9 +202,9 @@ public class DBSNPLoader extends DLALoader {
             /**
              * process the genotype file for Individual data
              */
-            logger.logdDebug("processing genotype file for Individual data " +
+            logger.logdInfo("processing genotype file for Individual data " +
 			    genotypeFilename + ". Free memory: " +
-			    Runtime.getRuntime().freeMemory());
+			    Runtime.getRuntime().freeMemory(), true);
             XMLDataIterator indivIterator =
                 new DBSNPGenotypeIndividualInputFile(
 				genotypeFilename).getIterator();
@@ -212,9 +217,9 @@ public class DBSNPLoader extends DLALoader {
              * process the genotype file for RefSNP data
              */
 
-            logger.logdDebug("processing genotype file for RefSnp data " +
+            logger.logdInfo("processing genotype file for RefSnp data " +
 			    genotypeFilename + ". Free memory: " +
-			    Runtime.getRuntime().freeMemory());
+			    Runtime.getRuntime().freeMemory(), true);
             XMLDataIterator genoRefSNPIterator =
 		    new DBSNPGenotypeRefSNPInputFile(
                  genotypeFilename, dbsnpProcessor.getIndividualMap()).
@@ -234,6 +239,8 @@ public class DBSNPLoader extends DLALoader {
              * process the NSE file
              */
             System.out.println("processing NSE file " + nseFilename);
+            logger.logdInfo("processing " + nseFilename + ". Free memory: " +
+			    Runtime.getRuntime().freeMemory(), true);
             XMLDataIterator it = new DBSNPNseInputFile(nseFilename).
 		    getIterator();
             while (it.hasNext()) {
