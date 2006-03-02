@@ -156,9 +156,7 @@ def createBCP():
 	    primaryKey = primaryKey + 1
 	    bcpLine = str(primaryKey) + DL + \
 		str(handleKey) + DL + \
-                str(popName) + DL + \
-                str(userKey) + DL + str(userKey) + DL + \
-                loaddate + DL + loaddate + NL
+                str(popName) + NL
 	    popBCP.write(bcpLine)
 	    createAccession(popId, primaryKey, snpPopLdbKey, snpPopmgiTypeKey) 
 	    line = string.strip(inFile.readline())
