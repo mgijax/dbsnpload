@@ -1,3 +1,32 @@
+TAG: dbsnpload-tr7392-1
+DATE: 03/02/2006
+STAFF: sc
+RELEASE: 3.44
+CHANGES: TR7461 - the following copied from the tr7392 branch
+   Note this tag is after the changes below, but before changes
+   to use new 'snp' database. This tag is dependent on lib_java_dbsmgd
+   and lib_java_dbsrdr be compiled against a MGI3.43 schema
+- the following copied from the tr7392 branch
+1) dbsnpload.config.default - 
+  A) added StAX jar file to JAVA_LIB, 
+     removed Xerces jar file from CLASSPATH, reset Collection name 
+     back to build 24 for proper deletion (this var will go away by the
+     time we're done with this release
+  B) Added SNP_OK_TO_DELETE_STRAINSET
+  C)
+2) snpPopulation.py - removed created/modified columns from bcp file 
+   creation
+3) DBSNPInputProcessor.java - 
+  A) Added fix for defect #569 - don't load refsnps with 
+     missing BL6 coordinates
+  B) Added TR7299 fix - consensus Allele isConflict determination corrected
+4) SNPLoaderConstants - updated varClass MNP and NAMED constants
+5) mgiSNPStrainOrder.txt - added 4 new strains
+6) SNP.java - removed SNP_Strain_Cache objects and sending to stream
+7) DBSNPNseInputFile.java - added debug output for physMapInt vs physMapStr
+- changes since 3.43
+1) Changes, primarily to DBSNPINputProcessor merging SNPProcessor.
+
 TAG: dbsnpload-tr7392-BP
 DATE: 01/16/2006
 STAFF: sc
