@@ -3,7 +3,7 @@ package org.jax.mgi.app.dbsnploader;
 import org.jax.mgi.shr.dla.loader.DLALoader;
 import org.jax.mgi.shr.dbutils.dao.SQLStream;
 import org.jax.mgi.shr.timing.Stopwatch;
-import org.jax.mgi.shr.config.SequenceLoadCfg;
+//import org.jax.mgi.shr.config.SequenceLoadCfg;
 import org.jax.mgi.shr.ioutils.RecordDataIterator;
 import org.jax.mgi.shr.dbutils.ScriptWriter;
 import org.jax.mgi.shr.dbutils.DataIterator;
@@ -15,9 +15,22 @@ import org.jax.mgi.dbs.mgd.loads.SeqSrc.UnresolvedAttributeException;
 import org.jax.mgi.dbs.mgd.lookup.AccessionLookup;
 import org.jax.mgi.dbs.mgd.lookup.LogicalDBLookup;
 import org.jax.mgi.dbs.mgd.MGITypeConstants;
+import org.jax.mgi.dbs.SchemaConstants;
 import org.jax.mgi.dbs.mgd.LogicalDBConstants;
 import org.jax.mgi.dbs.mgd.AccessionLib;
 import org.jax.mgi.shr.ioutils.XMLDataIterator;
+import org.jax.mgi.shr.dla.loader.DLALoaderHelper;
+import org.jax.mgi.shr.dbutils.SQLDataManager;
+import org.jax.mgi.shr.config.DatabaseCfg;
+import org.jax.mgi.shr.dbutils.bcp.BCPManager;
+import org.jax.mgi.shr.config.BCPManagerCfg;
+import org.jax.mgi.shr.dla.loader.DLALoaderException;
+import org.jax.mgi.shr.dla.loader.DLALoaderExceptionFactory;
+import org.jax.mgi.shr.cache.CacheException;
+import org.jax.mgi.shr.dbutils.DBException;
+import org.jax.mgi.shr.config.ConfigException;
+import org.jax.mgi.shr.cache.KeyNotFoundException;
+
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -45,8 +58,14 @@ import java.util.StringTokenizer;
 
 public class DBSNPLoader extends DLALoader {
 
-    // the SQLStream used for loading radar data
-    private SQLStream radarStream;
+    // An SQL data manager for providing database access to the snp database
+    protected SQLDataManager snpDBMgr;
+
+    // A bcp manager for controlling the bcp writers for the snp database
+     protected BCPManager snpBCPMgr;
+
+     // the SQLStream used for loading snp data
+     private SQLStream snpStream;
 
     // Resolves DBSNP attributes to MGI values and writes radar and mgd
     // bcp files
@@ -75,10 +94,11 @@ public class DBSNPLoader extends DLALoader {
     private int rsRepeatExceptionCtr;
 
     // list of chromosomes for which we want to parse chromosome files
-    private ArrayList chrList;
+    //private ArrayList chrList;
+    private String[] chromosomes;
 
     // writer for CoordLoad input file
-    private BufferedWriter coordWriter;
+    //private BufferedWriter coordWriter;
 
     // load configurator
     private DBSNPLoaderCfg loadCfg;
@@ -103,40 +123,40 @@ public class DBSNPLoader extends DLALoader {
     protected void initialize() throws MGIException {
         // configurator for the load
         loadCfg = new DBSNPLoaderCfg();
+        String[] snpTables = loadCfg.getTruncateSnpTables();
 
         // configurators for each input file
         genoConfig = new DBSNPLoaderCfg("GENO");
         nseConfig = new DBSNPLoaderCfg("NSE");
 
-        // create list of chromosomes for iterating thru Chr files
-        String chromosomes = loadCfg.getChromosomesToLoad();
-        StringTokenizer chrTokenizer = new StringTokenizer(chromosomes, ",");
-        chrList = new ArrayList();
-        while (chrTokenizer.hasMoreTokens()) {
-            chrList.add( ( (String) chrTokenizer.nextToken()).trim());
-        }
+        // get list of chromosomes for iterating thru Chr files
+        chromosomes = loadCfg.getChromosomesToLoad();
 
-        // writer for creating coordload input file
+        // create SQLStream for snp database
+        snpDBMgr = new SQLDataManager(new DatabaseCfg("SNP"));
+        snpDBMgr.setLogger(logger);
+        snpBCPMgr = new BCPManager(new BCPManagerCfg("SNP"));
+        snpBCPMgr.setLogger(logger);
+        snpStream = createSQLStream(loadCfg.getSnpStreamName(),
+                                   snpDBMgr, snpBCPMgr);
+       // create snp processor
+        dbsnpProcessor = new DBSNPInputProcessor(snpStream);
+
+        // close radar connection provided by super class, don't need it
+        qcDBMgr.closeResources();
+
+        // create ExceptionFactory
+        snpEFactory = new SNPLoaderExceptionFactory();
         try {
-            coordWriter = new BufferedWriter(new FileWriter(
-                loadCfg.getCoordFilename()));
+            logger.logdInfo("Truncating SNP tables", true);
+            if (snpTables != null) {
+                DLALoaderHelper.truncateTables(snpTables,
+                                               snpDBMgr.getDBSchema(), logger);
+            }
         }
-        catch (IOException e) {
+        catch (Exception e) {
             throw new MGIException(e.getMessage());
         }
-
-        // rename the stream for clarity -
-	// the DLA thinks of the radar database as qc
-        radarStream = qcStream;
-
-	// create processor
-        dbsnpProcessor = new DBSNPInputProcessor(radarStream, loadStream,
-                                                 coordWriter);
-
-	// create ExceptionFactory
-        snpEFactory = new SNPLoaderExceptionFactory();
-
-
 
         // initialize all counters
         snpCtr = 0;
@@ -149,20 +169,17 @@ public class DBSNPLoader extends DLALoader {
     }
 
     /**
-     * to perform load pre processing
+     * Performs load pre processing
      * @effects depending on configuration, SNP accessions and/or
      * the snp strain set is deleted
      * @throws MGIException if errors occur during preprocessing
      */
     protected void preprocess() throws MGIException {
+
         // delete accession records, note that truncating SNP tables is done at
         // the dla level via Configuration
         if(loadCfg.getOkToDeleteAccessions().equals(Boolean.TRUE)) {
             deleteAccessions();
-        }
-	// delete DBSNP Strain Set
-        if(loadCfg.getOkToDeleteStrainSet().equals(Boolean.TRUE)) {
-            deleteStrainSet();
         }
     }
 
@@ -178,15 +195,16 @@ public class DBSNPLoader extends DLALoader {
         /**
          * process chromosome files one at a time
          */
-        for (Iterator i = chrList.iterator(); i.hasNext(); ) {
+        //for (Iterator i = chrList.iterator(); i.hasNext(); ) {
+        for (int i = 0; i < chromosomes.length; i++ ) {
             // reinitialize DBSNPProcessor structures for this chromosome
             dbsnpProcessor.reinitializeProcessor();
 
             // encourage the garbage collector
             System.gc();
 
-	    // get the next chromosome
-            String chr = ((String)i.next()).trim();
+            // get the next chromosome
+            String chr = chromosomes[i].trim();
             logger.logdInfo("Processing chr " + chr, true);
             logger.logdInfo("Free memory: " + Runtime.getRuntime().freeMemory(), false);
             /**
@@ -246,7 +264,7 @@ public class DBSNPLoader extends DLALoader {
             while (it.hasNext()) {
                 DBSNPNseInput nseInput = (DBSNPNseInput)it.next();
                 //logger.logdDebug("Processing " + nseInput.getRS().getRsId() +
-		//". Free memory: " +  Runtime.getRuntime().freeMemory(), true);
+                //". Free memory: " +  Runtime.getRuntime().freeMemory(), true);
 
                 try {
                     dbsnpProcessor.processInput(nseInput);
@@ -283,16 +301,60 @@ public class DBSNPLoader extends DLALoader {
      */
     protected void postprocess() throws MGIException
     {
-        try {
-            coordWriter.close();
-        } catch (IOException e) {
-            throw new MGIException(e.getMessage());
-        }
-        logger.logdInfo("Closing load stream", false);
-        this.radarStream.close();
-        this.loadStream.close();
+        // do updates on MGI_dbinfo table in the 'snp' database
+        updateMGIdbinfo();
+
+        // do updates on MGI_Tables in the 'snp' database
+        updateMGITables();
+
+        // close snp and mgd streams
+        logger.logdInfo("Closing snp stream", false);
+        this.snpStream.close();
+
+        // report load statistics
         reportLoadStatistics();
         logger.logdInfo("DBSNPLoader complete", true);
+    }
+
+    /**
+     * deletes snp..SNP_Accession for  RefSNP, SubSNP and SubmitterSnp ids
+     * @throws MGIException
+     */
+    private void deleteAccessions() throws MGIException {
+        logger.logdInfo("Deleting Accessions", true);
+
+        try {
+            snpDBMgr.executeUpdate(
+                    "select a._Accession_key " +
+                    "into #todelete " +
+                    "from SNP_Accession a " +
+                    "where a._MGIType_key =  " + MGITypeConstants.CONSENSUSSNP +
+                    " and a._LogicalDB_key = " + LogicalDBConstants.REFSNP +
+                    " UNION " +
+                    "select a._Accession_key " +
+                    "from SNP_Accession a " +
+                    "where a._MGIType_key =  " + MGITypeConstants.SUBSNP +
+                    " and a._LogicalDB_key = " + LogicalDBConstants.SUBSNP +
+                    " UNION " +
+                    "select a._Accession_key " +
+                    "from SNP_Accession a " +
+                    "where a._MGIType_key =  " + MGITypeConstants.SUBSNP +
+                    " and a._LogicalDB_key = " +
+            LogicalDBConstants.SUBMITTERSNP);
+
+            snpDBMgr.executeUpdate(
+                "create index idx1 on #todelete(_Accession_key)");
+
+            snpDBMgr.executeUpdate("delete SNP_Accession " +
+                           "from #todelete d, SNP_Accession a " +
+                           "where d._Accession_key = a._Accession_key");
+       }
+       catch (MGIException e) {
+           SNPLoaderException e1 =
+                   (SNPLoaderException) snpEFactory.getException(
+                   SNPLoaderExceptionFactory.SNPDeleteAccessionsErr, e);
+               throw e1;
+       }
     }
 
     /**
@@ -320,72 +382,42 @@ public class DBSNPLoader extends DLALoader {
     }
 
     /**
-     * deletes SNP Accessions, RefSNP, SubSNP and SubmitterSnp ids
-     * @throws MGIException
+      * writes updates to file for MGI_dbinfo table
+      * @throws ConfigException
+      * @throws DBException
+      */
+     private void updateMGIdbinfo() throws ConfigException, DBException {
+
+         String dataVersion = loadCfg.getSnpDataVersion();
+
+         // create updater for the snp database
+         MGI_dbinfoUpdater snpUpdater = new MGI_dbinfoUpdater(SchemaConstants.SNP);
+
+         // writes update out to script file
+         snpStream.update((org.jax.mgi.dbs.snp.dao.MGI_dbinfoDAO)snpUpdater.
+                 update(dataVersion));
+     }
+
+    /**
+     * updates MGI_Tables reloaded by this load
+     * @throws ConfigException
+     * @throws DBException
+     * @throws KeyNotFoundException
+     * @throws CacheException
      */
-    private void deleteAccessions() throws MGIException {
-        logger.logdInfo("Deleting Accessions", true);
+    private void updateMGITables() throws ConfigException, DBException,
+        KeyNotFoundException, CacheException{
 
-        try {
-            loadDBMgr.executeUpdate(
-                    "select a._Accession_key " +
-                    "into #todelete " +
-                    "from ACC_Accession a " +
-                    "where a._MGIType_key =  " + MGITypeConstants.CONSENSUSSNP +
-                    " and a._LogicalDB_key = " + LogicalDBConstants.REFSNP +
-                    " UNION " +
-                    "select a._Accession_key " +
-                    "from ACC_Accession a " +
-                    "where a._MGIType_key =  " + MGITypeConstants.SUBSNP +
-                    " and a._LogicalDB_key = " + LogicalDBConstants.SUBSNP +
-                    " UNION " +
-                    "select a._Accession_key " +
-                    "from ACC_Accession a " +
-                    "where a._MGIType_key =  " + MGITypeConstants.SUBSNP +
-                    " and a._LogicalDB_key = " +
-		    LogicalDBConstants.SUBMITTERSNP);
+        // get an updater for the 'snp' database
+        MGI_TablesUpdater snpUpdater =
+            new MGI_TablesUpdater(SchemaConstants.SNP, loadCfg.getJobstreamName());
 
-            loadDBMgr.executeUpdate(
-			    "create index idx1 on #todelete(_Accession_key)");
+        // get the set of SNP database tables to update
+        String[] tables = loadCfg.getUpdateMGITables();
 
-            loadDBMgr.executeUpdate("delete ACC_Accession " +
-                           "from #todelete d, ACC_Accession a " +
-                           "where d._Accession_key = a._Accession_key");
-       }
-       catch (MGIException e) {
-           SNPLoaderException e1 =
-                   (SNPLoaderException) snpEFactory.getException(
-                   SNPLoaderExceptionFactory.SNPDeleteAccessionsErr, e);
-               throw e1;
-       }
-    }
-
-     /**
-     * deletes the DBSNP Strain Set
-     * @throws MGIException
-     */
-    private void deleteStrainSet() throws MGIException {
-        logger.logdInfo("Deleting DBSNP Strain Set", true);
-
-        try {
-            loadDBMgr.executeUpdate(
-                "select sm._SetMember_key " +
-                "into #membersTodelete " +
-                "from MGI_SetMember sm, MGI_Set s " +
-                "where sm._Set_key = s._Set_key " +
-                "and s.name = 'SNP Strains'"
-                );
-            loadDBMgr.executeUpdate(
-                "create index idx1 on #membersTodelete(_SetMember_key)");
-            loadDBMgr.executeUpdate("delete MGI_SetMember " +
-                                    "from #membersTodelete d, MGI_SetMember sm " +
-                                    "where d._SetMember_key = sm._SetMember_key");
+        // update each table
+        for (int i = 0; i < tables.length; i++) {
+            snpStream.update((org.jax.mgi.dbs.snp.dao.MGI_TablesDAO)snpUpdater.update(tables[i].trim()));
         }
-        catch (MGIException e) {
-          SNPLoaderException e1 =
-                  (SNPLoaderException) snpEFactory.getException(
-                  SNPLoaderExceptionFactory.SNPDeleteStrainSetErr, e);
-              throw e1;
-      }
     }
 }

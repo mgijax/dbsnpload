@@ -12,7 +12,7 @@ import org.jax.mgi.shr.dbutils.SQLDataManager;
 import org.jax.mgi.shr.dbutils.SQLDataManagerFactory;
 import org.jax.mgi.shr.dla.log.DLALogger;
 import org.jax.mgi.shr.dla.log.DLALoggingException;
-import org.jax.mgi.dbs.rdr.dao.*;
+import org.jax.mgi.dbs.snp.dao.*;
 import org.jax.mgi.dbs.mgd.dao.*;
 import org.jax.mgi.shr.cache.CacheException;
 import org.jax.mgi.shr.dbutils.DBException;
@@ -26,9 +26,12 @@ import org.jax.mgi.dbs.mgd.lookup.VocabKeyLookup;
 import org.jax.mgi.dbs.mgd.lookup.ChromosomeKeyLookup;
 import org.jax.mgi.dbs.mgd.LogicalDBConstants;
 import org.jax.mgi.dbs.mgd.VocabularyTypeConstants;
+import org.jax.mgi.shr.cache.CacheConstants;
 import org.jax.mgi.dbs.mgd.MGITypeConstants;
 import org.jax.mgi.dbs.mgd.MGISetConstants;
 import org.jax.mgi.dbs.mgd.AccessionLib;
+import org.jax.mgi.dbs.snp.lookup.SNPAccessionLookup;
+import org.jax.mgi.dbs.SchemaConstants;
 
 import java.util.Vector;
 import java.util.Iterator;
@@ -36,20 +39,18 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.io.BufferedWriter;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * is an object that processes a DBSNPInput object. It resolves and/or
  * translates raw values into MGI values and creates radar and mgd
  * bcp files
  * @has Lookups to resolve attributes,
- *      SQLStreams to write to radar and mgd bcp files,
+ *      SQLStreams to write to snp and mgd bcp files,
  *      A running list of RS ids already looked at, to avoid dups
- *      A writer to write out coordinate info in mgs format for processing
- *        by the coordload
- * @does resolves snp attributes writing them to bcp files and to a coordinate
- *       output file.
+ * @does resolves snp attributes writing them to bcp files a
  * @company Jackson Laboratory
  * @author sc
  *
@@ -60,27 +61,27 @@ public class DBSNPInputProcessor {
     private Stopwatch stopWatch;
 
     // mgd stream; writes to bcp files
-    private SQLStream loadStream;
+   // private SQLStream loadStream;
 
-    // radar stream; writes to bcp files
-    private SQLStream radarStream;
+    // snp stream; writes to bcp files
+    private SQLStream snpStream;
 
     // logger for the load
     private DLALogger logger;
 
     // get a sequence load configurator
-    private DBSNPLoaderCfg config;
+    private DBSNPLoaderCfg loadCfg;
 
     // jobstream key for the radar table load
-    private Integer jobStreamKey;
+    //private Integer jobStreamKey;
 
     // Hashmap of SS populations by RS
     // {rsId:{ssid:Vector of DBSNPGenotypePopulation}, ... }
     private HashMap rsPopulationsBySS;
 
     // Compound object holding all the DAOs representing an RS
-    private RADARSNP radarSnp;
-    private MGDSNP mgdSnp;
+    private SNPSNP snpSnp;
+   // private MGDSNP mgdSnp;
 
     // Set of RS ids we have processed (so we don't load dups)
     private HashSet rsIdSet;
@@ -100,35 +101,44 @@ public class DBSNPInputProcessor {
      // current number of ss (for BL6 RS) w/o strain alleles)
     private int ssNoStAllele = 0;
 
-    // lookup mgd strain key, given a strain  name
+    // lookup mgd db strain key, given a strain  name
     private StrainKeyLookup strainKeyLookup;
 
-    // uniq set of mgd strain keys to create an MGI_Set
+    // lookup mgd db strain name given a strain key
+    private StrainNameLookup strainNameLookup;
+
+    // uniq set of mgd db strain keys to create an MGI_Set
     private HashSet strainKeySet;
 
-    // lookup a strain key, given a jax registry id
+    // lookup mgd db strain key, given a jax registry id
     private AccessionLookup jaxRegistryLookup;
 
-    // lookup handle name given a population id
-    private HandleNameByPopIdLookup handleNameLookup;
+    // lookup snp db handle name given a population id
+    private HandleNameByPopIdLookup handleNameLookupByPopId;
 
     // lookup population key given population id
-    private AccessionLookup populationKeyLookup;
+    private SNPAccessionLookup populationKeyLookupByPopId;
 
     // lookup population name given a population id
-    private PopNameByPopIdLookup popNameLookup;
+    private PopNameByPopIdLookup popNameLookupByPopId;
 
     // lookup handle key given handle name
-    private VocabKeyLookup subHandleLookup;
+    private VocabKeyLookup subHandleKeyLookup;
 
     // lookup variation class key given variation class
-    private VocabKeyLookup varClassLookup;
+    private VocabKeyLookup varClassKeyLookup;
+
+    // lookup fxn class key given a fxn class
+    // we use this for verification only; fxnClassName
+    // is loaded to DP_SNP_Marker. snpcacheload then
+    // resolves the fxn class to a key.
+    private VocabKeyLookup fxnClassKeyLookup;
 
     // lookup MRK_Chromosome._Chromosome_key by name
     private ChromosomeKeyLookup chrLookupByName;
 
-    // get a MRK_ChromosomeDAO object Key
-    private MRK_ChromosomeLookup chrLookupByKey;
+    // get a chromosome sequenceNum given a _Chromosome_key
+    private ChrSeqNumLookup chrSeqNumLookupByKey;
 
     // the mapping of strainIds to strain names
     private HashMap individualMap;
@@ -143,13 +153,10 @@ public class DBSNPInputProcessor {
     private SNPLoaderExceptionFactory snpEFactory;
 
     /**
-     * Constructs a DBSNPInputProcessor with a radar and mgd stream
-     * and a BufferedWriter
+     * Constructs a DBSNPInputProcessor with a snp and mgd stream
      * @assumes Nothing
      * @effects Writes files to a filesystem
-     * @param radarSqlStream stream for writing radar bcp files
-     * @param loadSqlStream stream for writing mgd bcp files
-     * @param coordWriter BufferedWriter for writing coordinate information
+     * @param snpSqlStream stream for writing snp bcp files
      * @throws CacheException
      * @throws KeyNotFoundException
      * @throws TranslationException
@@ -158,9 +165,9 @@ public class DBSNPInputProcessor {
      * @throws DLALoggingException if error creating a logger
      */
 
-    public DBSNPInputProcessor(SQLStream radarSqlStream,
-                               SQLStream loadSqlStream,
-                               BufferedWriter cWriter) throws
+    //public DBSNPInputProcessor(SQLStream snpSqlStream,
+      //                         SQLStream loadSqlStream) throws
+      public DBSNPInputProcessor(SQLStream snpSqlStream) throws
         CacheException, KeyNotFoundException,
         DBException, ConfigException, DLALoggingException, TranslationException {
         /**
@@ -169,51 +176,71 @@ public class DBSNPInputProcessor {
         stopWatch = new Stopwatch();
 
         // set the streams
-        radarStream = radarSqlStream;
-        loadStream = loadSqlStream;
+        snpStream = snpSqlStream;
 
         // get a logger
         logger = DLALogger.getInstance();
 
         // configurator
-        config = new DBSNPLoaderCfg();
-
-        // set the jobstream key
-        jobStreamKey = new Integer(config.getJobstreamKey());
+        loadCfg = new DBSNPLoaderCfg();
 
         // initialize HashMap for populations
         rsPopulationsBySS = new HashMap();
 
-        // to lookup a strain key given a strain name=
+        // to lookup a strain key in mgd given a strain name and
+        // initialize now, so we can close the mgd connection
         strainKeyLookup = new StrainKeyLookup();
+        strainKeyLookup.initCache();
+
+	// lookup strain name by strain key
+	strainNameLookup = new StrainNameLookup();
+	strainNameLookup.initCache();
 
         // unique set of strain keys
         strainKeySet = new HashSet();
 
-        // to lookup a strain key given a JAX registry id
+        // to lookup a strain key in mgd given a JAX registry id and
+        // initialize now, so we can close the mgd connection
         jaxRegistryLookup = new AccessionLookup(LogicalDBConstants.JAXREGISTRY,
                                                 MGITypeConstants.STRAIN,
                                                 AccessionLib.PREFERRED);
+        jaxRegistryLookup.initCache();
 
-        // to lookup a population name given a population id
-        popNameLookup = new PopNameByPopIdLookup();
+        // to lookup a submitter handle name in snp given a population id and
+        handleNameLookupByPopId = new HandleNameByPopIdLookup();
 
-        // to lookup a population key given a population id
-        populationKeyLookup = new AccessionLookup(LogicalDBConstants.SNPPOPULATION,
-                MGITypeConstants.SNPPOPULATION, AccessionLib.PREFERRED);
+        // to lookup a population key in snp given a population id
+        populationKeyLookupByPopId = new SNPAccessionLookup(LogicalDBConstants.SNPPOPULATION,
+                MGITypeConstants.SNPPOPULATION);
 
-        // to lookup a submitter handle name given a population id
-        handleNameLookup = new HandleNameByPopIdLookup();
+        // to lookup a population name in snp given a population id
+        popNameLookupByPopId = new PopNameByPopIdLookup();
 
-        // to lookup term key given a submitter handle
-        subHandleLookup = new VocabKeyLookup(VocabularyTypeConstants.SUBHANDLE);
+        // to lookup term key in mgd given a submitter handle and
+        // initialize now, so we can close the mgd connection
+        subHandleKeyLookup = new VocabKeyLookup(VocabularyTypeConstants.SUBHANDLE,
+            CacheConstants.FULL_CACHE, CacheConstants.FULL_CACHE);
+        subHandleKeyLookup.initCache();
 
-        // to lookup term key given a variation class
-        varClassLookup = new VocabKeyLookup(VocabularyTypeConstants.SNPVARCLASS);
+        // to lookup term key in mgd given a variation class and
+        // initialize now, so we can close the mgd connection
+        varClassKeyLookup = new VocabKeyLookup(VocabularyTypeConstants.SNPVARCLASS,
+                CacheConstants.FULL_CACHE, CacheConstants.FULL_CACHE);
+        varClassKeyLookup.initCache();
 
-        // create lookups to get the sequence number of a given mouse chromosome
+        // to lookup term key in mgd given a function class and
+        // initialize now, so we can close the mgd connection
+        fxnClassKeyLookup = new VocabKeyLookup(VocabularyTypeConstants.SNPFUNCTION,
+                CacheConstants.FULL_CACHE, CacheConstants.FULL_CACHE);
+        fxnClassKeyLookup.initCache();
+
+        // to lookup a chromosome sequence number of a given a mouse chromosome
+        // in mgd. First get the key then get the sequenceNum
+        // initialize now, so we can close the mgd connection
         chrLookupByName = new ChromosomeKeyLookup(SNPLoaderConstants.MGI_MOUSE);
-        chrLookupByKey = new MRK_ChromosomeLookup();
+        chrLookupByName.initCache();
+        chrSeqNumLookupByKey = new ChrSeqNumLookup();
+        chrSeqNumLookupByKey.initCache();
 
         // create set to avoid loading dups
         rsIdSet = new HashSet();
@@ -226,6 +253,11 @@ public class DBSNPInputProcessor {
 
         // resolves an allele string to an iupac code
         iupacResolver = new IUPACResolver();
+
+        // close the mgd connection provided by superclass now that we have
+        // created the lookups
+        //SQLDataManagerFactory.getShared(SchemaConstants.MGD).closeResources();
+
     }
 
     /**
@@ -276,8 +308,8 @@ public class DBSNPInputProcessor {
      * @effects - writes bcp files to a filesystem
      */
     public void processInput(DBSNPNseInput input) throws MGIException {
-        radarSnp = new RADARSNP(radarStream);
-        mgdSnp = new MGDSNP(loadStream);
+        snpSnp = new SNPSNP(snpStream);
+        //mgdSnp = new MGDSNP(loadStream);
         DBSNPNseRS rs = ( (DBSNPNseInput) input).getRS();
         rsId = rs.getRsId();
 
@@ -320,8 +352,9 @@ public class DBSNPInputProcessor {
         processCoordinates(consensusKey, contigHits, rsId);
 
         // create ACC_AccesssionDAO for the rs id
-        processAccession(rsId, LogicalDBConstants.REFSNP, consensusKey,
-                         MGITypeConstants.CONSENSUSSNP, Boolean.FALSE);
+
+        processAccession(SNPLoaderConstants.PREFIX_CSNP + rsId, LogicalDBConstants.REFSNP, consensusKey,
+                         MGITypeConstants.CONSENSUSSNP);
         /**
          * for each SubSnp create:
          * 1)  subSNP DAO
@@ -345,7 +378,7 @@ public class DBSNPInputProcessor {
             }
 
             // create all DAO's for SubSnps (SNP_SubSnpDAOs, SNP_AccessionDAOs
-            // SNP_SubSnp_StrainAlleleDAOs, MGI_SetMemberDAOs)
+            // SNP_SubSnp_StrainAlleleDAOs, SNP_StrainDAOs)
             processSS(consensusKey, ss, popsForSSVector);
         }
 
@@ -363,11 +396,9 @@ public class DBSNPInputProcessor {
         // resolve the remaining SNP_ConsensusSnpState attributes
         finishConsensusSnp(orderedAlleleSummary, rs.getRsVarClass());
 
-        // if we have gotten this far, we have complete radar and mgd SNP objects
-        // send them to their streams. Note that the radarSnp object may not
-        // contain any DAO's as not all snps have marker relationships
-        mgdSnp.sendToStream();
-        radarSnp.sendToStream();
+        // if we have gotten this far, we have complete snp and mgd SNP objects
+        // send them to their streams.
+        snpSnp.sendToStream();
 
         // incr ctr, we've added another snp
         snpCtr++;
@@ -414,8 +445,8 @@ public class DBSNPInputProcessor {
         SNP_ConsensusSnpState state = new SNP_ConsensusSnpState();
         state.setBuildCreated(rs.getBuildCreated());
         state.setBuildUpdated(rs.getBuildUpdated());
-        mgdSnp.setConsensusSnp(state);
-        return mgdSnp.getConsensusSnpKey();
+        snpSnp.setConsensusSnp(state);
+        return snpSnp.getConsensusSnpKey();
     }
 
 
@@ -443,14 +474,14 @@ public class DBSNPInputProcessor {
 
         // get the SNP_ConsensusSnpState from the MGDSNP and add alleleSummary
         // variation class key and iupac code
-        SNP_ConsensusSnpState csState = mgdSnp.getConsensusSnpDao().getState();
+        SNP_ConsensusSnpState csState = snpSnp.getConsensusSnpDao().getState();
         csState.setAlleleSummary(orderedAlleleSummary);
         csState.setVarClassKey(varClassKey);
         csState.setIupacCode(iupacCode);
 
         // get the set of SNP_Coord_CacheDAOs from the MGDSNP so we can add
         // alleleSummary, variation class key, and iupac code
-        Vector v = mgdSnp.getCoordCacheDaos();
+        Vector v = snpSnp.getCoordCacheDaos();
         for(Iterator i = v.iterator(); i.hasNext();) {
             SNP_Coord_CacheState ccState = ((SNP_Coord_CacheDAO)i.next()).getState();
             ccState.setAlleleSummary(orderedAlleleSummary);
@@ -579,7 +610,7 @@ public class DBSNPInputProcessor {
         }
         else {
             try {
-                varClassKey = varClassLookup.lookup(varClass);
+                varClassKey = varClassKeyLookup.lookup(varClass);
             }
             catch (KeyNotFoundException e) {
                 logger.logcInfo("UNRESOLVED CS VARCLASS " + varClass +
@@ -654,8 +685,8 @@ public class DBSNPInputProcessor {
                  * Iterate thru strains
                  */
                 for (Iterator k = alleleMap.keySet().iterator(); k.hasNext(); ) {
-                    String strain = (String) k.next();
-                    Integer strainKey = resolveStrain(strain, pop.getPopId());
+                    String strain = ((String) k.next()).trim()  ;
+                    Integer strainKey = resolveStrain(strain, pop.getPopId()).getMgdStrainKey();
                     // if we can't resolve the strain, continue
                     if (strainKey == null) {
                         continue;
@@ -848,10 +879,10 @@ public class DBSNPInputProcessor {
             // now create the consensus allele
             SNP_ConsensusSnp_StrainAlleleState state = new SNP_ConsensusSnp_StrainAlleleState();
             state.setConsensusSnpKey(csKey);
-            state.setStrainKey(strainKey);
+            state.setMgdStrainKey(strainKey);
             state.setAllele(currentConsensusAllele);
             state.setIsConflict(isConflict);
-            mgdSnp.addConsensusSnpStrainAllele(state);
+            snpSnp.addConsensusSnpStrainAllele(state);
         }
     }
 
@@ -865,9 +896,9 @@ public class DBSNPInputProcessor {
      * @throws TranslationException
      * @throws CacheException
      */
-    private Integer resolveStrain(String strain, String popId) throws
+    private SNP_StrainState resolveStrain(String strain, String popId) throws
         DBException, ConfigException,
-        TranslationException, CacheException {
+        TranslationException, CacheException, KeyNotFoundException {
 
         Integer strainKey = null;
 
@@ -892,14 +923,14 @@ public class DBSNPInputProcessor {
         if (strainKey == null) {
             try {
                 // lookup the handle name
-                String handleName = handleNameLookup.lookup(popId);
+                String handleName = handleNameLookupByPopId.lookup(popId);
 
                 // lookup the population name
-                String popName = popNameLookup.lookup(popId);
+                String popName = popNameLookupByPopId.lookup(popId);
 
                 // create the new strain name
                 String qualifiedStrainName = handleName + "_" + popName + "_" +
-                    strain.trim();
+                    strain;
                 // lookup the new strain name
                 strainKey = strainKeyLookup.lookup(qualifiedStrainName);
             }
@@ -907,7 +938,16 @@ public class DBSNPInputProcessor {
                 strainKey = null;
             }
         }
-        return strainKey;
+        SNP_StrainState state = null;
+        if (strainKey != null) {
+            String name = strainNameLookup.lookup(strainKey);
+            state = new SNP_StrainState();
+            state.setMgdStrainKey(strainKey);
+            state.setStrain(name);
+            // another process sets sequenceNum
+            state.setSequenceNum(new Integer(1));
+        }
+        return state;
     }
 
     /**
@@ -1010,10 +1050,16 @@ public class DBSNPInputProcessor {
         // create a SS state object
         SNP_SubSnpState state = new SNP_SubSnpState();
 
-        // add attributes to the SS state object
+        /**
+         * set attributes to the SNP_SubSnpState object
+         */
+
+        // add _ConsensusSnp_key
         state.setConsensusSnpKey(consensusKey);
+
+        // resolve and set _SubmitterHandle_Key
         try{
-               state.setSubHandleKey(subHandleLookup.lookup(ss.
+               state.setSubHandleKey(subHandleKeyLookup.lookup(ss.
                    getSubmitterHandle()));
         } catch (KeyNotFoundException e) {
             String h = ss.getSubmitterHandle();
@@ -1024,8 +1070,9 @@ public class DBSNPInputProcessor {
             e1.bind("RS" + rsId + " SubHandle" + h);
             throw e1;
         }
+        // resolve and set _VariationClass_key
         try {
-            state.setVarClassKey(varClassLookup.lookup(ss.getSSVarClass()));
+            state.setVarClassKey(varClassKeyLookup.lookup(ss.getSSVarClass()));
         } catch (KeyNotFoundException e) {
             String v = ss.getSSVarClass();
             logger.logcInfo("UNRESOLVED SS VARCLASS " + v +
@@ -1035,7 +1082,7 @@ public class DBSNPInputProcessor {
             e1.bind("RS" + rsId + " varClass " + v);
             throw e1;
         }
-        // resolve orientation
+        // resolve and set orientation
           String orient = ss.getSSOrientToRS();
           String translatedOrient = "";
           if(orient.equals(SNPLoaderConstants.NSE_FORWARD)){
@@ -1051,46 +1098,48 @@ public class DBSNPInputProcessor {
                   orient + " for RS" + rsId, true);
           }
           state.setOrientation(translatedOrient);
+          // set isExemplar bit
           state.setIsExemplar(ss.getIsExemplar());
+
+          // set observedAlleles
           state.setAlleleSummary(ss.getObservedAlleles());
+
           // set ss state object in the snp object, this returns the ssKey
           // for use creating accession and strain allele objects
-          Integer ssKey = mgdSnp.addSubSNP(state);
+          Integer ssKey = snpSnp.addSubSNP(state);
+
           // create an accession object for the ssId
-          processAccession(ssId, LogicalDBConstants.SUBSNP,
-                           ssKey, MGITypeConstants.SUBSNP, Boolean.FALSE);
+          processAccession(SNPLoaderConstants.PREFIX_SSNP + ssId, LogicalDBConstants.SUBSNP,
+                           ssKey, MGITypeConstants.SUBSNP);
+
           // create an accession object for the current submitter snp id
           processAccession(ss.getSubmitterSNPId(),
-              LogicalDBConstants.SUBMITTERSNP, ssKey, MGITypeConstants.SUBSNP,
-              Boolean.FALSE);
+              LogicalDBConstants.SUBMITTERSNP, ssKey, MGITypeConstants.SUBSNP);
+
           // process the strain alleles
           for (Iterator j = populations.iterator(); j.hasNext(); ) {
-            // create  StrainAllele DAOs
             processSSStrainAlleles(ssKey, ssId,
                 (DBSNPGenotypePopulation) j.next());
          }
 
     }
     /**
-     * create a mgd accession DAO
+     * create a SNP_AccessionState and set in the SNPSNP object
      * @param accid the accession id
-     * @param logicalDB the logical db of the accession id
-     * @param objectKey the object key with which we are associating 'accid'
-     * @param objectType the object type of 'object key'
-     * @param isPrivate true if this association is private
+     * @param logicalDBKey mgd _LogicalDB_key of the accession id
+     * @param objectKey the _Object_key with which we are associating 'accid'
+     * @param mgiTypeKey mgd _MGIType_key for the object type of 'object key'
      * @throws DBException
      * @throws ConfigException
      */
     private void processAccession(String accid, int logicalDBKey,
-                                  Integer objectKey, int mgiTypeKey,
-                                  Boolean isPrivate) throws DBException,
-        ConfigException, CacheException, KeyNotFoundException {
+                                  Integer objectKey, int mgiTypeKey)
+            throws DBException, ConfigException, CacheException,
+            KeyNotFoundException {
 
         // create a state object
-        ACC_AccessionState state = new ACC_AccessionState();
+        SNP_AccessionState state = new SNP_AccessionState();
 
-        // prefix the snp accession id and set in state
-        accid = SNPLoaderConstants.PREFIX_CSNP + accid;
         state.setAccID(accid);
 
         // split 'accid' into prefixPart and numericPart and set in state
@@ -1106,12 +1155,9 @@ public class DBSNPInputProcessor {
 
         // set mgi type
         state.setMGITypeKey(new Integer(mgiTypeKey));
-        // set private and preferred
-        state.setPrivateVal(isPrivate);
-        state.setPreferred(Boolean.TRUE);
 
-        // set the state in the MGDSNP object
-        mgdSnp.addAccession(state);
+        // set the state in the SNPSNP object
+        snpSnp.addAccession(state);
     }
 
     /**
@@ -1138,7 +1184,7 @@ public class DBSNPInputProcessor {
         // iterate thru the alleleMap
         for (Iterator i = alleleMap.keySet().iterator(); i.hasNext(); ) {
             // get the strain
-            String strain = (String) i.next();
+            String strain = ((String) i.next()).trim();
             // get the allele, translate blank alleles to "N"
             Allele a = (Allele) alleleMap.get(strain);
             String allele = a.getAllele();
@@ -1148,56 +1194,54 @@ public class DBSNPInputProcessor {
             }
 
             // resolve the strain
-            Integer strainKey = resolveStrain(strain, popId);
+            SNP_StrainState strainState= resolveStrain(strain, popId);
 
             // if we can't resolve strain, write it to the curation log
             // and go on to the next
-            if (strainKey == null) {
+            if (strainState == null) {
                 logger.logcInfo("BAD STRAIN " + strain + " RS" + rsId + " SS" +
                                 ssId + "PopId" + popId, false);
                 continue;
             }
-            // create MGI_SetMember for this strain
-            createStrainSetMember(strainKey);
+            // get the strainKey attribute from strainState
+            Integer strainKey = strainState.getMgdStrainKey();
 
-            // create a state object
+            // create SNP_StrainDAO for this strain, if we haven't already
+            createStrain(strainState);
+
+            // create a SNP_SubSnp_StrainAlleleState object and set it's attributes
             SNP_SubSnp_StrainAlleleState state = new SNP_SubSnp_StrainAlleleState();
             state.setSubSnpKey(ssKey);
 
             // resolve and set the population key
             // allow this to throw KeyNotFoundException, precondition is that
             // populations are in place
-            state.setPopulationKey(populationKeyLookup.lookup(popId));
+            state.setPopulationKey(populationKeyLookupByPopId.lookup(popId));
 
             // set the strain key
-            state.setStrainKey(strainKey);
+            state.setMgdStrainKey(strainKey);
 
-            // get the allele string from the Allele object, set in state
+            // set the allele
             state.setAllele(allele);
 
-            // set the state object in the snp
-            mgdSnp.addSubSnpStrainAllele(state);
+            // set the state object in the SNPSNP
+            snpSnp.addSubSnpStrainAllele(state);
         }
     }
     /**
-    * create MGI_SetMember object for the dbsnp strain set, if we haven't already
-    * @note no particular order to this set
-    * @param strainKey PRB_Strain._Strain_key of strain to add to set
+    * Add a SNP_StrainState to the SNPSNP object for this strain if we haven't already
+    * @param state SNP_StrainState from which to create DAO
     * @throws DBException
     * @throws CacheException
     * @throws ConfigException
     */
-    private void createStrainSetMember(Integer strainKey)
+    private void createStrain(SNP_StrainState state)
              throws DBException, CacheException, ConfigException {
-         if (!strainKeySet.contains(strainKey)) {
-             // the set of mgd strain keys for which we have already
-             // created an MGI_SetMember
-             strainKeySet.add(strainKey);
-             MGI_SetMemberState state = new MGI_SetMemberState();
-             state.setObjectKey(strainKey);
-             state.setSequenceNum(new Integer(1));
-             state.setSetKey( new Integer(MGISetConstants.SNPSTRAIN) );
-             mgdSnp.addSetMember(state);
+         Integer key = state.getMgdStrainKey();
+         // if strainSet contains 'key' we have already created a SNP_Strain object
+         if (!strainKeySet.contains(key)) {
+             strainKeySet.add(key);
+             snpSnp.addStrain(state);
          }
      }
 
@@ -1264,7 +1308,7 @@ public class DBSNPInputProcessor {
         state.setFlank(flankChunk);
         state.setIs5Prime(is5Prime);
         state.setSequenceNum(sequenceNum);
-        mgdSnp.addFlank(state);
+        snpSnp.addFlank(state);
     }
 
     /**
@@ -1286,7 +1330,7 @@ public class DBSNPInputProcessor {
         TranslationException, SNPLoaderException {
 
         // We're going to need some SNP_ConsensusSnpState attributes in this processing
-        SNP_ConsensusSnpState csState = (SNP_ConsensusSnpState)mgdSnp.getConsensusSnpDao().getState();
+        SNP_ConsensusSnpState csState = (SNP_ConsensusSnpState)snpSnp.getConsensusSnpDao().getState();
 
         // true if this RefSNP has a BL6 coordinate
         boolean bl6Flag = false;
@@ -1351,14 +1395,13 @@ public class DBSNPInputProcessor {
 
                 //resolve the chromosome sequence number
                 Integer chrKey = chrLookupByName.lookup(chromosome);
-                // lookup the chr sequence number and set in the SNP_CoordCacheState
-                coordCacheState.setSequenceNum( chrLookupByKey.findBySeqKey(
-                    chrKey).getState().getSequenceNum());
+
+                coordCacheState.setSequenceNum( chrSeqNumLookupByKey.lookup(chrKey) );
 
                 // dbSNP xml files now 0 based - need to add 1
                 startCoord = new Double (startCoord.intValue() + 1);
                 coordCacheState.setStartCoordinate(startCoord);
-                // Note: isMultiCoord is set in mgdSnp
+                // Note: isMultiCoord is set in snpSnp
 
                 /**
                  * get the RS orientation to the chromosome and translate it
@@ -1382,7 +1425,7 @@ public class DBSNPInputProcessor {
                 coordCacheState.setStrand(translatedOrient);
                 // Note: _VarClass_key, alleleSummary, and iupac code not set till
                 // later - See finishConsensusSnp() method
-                mgdSnp.addSnpCoordCache(coordCacheState);
+                snpSnp.addSnpCoordCache(coordCacheState);
                 /**
                  * now get the fxnSets and create MGI_SNP_MarkerState objects
                  */
@@ -1407,12 +1450,17 @@ public class DBSNPInputProcessor {
                         continue;
                     }
                     fxnSetSet.add(join);
+                    Integer fxnKey = fxnClassKeyLookup.lookup(fxnClass);
+                    if (fxnKey == null) {
+                        logger.logcInfo("UNRESOLVED FXNCLASS " + fxnClass, false);
+                        continue;
+                    }
 
-                    // create the MGI_SNP_MarkerState object
-                    MGI_SNP_MarkerState mState = new MGI_SNP_MarkerState();
+                    // create the DP_SNP_MarkerState object
+                    DP_SNP_MarkerState mState = new DP_SNP_MarkerState();
                     mState.setAccID(rsId);
                     mState.setEntrezGeneId(locusId);
-                    mState.setFxnClass(fxnClass);
+                    mState.setFxnKey(fxnKey);
                     mState.setChromosome(chromosome);
                     mState.setStartCoord(startCoord);
                     mState.setRefseqNucleotide(fSet.getNucleotideId());
@@ -1421,8 +1469,7 @@ public class DBSNPInputProcessor {
                     mState.setResidue(fSet.getAAResidue());
                     mState.setAaPosition(fSet.getAAPostition());
                     mState.setReadingFrame(fSet.getReadingFrame());
-                    mState.setJobStreamKey(jobStreamKey);
-                    radarSnp.addMarker(mState);
+                    snpSnp.addMarker(mState);
 
                     rdrMkrCtr++;
                 }
