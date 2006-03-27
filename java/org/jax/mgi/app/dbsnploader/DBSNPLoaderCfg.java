@@ -27,7 +27,7 @@ public class DBSNPLoaderCfg extends Configurator {
     }
 
      /**
-     * Constructs a DBSNPLoader configurator to get Vlues for parameters 
+     * Constructs a DBSNPLoader configurator to get Values for parameters
      * prefixed with 'prefix'
      * @throws ConfigException if a configuration manager cannot be obtained
      */
@@ -35,16 +35,6 @@ public class DBSNPLoaderCfg extends Configurator {
         //System.out.println(prefix);
          super.parameterPrefix = prefix;
     }
-
-    /**
-     * Gets the  parser object
-     * @return The parser object
-     * @throws ConfigException if "SNP_PARSER" not found by the Configurator
-     */
-    public Object getSnpParser() throws ConfigException {
-        return getConfigObject("SNP_PARSER");
-    }
-
 
      /**
      * Gets the  input file directory
@@ -58,7 +48,7 @@ public class DBSNPLoaderCfg extends Configurator {
      /**
      * Gets the input file prefix
      * @return The input file prefix
-     * @throws ConfigException if "SNP_INFILEPREFIX" not found by the 
+     * @throws ConfigException if "SNP_INFILEPREFIX" not found by the
      * Configurator
      */
 
@@ -69,7 +59,7 @@ public class DBSNPLoaderCfg extends Configurator {
      /**
       * Gets the input file suffix
       * @return The input file suffix
-      * @throws ConfigException if "SNP_INFILESUFFIX" not found by the 
+      * @throws ConfigException if "SNP_INFILESUFFIX" not found by the
       * Configurator
       */
 
@@ -85,19 +75,12 @@ public class DBSNPLoaderCfg extends Configurator {
     public String getJobstreamName() throws ConfigException {
         return getConfigString("JOBSTREAM");
     }
-    /**
-     * Gets the Jobstream key
-     * @return the Jobstream name
-     * @throws ConfigException if "JOBKEY" not found by the Configurator
-     */
-    public String getJobstreamKey() throws ConfigException {
-        return getConfigString("JOBKEY");
-    }
+
     /**
      * Gets the dbsnpload coordload filename (output of dbsnpload, input for
      *   coordload)
      * @return the coordload filename
-     * @throws ConfigException if "COORD_OUTPUT_FILE" not found by the 
+     * @throws ConfigException if "COORD_OUTPUT_FILE" not found by the
      * Configurator
      */
     public String getCoordFilename() throws ConfigException {
@@ -106,7 +89,7 @@ public class DBSNPLoaderCfg extends Configurator {
     /**
      * If true, deleted all SNP accession Ids.
      * @return whether to deleted SNP accession ids
-     * @throws ConfigException if "SNP_OK_TO_DELETE_ACCESSIONS" not 
+     * @throws ConfigException if "SNP_OK_TO_DELETE_ACCESSIONS" not
      * found by the Configurator
      */
 
@@ -128,12 +111,49 @@ public class DBSNPLoaderCfg extends Configurator {
     /**
      * get list of chromomes to load.
      * @return list of chromosomes
-     * @throws ConfigException if "SNP_CHROMOSOMES_TOLOAD" not found by the 
+     * @throws ConfigException if "SNP_CHROMOSOMES_TOLOAD" not found by the
      * Configurator
      */
 
-    public String getChromosomesToLoad() throws ConfigException {
-        return getConfigString("SNP_CHROMOSOMES_TOLOAD");
+    public String[] getChromosomesToLoad() {
+
+        return getConfigStringArrayNull("SNP_CHROMOSOMES_TOLOAD");
+    }
+    /**
+     * get dbSNP data version (build number)
+     * @return dbSNP data version (build number)
+     * @throws ConfigException if "SNP_DATAVERSIONk" not found by the
+     * Configurator
+     */
+
+    public String getSnpDataVersion() throws ConfigException {
+        return getConfigString("SNP_DATAVERSION");
     }
 
+    /**
+      * get the list of table names to truncate for the snp stream
+      * @return the list of table names to truncate for the snp stream
+      */
+     public String[] getTruncateSnpTables()
+     {
+         return getConfigStringArrayNull("DLA_TRUNCATE_SNP_TABLES");
+     }
+
+     /**
+      * get list of tables for which to update SNP..MGI_Tables
+      * @return list of table name for which to update SNP..MGI_Tables
+      */
+     public String[] getUpdateMGITables() {
+         return getConfigStringArrayNull("SNP_UPDATE_MGITABLES");
+
+     }
+     /**
+      * get the name of the SQLStream for snp data (the snp stream)
+      * @return the name of the SQLStream
+      */
+     public String getSnpStreamName()
+     {
+         return getConfigString("SNP_STREAM",
+                                "org.jax.mgi.shr.dbutils.dao.Bcp_Stream");
+     }
 }
