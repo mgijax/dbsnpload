@@ -225,7 +225,9 @@ echo "calling  ${SNP_SGL_USER} ${PRODSNP_DBSERVER} ${PRODSNP_DBNAME} true ${SNP_
 
 ${SNP_SGL_USER} ${PRODSNP_DBSERVER} ${PRODSNP_DBNAME} true ${SNP_SGL_USER_FILE} ${SNP_SLEEP_INTERVAL}
 
+#
 # run fxn class vocload?
+#
 if [ ${doFxn} = "yes" ]
 then
     ${DBSNP_VOCLOAD} -f
@@ -234,7 +236,9 @@ then
     checkstatus ${STAT} "${msg}"
 fi
 
+#
 # run variation class vocload?
+#
 if [ ${doVar} = "yes" ]
 then
     ${DBSNP_VOCLOAD} -v
@@ -243,13 +247,17 @@ then
     checkstatus ${STAT} "${msg}"
 fi
 
+#
 # always run submitter handle vocload
+#
 ${DBSNP_VOCLOAD} -h
 STAT=$?
 msg="dbsnp subHandle vocabulary load"
 checkstatus ${STAT} "${msg}"
 
+#
 # run variation class translation load?
+#
 if [ ${doVar} = "yes" ]
 then
     ${DBSNP_TRANS_LOAD} -v
@@ -258,7 +266,9 @@ then
     checkstatus ${STAT} "${msg}"
 fi
 
+#
 # run fxn class translation load?
+#
 if [ ${doFxn} = "yes" ]
 then
     ${DBSNP_TRANS_LOAD} -f
@@ -267,29 +277,46 @@ then
     checkstatus ${STAT} "${msg}"
 fi
 
+# 
+# run population load
+#
 echo "running population load"
 ${POPULATION_LOAD}
 STAT=$?
 msg="dbsnp population load"
 checkstatus ${STAT} "${msg}"
 
+#
+# run java dbSnp loader
+#
 echo "running dbsnp load"
 runsnpload
 STAT=$?
 msg="dbsnp load"
 checkstatus ${STAT} "${msg}"
 
+#
+# run snp marker cache load
+#
 echo "running ${SNP_MARKER_CACHE_LOAD}"
 ${SNP_MARKER_CACHE_LOAD}
 STAT=$?
 msg="dbsnp marker cache load"
 checkstatus  ${STAT} "${msg}"
 
+#
+# order snp strains
+#
 echo "running snp strain order update"
 ${STRAIN_ORDER_LOAD}
 STAT=$?
 msg="snp strain order update"
 checkstatus  ${STAT} "${msg}"
+
+#
+# run postProcessing - dump/load/update mgd MGI_dbinfo
+#
+${SNP_POST_PROCESS}
 
 # run postload cleanup and email logs
 #
