@@ -59,35 +59,33 @@ PAGE = reportlib.PAGE
 outFile = open(os.environ['SNP_STRAIN_FILE'], 'w')
 inFile = open(os.environ['MGI_STRAINORDER_FILE'], 'r')
 
-snpStrainSetName = os.environ['SNP_STRAIN_SET_NAME']
-strainSetKey = ""
+# strains in snp..SNP_Strain {strain:_Strain_key}
 snpStrainDict = {}
+
+# strains from the strain order input file {strain:sequenceNum}
 snpStrainOrderDict = {}
+
+# set up connection to the snp database
+server = os.environ['SNP_DBSERVER']
+snpDB = os.environ['SNP_DBNAME']
+user = os.environ['SNP_DBUSER']
+password = string.strip(open(os.environ['MGD_DBPASSWORDFILE'], 'r').readline())
+db.set_sqlLogin(user, password, server, snpDB)
 
 print 'querying for snp strains in mgi...%s' % CRT
 cmds = []
-# query for the SNP Strain _Set_key
-cmds.append('select _Set_key ' + \
-    'from MGI_Set ' + \
-    'where name = "%s"' % snpStrainSetName)
 
-# query for the SNP Strain Set members 
-cmds.append('select ps.strain, ms._Object_key as _Strain_key ' + \
-    'from MGI_SetMember ms, PRB_Strain ps ' + \
-    'where ms._Set_key = 1023 ' + \
-    'and ms._Object_key = ps._Strain_key ' + \
-    'order by ps.strain')
+# query for the SNP strains
+cmds.append('select strain, _mgdStrain_key ' + \
+    'from SNP_Strain ' + \
+    'order by strain')
 
 results = db.sql(cmds, 'auto')
 
-strainSetKey = results[0][0]['_Set_key']
-if strainSetKey == "":
-    sys.exit("Can't resolve SNP Strain Set name: %s" % snpStrainSetName)
-
 print 'reporting strains in MGI to %s%s' % (os.environ['SNP_STRAIN_FILE'], CRT)
-for r in results[1]:
-    snpStrainDict[ r['strain'] ] = r['_Strain_key']
-    outFile.write("%s%s%s%s" % (r['strain'],  TAB, r['_Strain_key'], CRT) )
+for r in results[0]:
+    snpStrainDict[ r['strain'] ] = r['_mgdStrain_key']
+    outFile.write("%s%s%s%s" % (r['strain'],  TAB, r['_mgdStrain_key'], CRT) )
 
 print 'reading the strain order input file ...%s' % CRT 
 sequenceNum = 0
@@ -137,8 +135,8 @@ for strain in snpStrainOrderDict.keys():
     sequenceNum = snpStrainOrderDict[strain]
     strainKey = snpStrainDict[strain]
     cmds = []
-    cmds.append('update MGI_SetMember ' + \
+    cmds.append('update SNP_Strain ' + \
 	'set sequenceNum = %s ' % sequenceNum + \
-	'where _Set_key = %s ' % strainSetKey + \
-	'and _Object_key = %s ' % strainKey)
+	'where _mgdStrain_key = %s ' % strainKey)
     results = db.sql(cmds, 'auto')
+    print cmds

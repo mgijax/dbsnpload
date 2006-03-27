@@ -5,6 +5,7 @@
 #
 # History
 #
+# sc    03/14/2006 - updated to load snp..SNP_Population
 # sc    08/17/2005
 #
 # This script 
@@ -12,8 +13,7 @@
 # 2. creates accession objects to associate a popid
 #     with each SNP_Population
 # Note: were are not dropping ACC_Accession indexes or updating
-#       statistics since there are so few population ids (code
-#       is commented out below.
+#       statistics since there are so few population ids 
 
 cd `dirname $0`/..
 
@@ -91,32 +91,23 @@ checkstatus ${STAT} "${msg}"
 
 # Allow bcp into database and truncate POP_TABLE
 echo "truncating ${POP_TABLE}"
-${MGIDBUTILSDIR}/bin/turnonbulkcopy.csh ${MGD_DBSERVER} ${MGD_DBNAME} | tee -a ${POP_LOG}
-${MGD_DBSCHEMADIR}/table/${POP_TABLE}_truncate.object | tee -a ${POP_LOG}
+${MGIDBUTILSDIR}/bin/turnonbulkcopy.csh ${SNP_DBSERVER} ${SNP_DBNAME} | tee -a ${POP_LOG}
+${SNP_DBSCHEMADIR}/table/${POP_TABLE}_truncate.object | tee -a ${POP_LOG}
 
 
 echo "dropping indexes on ${POP_TABLE}" 
-${MGD_DBSCHEMADIR}/index/${POP_TABLE}_drop.object | tee -a ${POP_LOG}
+${SNP_DBSCHEMADIR}/index/${POP_TABLE}_drop.object | tee -a ${POP_LOG}
 
 echo "bcp'ing data into ${POP_TABLE}"
-cat ${MGD_DBPASSWORDFILE} | bcp ${MGD_DBNAME}..${POP_TABLE} in ${OUTPUTDIR}/${POP_TABLE}.bcp -c -t\| -S${MGD_DBSERVER} -U${MGD_DBUSER} | tee -a  ${POP_LOG}
+cat ${MGD_DBPASSWORDFILE} | bcp ${SNP_DBNAME}..${POP_TABLE} in ${OUTPUTDIR}/${POP_TABLE}.bcp -c -t\| -S${SNP_DBSERVER} -U${SNP_DBUSER} | tee -a  ${POP_LOG}
 
 echo "creating indexes on ${POP_TABLE}"
-${MGD_DBSCHEMADIR}/index/${POP_TABLE}_create.object | tee -a ${POP_LOG}
+${SNP_DBSCHEMADIR}/index/${POP_TABLE}_create.object | tee -a ${POP_LOG}
 
 echo "updating statistics on ${POP_TABLE}"
-${MGIDBUTILSDIR}/bin/updateStatistics.csh ${MGD_DBSERVER} ${MGD_DBNAME} ${POP_TABLE} | tee -a ${POP_LOG}
-
-#echo "dropping indexes on ${ACC_TABLE}"
-#${MGD_DBSCHEMADIR}/index/${ACC_TABLE}_drop.object | tee -a ${POP_LOG}
+${MGIDBUTILSDIR}/bin/updateStatistics.csh ${SNP_DBSERVER} ${SNP_DBNAME} ${POP_TABLE} | tee -a ${POP_LOG}
 
 echo "bcp'ing data into ${ACC_TABLE}"
-cat ${MGD_DBPASSWORDFILE} | bcp ${MGD_DBNAME}..${ACC_TABLE} in ${OUTPUTDIR}/${ACC_TABLE}.pop.bcp -c -t \| -S${MGD_DBSERVER} -U${MGD_DBUSER} | tee -a ${POP_LOG}
-
-#echo "creating indexes on ${ACC_TABLE}"
-#${MGD_DBSCHEMADIR}/index/${ACC_TABLE}_create.object | tee -a  ${POP_LOG}
-
-#echo "updating statistics on ${ACC_TABLE}"
-#${MGIDBUTILSDIR}/bin/updateStatistics.csh ${MGD_DBSERVER} ${MGD_DBNAME} ${ACC_TABLE} | tee - a ${POP_LOG}
+cat ${MGD_DBPASSWORDFILE} | bcp ${SNP_DBNAME}..${ACC_TABLE} in ${OUTPUTDIR}/${ACC_TABLE}.pop.bcp -c -t \| -S${SNP_DBSERVER} -U${SNP_DBUSER} | tee -a ${POP_LOG}
 
 date | tee -a ${LOG}  ${POP_LOG}
