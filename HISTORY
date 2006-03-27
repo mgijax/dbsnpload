@@ -1,3 +1,28 @@
+TAG: dbsnpload-build125-4
+DATE: 03/27/2006
+STAFF: sc
+RELEASE: 3.44
+CHANGES: TR7461 
+1) dbsnpload.sh - removed call to coordload and coordcacheload
+     added call to mgidbutilities/doSglUser.csh and 
+     ./bin/postProcess.sh
+2) snpPopulation.py - removed calls to loadlib functions, 
+     updated to talk to  snp database
+3) snpPopulation.sh - updated from MGD to SNP config vars
+4) updateSnpStrainOrder.py - updated to talk to snp database
+5) dbsnpload.config.default - added SNP db config and config
+     for new/changed processing
+6) removed java classes: SNP.java MGDSNP 
+      DBSNPNse RADARSNP
+7) added java classes: ChrSeqNumLookup MGI_TablesLookup StrainNameLookup
+      MGI_TablesUpdater MGI_dbinfoLookup MGI_dbinfoUpdater SNPSNP
+8) SNPLoaderExceptionFactory.java - removed  old exceptions
+9) PopNameByPopIdLookup.java - updated to use snp database
+10) HandleNameByPopIdLookup.java - queries snp..SNP_Population.subHandle instead
+    of joining to mgd..VOC_Term
+11) DBSNPLoaderCfg.java - added snp db /removed radar/mgd db config get/set methods 
+12) DBSNPLoader.java DBSNPInputProcessor.java - updated to talk to snp database
+      
 TAG: dbsnpload-build125-3
 DATE: 03/02/2006
 STAFF: sc
