@@ -219,9 +219,11 @@ checkstatus ()
 preload 
 
 #
-# rm all files/dirs from OUTPUTDIR and RPTDIR
+# put production snp database in single user mode prior to loading snps
 #
-#cleanDir ${OUTPUTDIR} ${RPTDIR}
+echo "calling  ${SNP_SGL_USER} ${PRODSNP_DBSERVER} ${PRODSNP_DBNAME} true ${SNP_SGL_USER_FILE} ${SNP_SLEEP_INTERVAL}
+
+${SNP_SGL_USER} ${PRODSNP_DBSERVER} ${PRODSNP_DBNAME} true ${SNP_SGL_USER_FILE} ${SNP_SLEEP_INTERVAL}
 
 # run fxn class vocload?
 if [ ${doFxn} = "yes" ]
@@ -276,18 +278,6 @@ runsnpload
 STAT=$?
 msg="dbsnp load"
 checkstatus ${STAT} "${msg}"
-
-echo "running snp coordinate load"
-runcoordload
-STAT=$?
-msg="dbsnp coordload"
-checkstatus  ${STAT} "${msg}"
-
-echo "running ${SNP_COORD_CACHE_LOAD}"
-${SNP_COORD_CACHE_LOAD}
-STAT=$?
-msg="dbsnp coord cache load"
-checkstatus  ${STAT} "${msg}"
 
 echo "running ${SNP_MARKER_CACHE_LOAD}"
 ${SNP_MARKER_CACHE_LOAD}
