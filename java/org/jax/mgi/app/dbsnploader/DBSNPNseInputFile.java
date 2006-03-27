@@ -256,27 +256,6 @@ public class DBSNPNseInputFile extends InputXMLDataFile
 
                              }
                          }
-                         // DEBUG
-                         if(currentAssembly.equals("C57BL/6J")) {
-                             if (currentPhysMapInt != null && currentPhysMapStr != null) {
-                                 Integer temp = new Integer(new Integer(
-                                     currentPhysMapInt).intValue() + 1);
-                                 currentPhysMapInt = temp.toString();
-
-                                 if (!currentPhysMapStr.equals(currentPhysMapInt)) {
-                                     logger.logcInfo(
-                                         "Int & Str Coord disagree for RS" +
-                                         currentRS.getRsId(), false);
-                                     logger.logcInfo("    physMapInt " +
-                                         currentPhysMapInt +
-                                         " physMapStr " +
-                                         currentPhysMapStr, false);
-                                 }
-                             }
-                             currentPhysMapInt = null;
-                             currentPhysMapStr = null;
-                         }
-                         // END DEBUG
                      }
                      else if (it.getTagName().equals("FxnSet")) {
                             // create a FxnSet object
@@ -317,23 +296,15 @@ public class DBSNPNseInputFile extends InputXMLDataFile
                     else if (it.getTagName().equals("PrimarySequence")) {
                         getCompLoc = false;
                     }
-
                      it.nextTag();
                  }
-
-
             }
 
             catch (IOUException e)
             {
                 throw new InterpretException("Cannot read data from xml", e);
             }
-
             return currentNseInput;
         }
-
     }
-
-
-
 }
