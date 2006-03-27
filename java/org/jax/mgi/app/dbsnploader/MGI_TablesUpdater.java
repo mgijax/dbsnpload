@@ -1,0 +1,122 @@
+// $Header
+// $Name
+
+package org.jax.mgi.app.dbsnploader;
+
+import org.jax.mgi.shr.dbutils.DBException;
+import org.jax.mgi.shr.config.ConfigException;
+import org.jax.mgi.shr.cache.CacheException;
+import org.jax.mgi.shr.cache.KeyNotFoundException;
+import org.jax.mgi.shr.dbutils.dao.DAO;
+import org.jax.mgi.dbs.SchemaConstants;
+import org.jax.mgi.dbs.mgd.lookup.MGIUserKeyLookup;
+
+import java.sql.Timestamp;
+import java.util.Date;
+
+/**
+ * An object that updates the snp_data_version and modification_date of an
+ *  MGI_dbinfoState object
+ * @has
+ *   <UL>
+ *   <LI>MGI_dbinfoLookup to lookup the existing record in a database
+ *   <LI>an instance of itself
+ *   </UL>
+ * @does
+ *   <UL>
+ *   <LI>>Creates and Updates  the snp_data_version and modification_date of an
+ *        MGI_dbinfoState object
+ *   <UL>
+ * @company The Jackson Laboratory
+ * @author sc
+ * @version 1.0
+ */
+
+public class MGI_TablesUpdater {
+
+    // Looks up an existing MGI_Table object
+    private MGI_TablesLookup tableDAOLookup;
+
+    // Looks up an MGI_User login to get its key
+    MGIUserKeyLookup userKeyLookup;
+
+    // _loadedBy_key with which to update MGI_Tables records
+    Integer loadedByKey;
+
+    // database in which MGI_Table objects will be updated
+    private String database;
+
+    // current time to update modification date
+    private Timestamp currentDate;
+
+    /**
+     * constructs a MGI_TablesUpdater for a given given database
+     * @effects Queries a database
+     * @throws DBException if error creating MGI_TablesLookup
+     * @throws ConfigException if configuration error creating MGI_TablesLookup or MGIUserLookup
+     */
+
+    public MGI_TablesUpdater(String database, String loadedBy) throws
+        DBException, ConfigException, CacheException, KeyNotFoundException {
+        this .database = database;
+        tableDAOLookup = new MGI_TablesLookup(database);
+        userKeyLookup= new MGIUserKeyLookup();
+        loadedByKey = userKeyLookup.lookup(loadedBy);
+        Timestamp modDate = new Timestamp(new Date().getTime());
+    }
+
+    /**
+     * Creates MGI_TablesDAO for 'tableName' from the current database
+     * then updates _LoadedBy_key,  modification_date, ad loaded_date attributes
+     * @param snpDataVersion new snp data version
+     * @param modDate new modification date
+     * @return updated MGI_TablesDAO object
+     */
+    public DAO update(String tableName) {
+
+        DAO dao = tableDAOLookup.lookup(tableName);
+
+        if(database.equals(SchemaConstants.MGD)) {
+            org.jax.mgi.dbs.mgd.dao.MGI_TablesState state =
+                (( org.jax.mgi.dbs.mgd.dao.MGI_TablesDAO)dao).getState();
+            state.setLoadedByKey(loadedByKey);
+            state.setModificationDate(currentDate);
+            state.setLoadedDate(currentDate);
+        }
+        else if (database.equals(SchemaConstants.SNP)) {
+            org.jax.mgi.dbs.snp.dao.MGI_TablesState state =
+                (( org.jax.mgi.dbs.snp.dao.MGI_TablesDAO)dao).getState();
+            state.setLoadedByKey(loadedByKey);
+            state.setModificationDate(currentDate);
+            state.setLoadedDate(currentDate);
+        }
+        // unsupported database
+        else {
+            // throw an exception
+        }
+        return dao;
+    }
+}
+// $Log
+/**************************************************************************
+*
+* Warranty Disclaimer and Copyright Notice
+*
+*  THE JACKSON LABORATORY MAKES NO REPRESENTATION ABOUT THE SUITABILITY OR
+*  ACCURACY OF THIS SOFTWARE OR DATA FOR ANY PURPOSE, AND MAKES NO WARRANTIES,
+*  EITHER EXPRESS OR IMPLIED, INCLUDING MERCHANTABILITY AND FITNESS FOR A
+*  PARTICULAR PURPOSE OR THAT THE USE OF THIS SOFTWARE OR DATA WILL NOT
+*  INFRINGE ANY THIRD PARTY PATENTS, COPYRIGHTS, TRADEMARKS, OR OTHER RIGHTS.
+*  THE SOFTWARE AND DATA ARE PROVIDED "AS IS".
+*
+*  This software and data are provided to enhance knowledge and encourage
+*  progress in the scientific community and are to be used only for research
+*  and educational purposes.  Any reproduction or use for commercial purpose
+*  is prohibited without the prior express written permission of The Jackson
+*  Laboratory.
+*
+* Copyright \251 1996, 1999, 2002, 2003 by The Jackson Laboratory
+*
+* All Rights Reserved
+*
+**************************************************************************/
