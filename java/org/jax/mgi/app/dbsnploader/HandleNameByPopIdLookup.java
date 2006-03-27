@@ -16,7 +16,7 @@ import org.jax.mgi.shr.dbutils.SQLDataManagerFactory;
 
 /**
  * @is An object that knows how to look up Handle Name given a Population Id
- * @has Nothing
+ * @has A query to get all handle name/population id pairs
  * @does Provides a method to look up a Handle Name given a Population Id
  * @company The Jackson Laboratory
  * @author sc
@@ -36,7 +36,7 @@ public class HandleNameByPopIdLookup extends FullCachedLookup
      */
     public HandleNameByPopIdLookup ()
         throws CacheException, ConfigException, DBException {
-        super(SQLDataManagerFactory.getShared(SchemaConstants.MGD));
+        super(SQLDataManagerFactory.getShared(SchemaConstants.SNP));
     }
 
 
@@ -56,7 +56,6 @@ public class HandleNameByPopIdLookup extends FullCachedLookup
         return (String)super.lookup(popId);
     }
 
-
     /**
      * Get the query to fully initialize the cache.
      * @assumes Nothing
@@ -64,15 +63,12 @@ public class HandleNameByPopIdLookup extends FullCachedLookup
      * @return The query to fully initialize the cache.
      */
     public String getFullInitQuery () {
-        return new String("SELECT a.accid, v.term " +
-                          "FROM ACC_Accession a, SNP_Population p, VOC_Term v " +
+        return new String("SELECT a.accid, p.subHandle " +
+                          "FROM SNP_Accession a, SNP_Population p " +
                           "WHERE a._LogicalDB_key =  " + LogicalDBConstants.SNPPOPULATION +
                           " and a._MGITYpe_key =  " + MGITypeConstants.SNPPOPULATION +
-                          " and a._Object_key = p._Population_key " +
-                          "and v._Vocab_key = " + VocabularyTypeConstants.SUBHANDLE +
-                          " and p._SubHandle_key = v._Term_key");
+                          " and a._Object_key = p._Population_key");
     }
-
 
     /**
      * Get a RowDataInterpreter for creating a KeyValue object from a database
