@@ -4,6 +4,7 @@ RELEASE: 3.44
 CHANGES: 
 1) dbsnpload.config.default - updated SNP_DBURL to correct port, 
    added SNP_Population and SNP_Accession to SNP_UPDATE_MGITABLES
+2) dbsnpload.sh - need closing quote on first echo in main
 
 TAG: dbsnpload-build125-4
 DATE: 03/27/2006
