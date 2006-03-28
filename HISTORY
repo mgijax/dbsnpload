@@ -1,3 +1,10 @@
+DATE: 03/28/2006
+STAFF: sc
+RELEASE: 3.44
+CHANGES: 
+1) dbsnpload.config.default - updated SNP_DBURL to correct port, 
+   added SNP_Population and SNP_Accession to SNP_UPDATE_MGITABLES
+
 TAG: dbsnpload-build125-4
 DATE: 03/27/2006
 STAFF: sc
