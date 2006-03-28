@@ -221,7 +221,7 @@ preload
 #
 # put production snp database in single user mode prior to loading snps
 #
-echo "calling  ${SNP_SGL_USER} ${PRODSNP_DBSERVER} ${PRODSNP_DBNAME} true ${SNP_SGL_USER_FILE} ${SNP_SLEEP_INTERVAL}
+echo "calling  ${SNP_SGL_USER} ${PRODSNP_DBSERVER} ${PRODSNP_DBNAME} true ${SNP_SGL_USER_FILE} ${SNP_SLEEP_INTERVAL}"
 
 ${SNP_SGL_USER} ${PRODSNP_DBSERVER} ${PRODSNP_DBNAME} true ${SNP_SGL_USER_FILE} ${SNP_SLEEP_INTERVAL}
 
