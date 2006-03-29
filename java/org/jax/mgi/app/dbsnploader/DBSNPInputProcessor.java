@@ -603,7 +603,7 @@ public class DBSNPInputProcessor {
         }
         // now resolve if not null
         if (varClass == null) {
-            // case not covered; throw an exception
+            // case not covered; log it
             logger.logcInfo("resolveCSVarClass case not covered. RS" +
                             rsId + " dbsnpVarClass: " +
                             dbsnpVarClass + " alleleSummary " + orderedAlleleSummary, false);
