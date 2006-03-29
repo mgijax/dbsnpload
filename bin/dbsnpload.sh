@@ -198,6 +198,9 @@ preload
 echo "calling  ${SNP_SGL_USER} ${PRODSNP_DBSERVER} ${PRODSNP_DBNAME} true ${SNP_SGL_USER_FILE} ${SNP_SLEEP_INTERVAL}"
 
 ${SNP_SGL_USER} ${PRODSNP_DBSERVER} ${PRODSNP_DBNAME} true ${SNP_SGL_USER_FILE} ${SNP_SLEEP_INTERVAL}
+STAT=$?
+msg="${SNP_SGL_USER} "
+checkstatus ${STAT} "${msg}"
 
 #
 # run fxn class vocload?
