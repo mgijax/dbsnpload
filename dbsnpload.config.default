@@ -320,7 +320,7 @@ export LOG_DISCREP
 SNP_POST_PROCESS=${INSTALLDIR}/bin/postProcess.sh
 
 # full path to backup to create and load into production snp database
-SNP_BACKUP=/rohan/sybase/snp.backup
+SNP_BACKUP=/rohan/sybase/snp_load.backup
 
 export SNP_BACKUP SNP_POST_PROCESS
 
