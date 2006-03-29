@@ -232,7 +232,7 @@ if [ ${doFxn} = "yes" ]
 then
     ${DBSNP_VOCLOAD} -f
     STAT=$?
-    msg="dbsnp fxnClass vocabulary load"
+    msg="dbsnp fxnClass vocabulary load "
     checkstatus ${STAT} "${msg}"
 fi
 
@@ -243,7 +243,7 @@ if [ ${doVar} = "yes" ]
 then
     ${DBSNP_VOCLOAD} -v
     STAT=$?
-    msg="dbsnp varClass vocabulary load"
+    msg="dbsnp varClass vocabulary load "
     checkstatus ${STAT} "${msg}"
 fi
 
@@ -252,7 +252,7 @@ fi
 #
 ${DBSNP_VOCLOAD} -h
 STAT=$?
-msg="dbsnp subHandle vocabulary load"
+msg="dbsnp subHandle vocabulary load "
 checkstatus ${STAT} "${msg}"
 
 #
@@ -262,7 +262,7 @@ if [ ${doVar} = "yes" ]
 then
     ${DBSNP_TRANS_LOAD} -v
     STAT=$?
-    msg="dbsnp varClass translation load"
+    msg="dbsnp varClass translation load "
     checkstatus ${STAT} "${msg}"
 fi
 
@@ -273,7 +273,7 @@ if [ ${doFxn} = "yes" ]
 then
     ${DBSNP_TRANS_LOAD} -f
     STAT=$?
-    msg="dbsnp fxnClass translation load"
+    msg="dbsnp fxnClass translation load "
     checkstatus ${STAT} "${msg}"
 fi
 
@@ -283,7 +283,7 @@ fi
 echo "running population load"
 ${POPULATION_LOAD}
 STAT=$?
-msg="dbsnp population load"
+msg="dbsnp population load "
 checkstatus ${STAT} "${msg}"
 
 #
@@ -292,7 +292,7 @@ checkstatus ${STAT} "${msg}"
 echo "running dbsnp load"
 runsnpload
 STAT=$?
-msg="dbsnp load"
+msg="dbsnp load "
 checkstatus ${STAT} "${msg}"
 
 #
@@ -301,7 +301,7 @@ checkstatus ${STAT} "${msg}"
 echo "running ${SNP_MARKER_CACHE_LOAD}"
 ${SNP_MARKER_CACHE_LOAD}
 STAT=$?
-msg="dbsnp marker cache load"
+msg="dbsnp marker cache load "
 checkstatus  ${STAT} "${msg}"
 
 #
@@ -310,13 +310,17 @@ checkstatus  ${STAT} "${msg}"
 echo "running snp strain order update"
 ${STRAIN_ORDER_LOAD}
 STAT=$?
-msg="snp strain order update"
+msg="snp strain order update "
 checkstatus  ${STAT} "${msg}"
 
 #
 # run postProcessing - dump/load/update mgd MGI_dbinfo
 #
+echo "running post-processing"
 ${SNP_POST_PROCESS}
+STAT=$?
+msg="post-processing "
+checkstatus  ${STAT} "${msg}"
 
 # run postload cleanup and email logs
 #
