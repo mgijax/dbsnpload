@@ -312,17 +312,24 @@ export LOG_DISCREP
 
 #
 # post-processing settings
-# - backup loaded snp db, load production snp db, take out of sgl user mode,
+# - backup loaded snp db, load production snp db, 
 #   update production mgd..MGI_dbinfo
 #
 
 # post-processing script
 SNP_POST_PROCESS=${INSTALLDIR}/bin/postProcess.sh
 
-# full path to backup to create and load into production snp database
-SNP_BACKUP=/rohan/sybase/snp_load.backup
+# backup name
+SNP_BACKUPNAME=snp_load.backup
 
-export SNP_BACKUP SNP_POST_PROCESS
+# full path to backup from the unix server on which the load runs; for dump
+SNP_BACKUP_LOCALPATH=/extra2/sybase/${SNP_BACKUPNAME}
+
+# full path to backup from the unix server on which we want to load the backup
+SNP_BACKUP_REMOTEPATH=/rohan/sybase/${snp_load.backup}
+
+export SNP_POST_PROCESS SNP_BACKUPNAME 
+export SNP_BACKUP_LOCALPATH SNP_BACKUP_REMOTEPATH
 
 # SQL STREAM
 # this overrides the default BCP_Inline_Stream
