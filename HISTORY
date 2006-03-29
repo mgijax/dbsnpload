@@ -4,6 +4,7 @@ RELEASE: 3.44
 CHANGES: 
 1) dbsnpload.config.default - updated SNP_DBURL to correct port, 
    added SNP_Population and SNP_Accession to SNP_UPDATE_MGITABLES
+   changed snp backup name to snp_load.backup
 2) dbsnpload.sh - need closing quote on first echo in main
 3) postProcess.sh setSglUser.sh - added
 
