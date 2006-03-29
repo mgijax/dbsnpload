@@ -210,7 +210,6 @@ public class DBSNPLoader extends DLALoader {
             /**
              * process the genotype file for the Individual data
              */
-            logger.logdDebug("Processing chr " + chr + ". Free memory: " +  Runtime.getRuntime().freeMemory());
 
             // create the genotype filename for this chromosome
             String genotypeFilename = genoConfig.getInfileDir()  +
@@ -263,15 +262,10 @@ public class DBSNPLoader extends DLALoader {
 		    getIterator();
             while (it.hasNext()) {
                 DBSNPNseInput nseInput = (DBSNPNseInput)it.next();
-                //logger.logdDebug("Processing " + nseInput.getRS().getRsId() +
-                //". Free memory: " +  Runtime.getRuntime().freeMemory(), true);
-
                 try {
                     dbsnpProcessor.processInput(nseInput);
                 }
                 catch (SNPNoStrainAlleleException e) {
-                   // logger.logdInfo("No StrainAlleles: " +
-		   // input.getRsId(), true);
                     rsWithNoAllelesCtr++;
                 }
                 catch (SNPNoBL6Exception e) {
