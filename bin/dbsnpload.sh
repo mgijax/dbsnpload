@@ -170,32 +170,6 @@ runsnpload ()
 	-DJOBKEY=${JOBKEY} ${DLA_START}
 }
 
-#
-# function that runs the java snp coordinate load
-#
-runcoordload ()
-{
-    #
-    # log time
-    #
-    echo "\n`date`" >> ${LOG_PROC}
-    #
-    # run dbsnp coordload
-
-    # Here we override the Configured value of DLA_LOADER
-    # and set it to the Configured coordload class
-    # we also override 
-    # and DLA_TRUNCATE_LOAD and  DLA_TRUNCATE_QC_TABLES
-    # so we don't delete the SNP tables during the coordload
-    ${JAVA} ${JAVARUNTIMEOPTS} -classpath ${CLASSPATH} \
-    -DCONFIG=${CONFIG_COMMON},${CONFIG_LOAD} \
-    -DDLA_LOADER=${COORD_DLA_LOADER} \
-    -DDLA_TRUNCATE_LOAD_TABLES="" \
-    -DDLA_TRUNCATE_QC_TABLES="" \
-    -DJOBKEY=${JOBKEY} ${DLA_START}
-}
-
-
 checkstatus ()
 {
 
