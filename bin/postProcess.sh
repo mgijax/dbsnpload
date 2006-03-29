@@ -70,7 +70,7 @@ date | tee -a ${PP_LOG}
 #
 # dump
 #
-echo "dumping ${SNP_DBSERVER} ${SNP_DBNAME} to ${SNP_BACKUP}" | tee -a ${PP_LOG}
+echo "dumping ${SNP_DBSERVER} ${SNP_DBNAME} to ${SNP_BACKUP_LOCALPATH}" | tee -a ${PP_LOG}
 ${MGIDBUTILSDIR}/bin/dump_db.csh ${SNP_DBSERVER} ${SNP_DBNAME} ${SNP_BACKUP}
 
 #
@@ -78,7 +78,7 @@ ${MGIDBUTILSDIR}/bin/dump_db.csh ${SNP_DBSERVER} ${SNP_DBNAME} ${SNP_BACKUP}
 # Note: this also takes the database OUT of sgl user mode
 #
 
-echo "loading ${PRODSNP_DBSERVER} ${PRODSNP_DBNAME} from ${SNP_BACKUP}" | tee -a ${PP_LOG}
+echo "loading ${PRODSNP_DBSERVER} ${PRODSNP_DBNAME} from ${SNP_BACKUP_REMOTEPATH}" | tee -a ${PP_LOG}
 echo ""
 ${MGIDBUTILSDIR}/bin/load_db.csh ${PRODSNP_DBSERVER} ${PRODSNP_DBNAME} ${SNP_BACKUP}
 
