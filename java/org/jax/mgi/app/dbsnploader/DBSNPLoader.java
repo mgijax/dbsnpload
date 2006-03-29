@@ -299,7 +299,9 @@ public class DBSNPLoader extends DLALoader {
         updateMGIdbinfo();
 
         // do updates on MGI_Tables in the 'snp' database
-        updateMGITables();
+        if(loadCfg.getUpdateMGITables() != null) {
+            updateMGITables();
+        }
 
         // close snp and mgd streams
         logger.logdInfo("Closing snp stream", false);
