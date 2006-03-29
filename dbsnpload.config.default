@@ -326,7 +326,7 @@ SNP_BACKUPNAME=snp_load.backup
 SNP_BACKUP_LOCALPATH=/extra2/sybase/${SNP_BACKUPNAME}
 
 # full path to backup from the unix server on which we want to load the backup
-SNP_BACKUP_REMOTEPATH=/rohan/sybase/${snp_load.backup}
+SNP_BACKUP_REMOTEPATH=/rohan/sybase/${SNP_BACKUPNAME}
 
 export SNP_POST_PROCESS SNP_BACKUPNAME 
 export SNP_BACKUP_LOCALPATH SNP_BACKUP_REMOTEPATH
