@@ -22,16 +22,17 @@
 #
 #      - Common configuration file (/usr/local/mgi/etc/common.config.sh)
 #      - dbsnpload.config
-#      - two XML format input files (genotypes are in seperate file)
+#      - two sets XML format input files (genotypes are in separate file set)
 #      - dbsnpload/data input files for translations and vocabs 
-#      - coordinate file created by dbsnpload is input to coordload
+#      - snp and mgd databases
+#
 #  Outputs:
 #
 #      - An archive file
 #      - Log files defined by the environment variables ${LOG_PROC},
 #        ${LOG_DIAG}, ${LOG_CUR} and ${LOG_VAL}
-#      - BCP files for for inserts to each database table to be loaded
-#      - dbsnpload outputs a coordinate file which is input to coordload
+#      - BCP files for inserts to each database table to be loaded
+#      - script files for updates to  snp MGI_dbinfo and MGI_Table
 #      - Records written to the database tables
 #      - Exceptions written to standard error
 #      - Configuration and initialization errors are written to a log file
@@ -115,8 +116,10 @@ fi
 
 echo "javaruntime:${JAVARUNTIMEOPTS}"
 echo "classpath:${CLASSPATH}"
-echo "dbserver:${MGD_DBSERVER}"
-echo "database:${MGD_DBNAME}"
+echo "mgd dbserver:${MGD_DBSERVER}"
+echo "mgd database:${MGD_DBNAME}"
+echo "snp dbserver:${SNP_DBSERVER}"
+echo echo "snp database:${SNP_DBNAME}"
 
 #
 #  Source the DLA library functions.
