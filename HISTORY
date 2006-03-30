@@ -2,11 +2,27 @@ DATE: 03/28/2006
 STAFF: sc
 RELEASE: 3.44
 CHANGES: 
-1) dbsnpload.config.default - updated SNP_DBURL to correct port, 
-   added SNP_Population and SNP_Accession to SNP_UPDATE_MGITABLES
-   changed snp backup name to snp_load.backup
-2) dbsnpload.sh - need closing quote on first echo in main
-3) postProcess.sh setSglUser.sh - added
+1) dbsnpload.config.default - 
+   a) updated SNP_DBURL to correct port, 
+   b) added SNP_Population and SNP_Accession to SNP_UPDATE_MGITABLES,
+   c) changed snp backup name to snp_load.backup,
+   d) Need 2 paths to the backup one on local unix server, one on so
+        created SNP_LOCALBACKUP and SNP_REMOTEBACKUP
+   e) removed SNP_ prefix on SCP* variables so the framework
+        uses them rather than the default which creates files in the 
+        root dir of the product named script.sql and script.out
+2) dbsnpload.sh - 
+    a) need closing quote on first echo in main,
+    b) added status logging of postProcess call,
+    c) removed old runcoordload function
+    d) added more comments; echo the snp db and server as well as the mgd ones
+3) postProcess.sh setSglUser.sh - added(had forgotten to commit)
+4) postProcess.sh - updated with SNP_LOCALBACKUP and SNP_REMOTEBACKUP
+5) added system_docs directory containing dataflow.vsd an MS Visio
+    diagram documenting snp processing.
+6) DBSNPLoader - added test to be sure there were tables configured with
+    which to update MGI_Tables so don't get null ptr exception in prevent
+    execute mode.
 
 TAG: dbsnpload-build125-4
 DATE: 03/27/2006
