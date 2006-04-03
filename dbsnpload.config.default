@@ -23,6 +23,8 @@ PYTHONPATH=/usr/local/mgi/live/lib/python
 PATH=.:$PATH:/usr/bin:$SYBASE/ASE-12_5/bin:$SYBASE/OCS-12_5/bin:/usr/java/bin
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SYBASE/OCS-12_5/lib
 
+export SYBASE PYTHONPATH PATH LD_LIBRARY_PATH
+
 ###########################################################################
 #
 #  Database settings by database
@@ -312,7 +314,7 @@ export LOG_DISCREP
 
 #
 # post-processing settings
-# - backup loaded snp db, load production snp db, 
+# - backup loaded snp db, load production snp db,
 #   update production mgd..MGI_dbinfo
 #
 
