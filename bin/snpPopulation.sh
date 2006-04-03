@@ -64,7 +64,7 @@ fi
 
 # snpPopulation log
 POP_LOG=${LOGDIR}/snpPopulation.log
-touch {POP_LOG}
+touch ${POP_LOG}
 
 checkstatus ()
 {
