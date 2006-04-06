@@ -35,9 +35,9 @@ export SYBASE PYTHONPATH PATH LD_LIBRARY_PATH
 # MGD Connection settings
 #
 
-MGD_DBSERVER=DEV2_MGI
+MGD_DBSERVER=PROD_MGI
 
-MGD_DBURL=firien.informatics.jax.org:4100
+MGD_DBURL=shire.informatics.jax.org:4100
 
 MGD_DBNAME=mgd
 
@@ -54,11 +54,11 @@ export MGD_DBUSER MGD_DBPASSWORDFILE MGD_DBSCHEMADIR
 # - we load to this snp server/database
 #
 
-SNP_DBSERVER=DEV_SNP
+SNP_DBSERVER=PROD1_MGI
 
-SNP_DBURL=rohan.informatics.jax.org:4102
+SNP_DBURL=lindon.informatics.jax.org:4100
 
-SNP_DBNAME=snp_2
+SNP_DBNAME=snp
 
 SNP_DBUSER=mgd_dbo
 SNP_DBPASSWORDFILE=${MGIDBUTILSDIR}/.mgd_dbo_password
@@ -73,14 +73,14 @@ export SNP_DBUSER SNP__DBPASSWORDFILE SNP_DBSCHEMADIR
 # - the production snp server/database
 #   which to load the backup
 #
-PRODSNP_DBSERVER=DEV2_MGI
+PRODSNP_DBSERVER=PROD_MGI
 PRODSNP_DBNAME=snp
 
 export PRODSNP_DBSERVER PRODSNP_DBNAME
 
 # 
 # radar schema directory in order to register jobstream
-# 
+# should be configured for PROD_MGI radar
 RADAR_DBSCHEMADIR=${RADARDBSCHEMADIR}
 
 ###########################################################################
@@ -250,13 +250,13 @@ DBSNP_TRANS_LOAD=${INSTALLDIR}/bin/loadTranslations.sh
 
 export TRANSLATION_LOAD DBSNP_TRANS_LOAD
 
-# varclass translation params (mode = full or preview)
+# varclass translation params (mode = full, fullest, or preview)
 VARCLASS_TRANS_INPUT=${SNP_DATA_DIR}/varClass.goodbad
 VARCLASS_TRANS_LOAD_MODE=fullest
 
 export VARCLASS_TRANS_LOAD VARCLASS_TRANS_INPUT VARCLASS_TRANS_LOAD_MODE
 
-# fxnclass translation params (mode = full or preview)
+# fxnclass translation params (mode = full,fullest, or preview)
 FXNCLASS_TRANS_INPUT=${SNP_DATA_DIR}/fxnClass.goodbad
 FXNCLASS_TRANS_LOAD_MODE=fullest
 
@@ -325,10 +325,10 @@ SNP_POST_PROCESS=${INSTALLDIR}/bin/postProcess.sh
 SNP_BACKUPNAME=snp_load.backup
 
 # full path to backup from the unix server on which the load runs; for dump
-SNP_BACKUP_LOCALPATH=/extra2/sybase/${SNP_BACKUPNAME}
+SNP_BACKUP_LOCALPATH=/extra1/sybase/${SNP_BACKUPNAME}
 
 # full path to backup from the unix server on which we want to load the backup
-SNP_BACKUP_REMOTEPATH=/rohan/sybase/${SNP_BACKUPNAME}
+SNP_BACKUP_REMOTEPATH=/lindon/sybase/${SNP_BACKUPNAME}
 
 export SNP_POST_PROCESS SNP_BACKUPNAME 
 export SNP_BACKUP_LOCALPATH SNP_BACKUP_REMOTEPATH
