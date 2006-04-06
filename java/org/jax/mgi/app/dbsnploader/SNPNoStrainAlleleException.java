@@ -6,8 +6,8 @@ package org.jax.mgi.app.dbsnploader;
 import org.jax.mgi.shr.exception.MGIException;
 
     /**
-     * An MGIException thrown when there are no strain alleles in the genotype
-     * file for this rs
+     * An MGIException thrown when there are no strain alleles
+     * file for this SNP
      * @has an exception message
      * @does nothing
      * @company Jackson Laboratory

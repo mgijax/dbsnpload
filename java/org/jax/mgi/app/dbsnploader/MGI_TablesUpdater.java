@@ -15,12 +15,16 @@ import java.sql.Timestamp;
 import java.util.Date;
 
 /**
- * An object that updates the snp_data_version and modification_date of an
+ * An object that updates modification_date of an
  *  MGI_dbinfoState object
  * @has
  *   <UL>
- *   <LI>MGI_dbinfoLookup to lookup the existing record in a database
- *   <LI>an instance of itself
+ *   <LI>Name of the process, 'loaded_by', using this Updater
+ *   <LI>Name of the database we are updating
+ *   <LI>date with which to update MGI_Tables modification_date and loaded_date
+ *   <LI>user (loaded_by) with which to update MGI_Tables loaded_by
+ *   <LI>MGI_TablesLookup to lookup the existing record in a database
+ *   <LI>MGIUserKeyLookup to resolve 'loaded_by'
  *   </UL>
  * @does
  *   <UL>
@@ -51,9 +55,13 @@ public class MGI_TablesUpdater {
 
     /**
      * constructs a MGI_TablesUpdater for a given given database
+     * @param database the db in which to do the update
+     * @param loadedBy the MGI_User name of the process doing the update
      * @effects Queries a database
      * @throws DBException if error creating MGI_TablesLookup
      * @throws ConfigException if configuration error creating MGI_TablesLookup or MGIUserLookup
+     * @throws CacheException
+     * @throws KeyNotFoundException
      */
 
     public MGI_TablesUpdater(String database, String loadedBy) throws
@@ -67,9 +75,8 @@ public class MGI_TablesUpdater {
 
     /**
      * Creates MGI_TablesDAO for 'tableName' from the current database
-     * then updates _LoadedBy_key,  modification_date, ad loaded_date attributes
-     * @param snpDataVersion new snp data version
-     * @param modDate new modification date
+     * then updates _LoadedBy_key,  modification_date, and loaded_date attributes
+     * @param tableName name of the table for which to update its MGI_Tables record
      * @return updated MGI_TablesDAO object
      */
     public DAO update(String tableName) {

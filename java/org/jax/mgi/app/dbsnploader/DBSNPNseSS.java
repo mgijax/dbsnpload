@@ -1,12 +1,12 @@
 package org.jax.mgi.app.dbsnploader;
 
-import java.util.HashMap;
-
 /**
  *
- * is an object that
- * @has
- * @does
+ * is an object that represents a dbSNP SS in the NSE input file
+ * @has an ssId, a submitter SNP id, a submitter handle that identifies the sub
+ * mitter, a variation class, the orientation of the SS to the RS, whether
+ * this is the 'exemplar' SS (SS from which the flaning sequence is taken), and
+ * the set of alleles observed in this SS.
  * @company Jackson Laboratory
  * @author sc
  *
@@ -90,5 +90,4 @@ class DBSNPNseSS {
      public String getObservedAlleles() {
          return observedAlleles;
      }
-
 }

@@ -10,14 +10,12 @@ import org.jax.mgi.shr.dbutils.DBException;
 import org.jax.mgi.shr.dbutils.RowDataInterpreter;
 import org.jax.mgi.shr.dbutils.RowReference;
 import org.jax.mgi.shr.dbutils.SQLDataManagerFactory;
-import org.jax.mgi.dbs.mgd.LogicalDBConstants;
-import org.jax.mgi.dbs.mgd.MGITypeConstants;
 
 import java.lang.Integer;
 
-
 /**
- * @is An object that the sequenceNum of a chromosome given a _Chromosome_Key
+ * @is An object that looks up  the sequenceNum of a chromosome
+ * given a _Chromosome_Key
  * @has A query to get _Chromosome_Key/sequenceNum pairs
  * @does Provides a method to look up sequenceNum given a _Chromosome_Key
  * @company The Jackson Laboratory
@@ -43,20 +41,18 @@ public class ChrSeqNumLookup extends FullCachedLookup
 
 
     /**
-     * Looks Population Id to find its Handle name.
+     * Looks up a _Chromosome_key to get its sequenceNum.
      * @assumes Nothing
      * @effects Nothing
-     * @param popId Population Id.
-     * @return A String object containing the Handle name for popId
+     * @param key _Chromosome_key to lookup
+     * @return An Integer, the sequenceNum for the given _Chromosome_key
      * @throws CacheException thrown if there is an error accessing the cache
-     * @throws DBException thrown if there is an error accessing the
-     * database
+     * @throws DBException thrown if there is an error accessing the database
      * @throws KeyNotFoundException thrown if the key is not found
      */
     public Integer lookup (Integer key)
         throws KeyNotFoundException, DBException, CacheException {
         return (Integer)super.lookup(key);
-        //return new Integer((String)super.lookup(key));
     }
 
     /**

@@ -10,16 +10,11 @@ import org.jax.mgi.shr.dbutils.DBException;
 import org.jax.mgi.shr.dbutils.RowDataInterpreter;
 import org.jax.mgi.shr.dbutils.RowReference;
 import org.jax.mgi.shr.dbutils.SQLDataManagerFactory;
-import org.jax.mgi.dbs.mgd.LogicalDBConstants;
-import org.jax.mgi.dbs.mgd.MGITypeConstants;
-
-import java.lang.Integer;
-
 
 /**
  * @is An object that looks up the strain name given a strain key
- * @has A query to _Strain_key/strain pairs
- * @does Provides a method to look up strain hame given a _Strain_Key
+ * @has A query to get  _Strain_key/strain pairs
+ * @does Provides a method to look up strain name given a _Strain_Key
  * @company The Jackson Laboratory
  * @author sc
  */
@@ -28,8 +23,7 @@ public class StrainNameLookup extends FullCachedLookup
 {
     /**
      * Constructs a StrainNameLookup object.
-     * @assumes Nothing
-     * @effects Nothing
+     * @effects May create a connection to a database
      * @throws CacheException thrown if there is an error accessing the cache
      * @throws ConfigException thrown if there is an error accessing the
      * configuration
@@ -45,8 +39,8 @@ public class StrainNameLookup extends FullCachedLookup
     /**
      * Looks up strain key to get its strain name
      * @assumes Nothing
-     * @effects Nothing
-     * @param popId Population Id.
+     * @effects queries a database if 'key' not in cache
+     * @param key _Strain_key with which to lookup its name
      * @return A String object containing the strain name
      * @throws CacheException thrown if there is an error accessing the cache
      * @throws DBException thrown if there is an error accessing the

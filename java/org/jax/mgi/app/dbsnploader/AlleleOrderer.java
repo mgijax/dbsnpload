@@ -1,7 +1,6 @@
 package org.jax.mgi.app.dbsnploader;
 
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.*;
 
 /**
  *
@@ -23,7 +22,7 @@ public class AlleleOrderer {
 
     /**
      * orders a '/' delimited string of alleles
-     * @param in - a string of alleles separated by '/'
+     * @param in a string of alleles separated by '/'
      * @return ordered string of alleles separated by '/'
      */
     public String order(String in) {
@@ -40,7 +39,6 @@ public class AlleleOrderer {
                     ret += "/";
                 }
             }
-
         return ret;
     }
 
@@ -74,9 +72,9 @@ public class AlleleOrderer {
          * equal sized nucleotide values (-, A, C, T, G) use ascii value to determine
          * <,=,>
          * shorter allele strings are < longer allele strings
-         * @param pObj1
-         * @param pObj2
-         * @return -1 if s1 < s2, 0 if s1 = s2, 1 if s1 > s2
+         * @param pObj1 object to compare to pObj2
+         * @param pObj2 pObj2 object to compare to pObj1
+         * @return -1 if s1 < s2; 0 if s1 = s2; 1 if s1 > s2
          */
         public int compare(Object pObj1, Object pObj2) {
             String s1 = (String)pObj1;

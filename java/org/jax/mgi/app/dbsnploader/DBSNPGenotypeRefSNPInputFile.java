@@ -126,7 +126,7 @@ public class DBSNPGenotypeRefSNPInputFile extends InputXMLDataFile {
             // set of DBSNPGenotypePopulation objects for the current SS
             Vector currentSSPopulationVector = new Vector();
 
-		// current population of the current SS
+            // current population of the current SS
             DBSNPGenotypePopulation currentPopulation = null;
 
             try {
@@ -164,13 +164,13 @@ public class DBSNPGenotypeRefSNPInputFile extends InputXMLDataFile {
                     // Beginning of a Population
                     else if (it.getTagName().equals("ByPop")) {
                         // add the population vector for the current ss
-			//  to the input object
+                        //  to the input object
                         currentInput.addPopulation(currentSSId,
                             currentSSPopulationVector);
                         for (int i = 0; i < attsCt; i++) {
-			    // when we find the popId attribute, create a new
-			    // population adding it to the current SS population
-			    // vector and set the popId
+                            // when we find the popId attribute, create a new
+                            // population adding it to the current SS population
+                            // vector and set the popId
                             if (atts[i] != null && atts[i].equals("popId")) {
                                 currentPopulation = new DBSNPGenotypePopulation();
                                 currentSSPopulationVector.add(currentPopulation);
@@ -183,7 +183,7 @@ public class DBSNPGenotypeRefSNPInputFile extends InputXMLDataFile {
                     else if (it.getTagName().equals("GTypeByInd")) {
                         for (int i = 0; i < attsCt; i++) {
                             // create an Allele ("A/A" becomes "A") and set
-			    // its orientation
+                            // its orientation
                             if (atts[i] != null && atts[i].equals("gtype")) {
                                 String allele = it.getAttributeValue(i);
                                 ArrayList a = StringLib.split(allele, "/");
@@ -197,7 +197,7 @@ public class DBSNPGenotypeRefSNPInputFile extends InputXMLDataFile {
                                 currentStrainId = it.getAttributeValue(i);
                                 if (strainMap.containsKey(currentStrainId)) {
                                     // set converted strain and its allele
-				    // into the strain allele map
+                                    // into the strain allele map
                                     currentConvertedStrainId = (String)
                                         strainMap.get(currentStrainId);
                                     currentPopulation.addStrainAlleles(

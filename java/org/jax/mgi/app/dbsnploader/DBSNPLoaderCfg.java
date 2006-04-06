@@ -1,7 +1,5 @@
 package org.jax.mgi.app.dbsnploader;
 
-import java.sql.Timestamp;
-
 import org.jax.mgi.shr.config.Configurator;
 import org.jax.mgi.shr.config.ConfigException;
 
@@ -29,10 +27,10 @@ public class DBSNPLoaderCfg extends Configurator {
      /**
      * Constructs a DBSNPLoader configurator to get Values for parameters
      * prefixed with 'prefix'
+     * @param prefix prepend this prefix on all parameters
      * @throws ConfigException if a configuration manager cannot be obtained
      */
     public DBSNPLoaderCfg(String prefix) throws ConfigException{
-        //System.out.println(prefix);
          super.parameterPrefix = prefix;
     }
 
@@ -77,16 +75,6 @@ public class DBSNPLoaderCfg extends Configurator {
     }
 
     /**
-     * Gets the dbsnpload coordload filename (output of dbsnpload, input for
-     *   coordload)
-     * @return the coordload filename
-     * @throws ConfigException if "COORD_OUTPUT_FILE" not found by the
-     * Configurator
-     */
-    public String getCoordFilename() throws ConfigException {
-        return getConfigString("COORD_OUTPUT_FILE");
-    }
-    /**
      * If true, deleted all SNP accession Ids.
      * @return whether to deleted SNP accession ids
      * @throws ConfigException if "SNP_OK_TO_DELETE_ACCESSIONS" not
@@ -95,17 +83,6 @@ public class DBSNPLoaderCfg extends Configurator {
 
     public Boolean getOkToDeleteAccessions() throws ConfigException {
         return getConfigBoolean("SNP_OK_TO_DELETE_ACCESSIONS", Boolean.FALSE);
-    }
-
-    /**
-     * If true, delete the dbsnp strain set.
-     * @return whether to deleted SNP accession ids
-     * @throws ConfigException if "SNP_OK_TO_DELETE_STRAINSET" not found by the
-     * Configurator
-     */
-
-    public Boolean getOkToDeleteStrainSet() throws ConfigException {
-        return getConfigBoolean("SNP_OK_TO_DELETE_STRAINSET", Boolean.FALSE);
     }
 
     /**

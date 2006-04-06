@@ -4,7 +4,6 @@ package org.jax.mgi.app.dbsnploader;
  *
  * is a data object representing an 'individual' from the dbsnp genotype input file
  * @has a strain (which may be a JAX strain id) and a dbsnp strain id
- * @does
  * @company Jackson Laboratory
  * @author sc
  *
@@ -19,7 +18,7 @@ public class DBSNPGenotypeIndividualInput {
 
     /**
      * sets strain id
-     * @param s- a dbsnp strain id
+     * @param s a dbsnp strain id
      */
     public void setStrainId (String s)  {
         strainId = s;

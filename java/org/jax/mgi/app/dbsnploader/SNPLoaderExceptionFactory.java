@@ -18,18 +18,7 @@ public class SNPLoaderExceptionFactory
     public SNPLoaderExceptionFactory() {
     }
 
-    /**
-     * Coordinate file IOException
-     */
-    public static final String CoordFileIOErr=
-        "org.jax.mgi.shr.dla.seqloader.RepeatFileIOException";
-    static {
-        exceptionsMap.put(CoordFileIOErr, new SNPLoaderException(
-            "Coordinate file IOException", false));
-    }
-
-
-    /**
+     /**
      * Database Error deleting Accessions
      */
     public static final String SNPDeleteAccessionsErr =
@@ -39,19 +28,6 @@ public class SNPLoaderExceptionFactory
             "Database Error deleting SNP Accessions",
             false));
     }
-
-
-        /**
-         * Database Error deleting dbsnp Strain Set
-         */
-        public static final String SNPDeleteStrainSetErr =
-            "org.jax.mgi.shr.dla.seqloader.SNPDeleteStrainSetErr";
-        static {
-            exceptionsMap.put(SNPDeleteStrainSetErr, new SNPLoaderException(
-                "Database Error deleting SNP Strain Set",
-                false));
-        }
-
 }
 // $Log
 /**************************************************************************

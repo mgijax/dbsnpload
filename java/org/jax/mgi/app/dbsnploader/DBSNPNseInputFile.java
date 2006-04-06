@@ -1,8 +1,5 @@
 package org.jax.mgi.app.dbsnploader;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-
 import org.jax.mgi.shr.ioutils.InputXMLDataFile;
 import org.jax.mgi.shr.ioutils.XMLDataIterator;
 import org.jax.mgi.shr.ioutils.XMLDataInterpreter;
@@ -11,17 +8,11 @@ import org.jax.mgi.shr.ioutils.IOUException;
 import org.jax.mgi.shr.ioutils.InterpretException;
 import org.jax.mgi.shr.config.ConfigException;
 
-// DEBUG
-import org.jax.mgi.shr.dla.log.DLALogger;
-import org.jax.mgi.shr.dla.log.DLALoggerFactory;
-import org.jax.mgi.shr.dla.log.DLALoggingException;
-// END DEBUG
-
 /**
- * A Representation of the DBSNP NSE file
+ * A Representation of RefSnp data from a dbsnp NSE file
  * @has a pointer to the input file
  * @does provides an iterator to iterate over dbSNP records
- * in the input file
+ * in an input file
  * @company The Jackson Laboratory
  * @author sc
  */
@@ -32,9 +23,6 @@ public class DBSNPNseInputFile extends InputXMLDataFile
 
     private String TAG =  "Rs";
     private String filename = null;
-    // DEBUG/analysis
-    private DLALogger logger;
-
 
     /**
      * constructor which takes the name of the input file as an argument
@@ -44,16 +32,11 @@ public class DBSNPNseInputFile extends InputXMLDataFile
      * @throws IOUException thrown if there is an error accessing the
      * file system
      */
-    // DEBUG - added DLALoggingException
-    public DBSNPNseInputFile(String filename) throws ConfigException, IOUException,
-    DLALoggingException
+    public DBSNPNseInputFile(String filename) throws ConfigException, IOUException
     {
         super(filename);
         this.filename = filename;
-        // DEBUG
-        logger = DLALogger.getInstance();
-        // END DEBUG
-    }
+     }
 
     /**
      * get the iterator for this file which will iterate over
@@ -110,10 +93,6 @@ public class DBSNPNseInputFile extends InputXMLDataFile
             // true if we are looking for Component MapLoc
             // (we don't want PrimarySequence)
             boolean getCompLoc = false;
-            // DEBUG
-            String currentPhysMapStr = null;
-            String currentPhysMapInt = null;
-            // END DEBUG
             try {
                  while (it.getState() != it.TAG_END) {
                      String[] atts = it.getAttributeNames();
@@ -249,12 +228,7 @@ public class DBSNPNseInputFile extends InputXMLDataFile
                              }
                              else if (atts[i] != null && atts[i].equals("physMapInt")) {
                                  currentMapLoc.setStartCoord(new Double(it.getAttributeValue(i)));
-                                 currentPhysMapInt = it.getAttributeValue(i);
-                             }
-                             else if (atts[i] != null && atts[i].equals("physMapStr")) {
-                                 currentPhysMapStr = it.getAttributeValue(i);
-
-                             }
+                              }
                          }
                      }
                      else if (it.getTagName().equals("FxnSet")) {

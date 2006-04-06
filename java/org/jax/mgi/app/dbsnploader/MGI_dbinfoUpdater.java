@@ -17,7 +17,9 @@ import java.util.Date;
  * @has
  *   <UL>
  *   <LI>MGI_dbinfoLookup to lookup the existing record in a database
- *   <LI>an instance of itself
+ *   <LI>a database name
+ *   <LI>date with which to update modification_date column
+ *   <LI>SNP Build Number with which to update snp_data_version column
  *   </UL>
  * @does
  *   <UL>
@@ -42,6 +44,7 @@ public class MGI_dbinfoUpdater {
 
     /**
      * constructs a MGI_dbinfoUpdater for a given given database
+     * @param database name of the database to update
      * @effects Queries a database
      * @throws DBException if error creating MGI_dbinfoLookup
      * @throws ConfigException if configuration error creating MGI_dbinfoLookup

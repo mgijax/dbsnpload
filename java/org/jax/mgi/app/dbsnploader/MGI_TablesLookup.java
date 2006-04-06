@@ -13,11 +13,9 @@ import java.util.HashMap;
 /**
  * @is An object that knows how to look up the MGI_Tables record for a given
  *     database.
- * @has Nothing
- * @does
- *   <UL>
- *   <LI> Provides a method to look up the MGI_Tables record.
- *   </UL>
+ * @has A database name, a Mapping of the table name to a MGI_TablesDAO for
+ * each table in MGI_Tables for this database
+ * @does Provides a method to look up the MGI_Tables record.
  * @company The Jackson Laboratory
  * @author sc
  * @version 1.0

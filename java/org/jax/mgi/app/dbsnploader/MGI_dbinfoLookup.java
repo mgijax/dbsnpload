@@ -13,10 +13,7 @@ import org.jax.mgi.shr.dbutils.ResultsNavigator;
  * @is An object that knows how to look up the MGI_dbinfo record for a given
  *     database.
  * @has Nothing
- * @does
- *   <UL>
- *   <LI> Provides a method to look up the MGI_dbinfo record.
- *   </UL>
+ * @does Provides a method to look up the MGI_dbinfo record.
  * @company The Jackson Laboratory
  * @author sc
  * @version 1.0
@@ -63,8 +60,6 @@ public class MGI_dbinfoLookup
         }
     }
 
-
-
     /**
      * Looks up the MGI_dbinfoDAO object
      * @assumes Nothing
@@ -74,7 +69,6 @@ public class MGI_dbinfoLookup
     public DAO lookup (){
         return dao;
     }
-
 }
 
 

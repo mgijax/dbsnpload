@@ -2,11 +2,8 @@
 // $Name
 
 package org.jax.mgi.app.dbsnploader;
-/**
- * Debug stuff
- */
-import org.jax.mgi.shr.timing.Stopwatch;
 
+import org.jax.mgi.shr.timing.Stopwatch;
 import org.jax.mgi.shr.dbutils.dao.SQLStream;
 import org.jax.mgi.shr.dbutils.SQLDataManager;
 import org.jax.mgi.shr.dbutils.SQLDataManagerFactory;
@@ -28,7 +25,6 @@ import org.jax.mgi.dbs.mgd.LogicalDBConstants;
 import org.jax.mgi.dbs.mgd.VocabularyTypeConstants;
 import org.jax.mgi.shr.cache.CacheConstants;
 import org.jax.mgi.dbs.mgd.MGITypeConstants;
-import org.jax.mgi.dbs.mgd.MGISetConstants;
 import org.jax.mgi.dbs.mgd.AccessionLib;
 import org.jax.mgi.dbs.snp.lookup.SNPAccessionLookup;
 import org.jax.mgi.dbs.SchemaConstants;
@@ -39,16 +35,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.io.IOException;
-import java.sql.Timestamp;
-import java.util.Date;
 
 /**
  * is an object that processes a DBSNPInput object. It resolves and/or
- * translates raw values into MGI values and creates radar and mgd
- * bcp files
+ * translates raw values into MGI values and creates bcp files
  * @has Lookups to resolve attributes,
- *      SQLStreams to write to snp and mgd bcp files,
+ *      SQLStream to write to snp bcp files
  *      A running list of RS ids already looked at, to avoid dups
  * @does resolves snp attributes writing them to bcp files a
  * @company Jackson Laboratory
@@ -57,11 +49,6 @@ import java.util.Date;
  */
 
 public class DBSNPInputProcessor {
-    // DEBUG
-    private Stopwatch stopWatch;
-
-    // mgd stream; writes to bcp files
-   // private SQLStream loadStream;
 
     // snp stream; writes to bcp files
     private SQLStream snpStream;
@@ -72,25 +59,23 @@ public class DBSNPInputProcessor {
     // get a sequence load configurator
     private DBSNPLoaderCfg loadCfg;
 
-    // jobstream key for the radar table load
-    //private Integer jobStreamKey;
-
-    // Hashmap of SS populations by RS
-    // {rsId:{ssid:Vector of DBSNPGenotypePopulation}, ... }
-    private HashMap rsPopulationsBySS;
-
     // Compound object holding all the DAOs representing an RS
     private SNPSNP snpSnp;
-   // private MGDSNP mgdSnp;
 
     // Set of RS ids we have processed (so we don't load dups)
     private HashSet rsIdSet;
 
+    /**
+     * Counters for logging statistics
+     */
     // the current rsId we are processing
     private String rsId;
 
-    // current number of SNPs processed
-    private int snpCtr = 0;
+    // current number of RefSNPs processed
+    private int rsCtr = 0;
+
+    // current number of SubSNPs processed
+    private int ssCtr = 0;
 
     // current number of radar snp/marker relationships process
     private int rdrMkrCtr = 0;
@@ -101,13 +86,23 @@ public class DBSNPInputProcessor {
      // current number of ss (for BL6 RS) w/o strain alleles)
     private int ssNoStAllele = 0;
 
+    /**
+     * Lookups
+     */
+    // the mapping of strainIds to strain names
+    private HashMap individualMap;
+
+    // SS populations by RS
+    // {rsId:{ssid:Vector of DBSNPGenotypePopulation}, ... }
+    private HashMap rsPopulationsBySS;
+
     // lookup mgd db strain key, given a strain  name
     private StrainKeyLookup strainKeyLookup;
 
     // lookup mgd db strain name given a strain key
     private StrainNameLookup strainNameLookup;
 
-    // uniq set of mgd db strain keys to create an MGI_Set
+    // uniq set of snp strain keys to create SNP_Strain
     private HashSet strainKeySet;
 
     // lookup mgd db strain key, given a jax registry id
@@ -140,40 +135,34 @@ public class DBSNPInputProcessor {
     // get a chromosome sequenceNum given a _Chromosome_key
     private ChrSeqNumLookup chrSeqNumLookupByKey;
 
-    // the mapping of strainIds to strain names
-    private HashMap individualMap;
-
+    /**
+     * Helper classes
+     */
     // orders a set of alleles
     private AlleleOrderer alleleOrderer;
 
     // resolves an allele string to an iupac code
     private IUPACResolver iupacResolver;
 
-    // Exceptions
+    // Exception Factory
     private SNPLoaderExceptionFactory snpEFactory;
 
     /**
-     * Constructs a DBSNPInputProcessor with a snp and mgd stream
+     * Constructs a DBSNPInputProcessor with a snp stream
      * @assumes Nothing
-     * @effects Writes files to a filesystem
      * @param snpSqlStream stream for writing snp bcp files
-     * @throws CacheException
-     * @throws KeyNotFoundException
-     * @throws TranslationException
-     * @throws ConfigException  if there are configuration errors.
+     * @throws CacheException - if lookup caching erro
+     * @throws KeyNotFoundException - if error creating ChromosomeKeyLookup
+     * @throws TranslationException - if error creating any VocabKeyLookup
+     *      or ChromsomeKeyLookup
+     * @throws ConfigException - if error accessing configuration
      * @throws DBException if error creating DBSNPGenotype objects
      * @throws DLALoggingException if error creating a logger
      */
 
-    //public DBSNPInputProcessor(SQLStream snpSqlStream,
-      //                         SQLStream loadSqlStream) throws
       public DBSNPInputProcessor(SQLStream snpSqlStream) throws
-        CacheException, KeyNotFoundException,
-        DBException, ConfigException, DLALoggingException, TranslationException {
-        /**
-         * Debug stuff
-         */
-        stopWatch = new Stopwatch();
+        CacheException, KeyNotFoundException, TranslationException,
+        DBException, ConfigException, DLALoggingException {
 
         // set the streams
         snpStream = snpSqlStream;
@@ -192,9 +181,9 @@ public class DBSNPInputProcessor {
         strainKeyLookup = new StrainKeyLookup();
         strainKeyLookup.initCache();
 
-	// lookup strain name by strain key
-	strainNameLookup = new StrainNameLookup();
-	strainNameLookup.initCache();
+	    // lookup strain name by strain key
+        strainNameLookup = new StrainNameLookup();
+        strainNameLookup.initCache();
 
         // unique set of strain keys
         strainKeySet = new HashSet();
@@ -257,7 +246,6 @@ public class DBSNPInputProcessor {
         // close the mgd connection provided by superclass now that we have
         // created the lookups
         //SQLDataManagerFactory.getShared(SchemaConstants.MGD).closeResources();
-
     }
 
     /**
@@ -301,15 +289,26 @@ public class DBSNPInputProcessor {
     }
 
     /**
-     * Resolves and/or translates raw values into MGI values and creates
-     * radar and mgd bcp files
-     * @param input DBSNPNseInput object containing raw values to resolve in
-     * order to create radar and mgd database objects
+     * Resolves and/or translates raw values to MGI values and creates bcp files
+     * @param input DBSNPNseInput object containing objects representing raw values
+     * from the input the NSE Input file
      * @effects - writes bcp files to a filesystem
+     * @throws MGIException if
+     * <OL>
+     * <LI>can't resolve a strain
+     * <LI>a RefSNP is repeated
+     * <LI>no BL6 coordinates
+     * <LI>BL6 coordinates on > 1 chromosome
+     * <LI>if error using lookups
+     * <LI>if error accessing configuration
+     * <LI>if error resolving a) orientation b)
+     * </OL
      */
     public void processInput(DBSNPNseInput input) throws MGIException {
+        // The compound snp object we are building
         snpSnp = new SNPSNP(snpStream);
-        //mgdSnp = new MGDSNP(loadStream);
+
+        // get the rs object and its rsId from 'input'
         DBSNPNseRS rs = ( (DBSNPNseInput) input).getRS();
         rsId = rs.getRsId();
 
@@ -322,7 +321,7 @@ public class DBSNPInputProcessor {
         }
         rsIdSet.add(rsId);
 
-        // get the raw data objects from the DBSNPNseInput object
+        // W know we don't have a repeat; get the rest of the data objects from 'input'
         Vector subSNPs = ( (DBSNPNseInput) input).getSubSNPs();
         Vector flank3Prime = ( (DBSNPNseInput) input).get3PrimeFlank();
         Vector flank5Prime = ( (DBSNPNseInput) input).get5PrimeFlank();
@@ -346,8 +345,7 @@ public class DBSNPInputProcessor {
         // create the consensus object
         Integer consensusKey = processConsensusSnp(rs);
 
-        // create radar MGI_SNP_Marker DAOs and SNP_Coord_CacheDAOs;
-        // do this first as RS with no C57BL/6J coordinates are
+        // process coordinates first; RS with no C57BL/6J coordinates are
         // rejected by this method
         processCoordinates(consensusKey, contigHits, rsId);
 
@@ -401,7 +399,7 @@ public class DBSNPInputProcessor {
         snpSnp.sendToStream();
 
         // incr ctr, we've added another snp
-        snpCtr++;
+        rsCtr++;
     }
 
     /**
@@ -417,7 +415,8 @@ public class DBSNPInputProcessor {
      */
     public Vector getProcessedReport() {
         Vector report = new Vector();
-        report.add("Total SNPs created: " + snpCtr);
+        report.add("Total RefSNPs created: " + rsCtr);
+        report.add("Total SubSNPs created: " + ssCtr);
         report.add("Total SS with no strain alleles: " + ssNoStAllele);
         report.add("Total snp/marker relationships created: " + rdrMkrCtr);
         report.add("Total snp coordinates created: " + snpCoordCtr);
@@ -431,11 +430,11 @@ public class DBSNPInputProcessor {
     }
 
     /**
-     * creates an SNP_ConsensusSNPDAO object
+     * creates an SNP_ConsensusSNPDAO object and sets in the SNPSNP object
      * @param rs a DBSNPNseRS object
      * @return SNP_ConsensusSNP._ConsensusSNP_key
      * @throws DBException
-     * @throws ConfigException
+     * @throws ConfigException - if error accessing configuration
      */
     private Integer processConsensusSnp(DBSNPNseRS rs) throws DBException,
         ConfigException {
@@ -455,12 +454,12 @@ public class DBSNPInputProcessor {
      * Adds _VarClass_key to SNP_Coord_CacheState object
      * These three attributes can be determined only after all ConsensusSnp alleles
      * have been processed.
-     * @param orderedAlleleSummary
-     * @param dbsnpVarClass
+     * @param orderedAlleleSummary - allele summary string
+     * @param dbsnpVarClass - the raw dbSNP variation class
      * @throws SNPVocabResolverException
-     * @throws ConfigException
+     * @throws ConfigException - if error accessing configuration
      * @throws TranslationException
-     * @throws CacheException
+     * @throws CacheException - if lookup caching error
      * @throws DBException
      */
     private void finishConsensusSnp(String orderedAlleleSummary, String dbsnpVarClass)
@@ -493,13 +492,13 @@ public class DBSNPInputProcessor {
 
     /**
      * determines the consensus snp variation class based on the allele summary
-     * @param dbsnpVarClass
-     * @param alleleSummary
+     * @param orderedAlleleSummary - allele summary string
+     * @param dbsnpVarClass - the raw dbSNP variation class
      * @return variation class key
      * @throws DBException
-     * @throws CacheException
+     * @throws CacheException - if lookup caching error
      * @throws TranslationException
-     * @throws ConfigException
+     * @throws ConfigException - if error accessing configuration
      * @throws SNPVocabResolverException
      * @note
      * See the requirements doc for Richard's algorithm. This method could
@@ -626,24 +625,27 @@ public class DBSNPInputProcessor {
 
     /**
      * create consensus snp allele objects
-     * @param consensusKey
+     * @param consensusKey _ConsensusSnp_key for the current Consensus Snp
      * @param ssPopulationMap {ssId:Vector of Population objects, ...}
-     * @param rsId
+     * @param rsId for the current Consensus Snp
      * @assumes unresolvable strains are reported when processing
      *           SS strain alleles
+     * @return allele summary string
      * @throws DBException
-     * @throws ConfigException
+     * @throws ConfigException - if error accessing configuration
      * @throws TranslationException
-     * @throws CacheException
+     * @throws CacheException - if lookup caching error
+     * @throws KeyNotFoundException if can't resolve strain
      * @throws SNPNoConsensusAlleleSummaryException if not able to create a
      *            ConsensusAllele summary
+     * @throws MGIException if error determining consensus allele
      */
     private String processConsensusAlleles(Integer consensusKey,
                                          HashMap ssPopulationMap,
                                          String rsId)
         throws DBException, ConfigException, TranslationException,
-			      CacheException, MGIException,
-			      SNPNoConsensusAlleleSummaryException {
+			      CacheException, KeyNotFoundException,
+			      SNPNoConsensusAlleleSummaryException, MGIException {
 
         //  map strain to alleles and count of each allele
         // consensusAlleleMap looks like strain:HashMap[allele:count]
@@ -651,9 +653,6 @@ public class DBSNPInputProcessor {
 
         // summary of the consensus alleles
         HashSet alleleSummarySet = new HashSet();
-
-        // current number of ss that have a population
-        int ssWithPopulationCt = 0; //DEBUG
 
         /**
          * Iterate thru each SS
@@ -664,12 +663,6 @@ public class DBSNPInputProcessor {
 
             // get the set of populations for this SS
             Vector population = (Vector) ssPopulationMap.get(currentSSId);
-
-            // DEBUG
-            if (population.size() > 0) {
-                ssWithPopulationCt++;
-            }
-            // END DEBUG
 
             /**
              * Iterate thru the populations of the current SS and create the
@@ -773,7 +766,8 @@ public class DBSNPInputProcessor {
      * @param csKey the _ConsensusSNP_key
      * @param csAlleleMap strainKey:HashMap[allele:count]
      * @throws DBException
-     * @throws ConfigException
+     * @throws ConfigException - if error accessing configuration
+     * @throws MGIException if error determining consensus allele
      */
     private void createConsensusAlleles(Integer csKey, HashMap csAlleleMap)
 	    throws DBException, ConfigException, MGIException {
@@ -891,10 +885,12 @@ public class DBSNPInputProcessor {
      * strain key
      * @param strain a dbsnp strain name of jax registry id
      * @param popId population id of the population from which 'strain' came
+     * @return SNP_StrainState object, which may be null
      * @throws DBException
-     * @throws ConfigException
+     * @throws ConfigException - if error accessing configuration
      * @throws TranslationException
-     * @throws CacheException
+     * @throws CacheException - if lookup caching error
+     * @throws KeyNotFoundException - if unable to resolve strain
      */
     private SNP_StrainState resolveStrain(String strain, String popId) throws
         DBException, ConfigException,
@@ -1034,12 +1030,15 @@ public class DBSNPInputProcessor {
    /**
     * creates SNP_SubSnpDAO(s), SNP_AccessionDAOs for submitter snp id and SubSnp id,
     * SNP_SubSnp_StrainAlleleDAO(s), and MGI_SetMemberDAO(s) for SNP Strain set
-    * @param consensusKey mgd _ConsensusSNP_key to which 'ss' belongs
-    * @param ss DBSNPNseSS object
+    * @param consensusKey _ConsensusSNP_key to which 'ss' belongs
+    * @param ss DBSNPNseSS (raw dbsnp ss data) object
+    * @param populations the set of populations for 'ss'
     * @throws DBException
-    * @throws ConfigException
-    * @throws CacheException
+    * @throws ConfigException - if error accessing configuration
+    * @throws CacheException - if lookup caching error
     * @throws TranslationException
+    * @throws KeyNotFoundException
+    * @throws SNPVocabResolverException
     */
     private void processSS(Integer consensusKey, DBSNPNseSS ss, Vector populations) throws
         DBException, ConfigException, CacheException, TranslationException,
@@ -1107,6 +1106,8 @@ public class DBSNPInputProcessor {
           // set ss state object in the snp object, this returns the ssKey
           // for use creating accession and strain allele objects
           Integer ssKey = snpSnp.addSubSNP(state);
+          // count of the total ss loaded
+          ssCtr++;
 
           // create an accession object for the ssId
           processAccession(SNPLoaderConstants.PREFIX_SSNP + ssId, LogicalDBConstants.SUBSNP,
@@ -1125,17 +1126,16 @@ public class DBSNPInputProcessor {
     }
     /**
      * create a SNP_AccessionState and set in the SNPSNP object
-     * @param accid the accession id
-     * @param logicalDBKey mgd _LogicalDB_key of the accession id
-     * @param objectKey the _Object_key with which we are associating 'accid'
-     * @param mgiTypeKey mgd _MGIType_key for the object type of 'object key'
+     * @param accid an accession id
+     * @param logicalDBKey  _LogicalDB_key of the accession id
+     * @param objectKey  _Object_key with which we are associating 'accid'
+     * @param mgiTypeKey  _MGIType_key for the object type of 'object key'
      * @throws DBException
-     * @throws ConfigException
+     * @throws ConfigException - if error accessing configuration
      */
     private void processAccession(String accid, int logicalDBKey,
                                   Integer objectKey, int mgiTypeKey)
-            throws DBException, ConfigException, CacheException,
-            KeyNotFoundException {
+            throws DBException, ConfigException {
 
         // create a state object
         SNP_AccessionState state = new SNP_AccessionState();
@@ -1162,13 +1162,14 @@ public class DBSNPInputProcessor {
 
     /**
      * create SubSNP strain allele DAOs for a population
-     * @param subSNPKey SubSNP key for which we are creating strain alleles
+     * @param ssKey SubSNP key for which we are creating strain alleles
      * @param ssId SubSNP id of the SS for which we are creating strain alleles
      * @param pop Population for which we are creating strain alleles
      * @throws DBException
-     * @throws ConfigException
-     * @throws CacheException
-     * @throws TranslationException
+     * @throws ConfigException - if error accessing configuration
+     * @throws CacheException - if lookup caching error
+     * @throws TranslationException if error translating strain
+     * @throws KeyNotFoundException if fail to resolve strain or population id to its name
      */
     private void processSSStrainAlleles(Integer ssKey, String ssId,
                                         DBSNPGenotypePopulation pop) throws
@@ -1232,8 +1233,8 @@ public class DBSNPInputProcessor {
     * Add a SNP_StrainState to the SNPSNP object for this strain if we haven't already
     * @param state SNP_StrainState from which to create DAO
     * @throws DBException
-    * @throws CacheException
-    * @throws ConfigException
+    * @throws CacheException - if lookup caching error
+    * @throws ConfigException - if error accessing configuration
     */
     private void createStrain(SNP_StrainState state)
              throws DBException, CacheException, ConfigException {
@@ -1252,7 +1253,7 @@ public class DBSNPInputProcessor {
      *   from the input file
      * @param is5Prime true if 5' flank, false if 3' flank
      * @throws DBException
-     * @throws ConfigException
+     * @throws ConfigException - if error accessing configuration
      */
 
     private void processFlank(Integer consensusKey, Vector flank,
@@ -1294,7 +1295,7 @@ public class DBSNPInputProcessor {
      * @param consensusKey  _Consensus_key to which this flank belongs
      * @param is5Prime true if 5' flank, false if 3' flank
      * @throws DBException
-     * @throws ConfigException
+     * @throws ConfigException - if error accessing configuration
      */
     private void processFlankState(String flankChunk, Integer sequenceNum,
                                    Integer consensusKey, Boolean is5Prime)
@@ -1312,30 +1313,31 @@ public class DBSNPInputProcessor {
     }
 
     /**
-     * Writes coordinate information to a file
+     * creates SNP_Coord_Cache and DP_SNP_Marker DAOs
      * @param consensusKey _Consensus_key to which 'contigHits' belong
      * @param contigHits Vector of contig hits for 'consensusKey'
      * @param rsId RefSNP id to which 'contigHits' belongs
-     * @throws DBException
-     * @throws ConfigException
-     * @throws CacheException
-     * @throws KeyNotFoundException
-     * @throws SNPNoBL6Exception
-     * @throws SNPMultiBL6ChrException
+     * @throws DBException - if database error in a lookup or when creating DAOs
+     * @throws ConfigException - if error accessing configuration
+     * @throws CacheException - if lookup caching error
+     * @throws KeyNotFoundException - if can't resolve chromosome, chr sequenceNum
+     *         or function class
+     * @throws SNPNoBL6Exception - if no BL6 coordinates
+     * @throws SNPMultiBL6ChrException - if BL6 coordinates on multiple chr
+     * @throws TranslationException - if can't resolve orientation
      */
     private void processCoordinates(Integer consensusKey, Vector contigHits,
                                     String rsId) throws DBException,
         ConfigException, CacheException, KeyNotFoundException,
-        SNPNoBL6Exception, SNPMultiBL6ChrException,
-        TranslationException, SNPLoaderException {
+        SNPNoBL6Exception, SNPMultiBL6ChrException, TranslationException{
 
         // We're going to need some SNP_ConsensusSnpState attributes in this processing
         SNP_ConsensusSnpState csState = (SNP_ConsensusSnpState)snpSnp.getConsensusSnpDao().getState();
 
-        // true if this RefSNP has a BL6 coordinate
+        // true if this SNP has a BL6 coordinate
         boolean bl6Flag = false;
 
-        // true if this RefSNP has a  BL6 MapLoc with no coordinate value
+        // true if this SNP has a  BL6 MapLoc with no coordinate value
         boolean bl6NoCoordFlag = false;
 
         // the set of chromosomes on BL6 assembly for this RS
@@ -1357,7 +1359,7 @@ public class DBSNPInputProcessor {
             // get the chromosome on which this contig hit is found
             String chromosome = cHit.getChromosome();
 
-            // add the chromosome to set of chr for this RefSNP
+            // add the chromosome to set of chr for this SNP
             bl6ChrSet.add(chromosome);
 
             // get the Map locations of this Contig Hit
@@ -1383,28 +1385,27 @@ public class DBSNPInputProcessor {
                     bl6NoCoordFlag = true;
                     continue;
                 }
-
-                //NEW CODE
+                // create the state object
                 SNP_Coord_CacheState coordCacheState = new SNP_Coord_CacheState();
 
                 /**
-                 * build the SNP_Coord_Cache object
+                 * We have BL6 coords on a sgl chr, build the SNP_Coord_Cache object
                  */
                 coordCacheState.setConsensusSnpKey(consensusKey);
                 coordCacheState.setChromosome(chromosome);
 
-                //resolve the chromosome sequence number
+                //resolve the chromosome sequence number; set in the state
                 Integer chrKey = chrLookupByName.lookup(chromosome);
-
                 coordCacheState.setSequenceNum( chrSeqNumLookupByKey.lookup(chrKey) );
+                logger.logdDebug("Used chrLookupByName for " + chromosome + " and got " + chrKey);
 
                 // dbSNP xml files now 0 based - need to add 1
+                // Note: isMultiCoord is set in snpSnp
                 startCoord = new Double (startCoord.intValue() + 1);
                 coordCacheState.setStartCoordinate(startCoord);
-                // Note: isMultiCoord is set in snpSnp
 
                 /**
-                 * get the RS orientation to the chromosome and translate it
+                 * get the RS orientation to the chromosome and translate it,
                  * if necessary. Set in SNP_Coord_CacheState object
                  */
                 String orient = mloc.getRSOrientToChr();
@@ -1432,8 +1433,8 @@ public class DBSNPInputProcessor {
                 Vector fxnSets = mloc.getFxnSets();
 
                 // the distinct set of fxn classes. contains string composed of
-                // chromosome + coord + locusId + fxnClass +
-                // nucleotideId + proteinId
+                // chromosome + coord + locusId + fxnClass + nucleotideId + proteinId
+                // uset this so we don't load dup fxn classes
                 HashSet fxnSetSet = new HashSet();
 
                 // iterate over the FxnSets
@@ -1475,14 +1476,8 @@ public class DBSNPInputProcessor {
                 }
             }
         }
-        // throw an exception if > 1 BL6 chromosome
+           // throw an exception if > 1 BL6 chromosome
            if (bl6ChrSet.size() > 1) {
-              /* logger.logcInfo("RS" + rsId + " has " + bl6ChrSet.size() +
-                               " chromosomes", false);
-               for (Iterator j = bl6ChrSet.iterator(); j.hasNext(); ) {
-                   logger.logcInfo( (String) j.next(), false);
-               } */
-
                SNPMultiBL6ChrException e = new
                    SNPMultiBL6ChrException();
                e.bind("rsId=" + rsId);

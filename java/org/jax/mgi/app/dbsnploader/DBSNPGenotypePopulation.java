@@ -1,11 +1,10 @@
 package org.jax.mgi.app.dbsnploader;
 
-import java.util.Vector;
 import java.util.HashMap;
 
 /**
  * is a data object representing a dbsnp Population
- * @has a population id and a set of strain/alleles for the population
+ * @has a population id and a mapping of strain/alleles for the population
  * @does
  * @company Jackson Laboratory
  * @author sc
@@ -16,7 +15,7 @@ public class DBSNPGenotypePopulation {
     // dbsnp Population id
     private String popId;
 
-    // strain alleles (like {strain:allele, ..., strain:allele} )
+    // strain alleles (looks like {strain:allele, ..., strain:allele} )
     private HashMap strainAllelesMap;
 
     /**

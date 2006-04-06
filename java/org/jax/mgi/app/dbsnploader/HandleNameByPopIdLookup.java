@@ -2,7 +2,6 @@ package org.jax.mgi.app.dbsnploader;
 
 import org.jax.mgi.dbs.SchemaConstants;
 import org.jax.mgi.dbs.mgd.LogicalDBConstants;
-import org.jax.mgi.dbs.mgd.VocabularyTypeConstants;
 import org.jax.mgi.dbs.mgd.MGITypeConstants;
 import org.jax.mgi.shr.cache.CacheException;
 import org.jax.mgi.shr.cache.FullCachedLookup;
@@ -27,7 +26,7 @@ public class HandleNameByPopIdLookup extends FullCachedLookup
     /**
      * Constructs a PopulationHandleLookup object.
      * @assumes Nothing
-     * @effects Nothing
+     * @effects May create a connection to a database
      * @throws CacheException thrown if there is an error accessing the cache
      * @throws ConfigException thrown if there is an error accessing the
      * configuration
@@ -43,7 +42,7 @@ public class HandleNameByPopIdLookup extends FullCachedLookup
     /**
      * Looks Population Id to find its Handle name.
      * @assumes Nothing
-     * @effects Nothing
+     * @effects queries a database if 'popId' not in the cache
      * @param popId Population Id.
      * @return A String object containing the Handle name for popId
      * @throws CacheException thrown if there is an error accessing the cache

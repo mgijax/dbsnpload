@@ -7,16 +7,12 @@ public class SNPLoaderConstants {
 *   <UL>
 *   <LI> Constant definitions for:
 *   <UL>
-     *  <LI> SNP objects type
-     *  <LI>accession id prefixex
-     *  <LI>logicalDB values
-     *  <LI>assemblies
-     *  <LI>orientation
-     *  <LI> function class
-     *  <LI> variation class
+*  <LI>accession id prefixes
+*  <LI>assemblies
+*  <LI>orientation
+*  <LI> variation class
 *   </UL>
 *   </UL>
-* @does Nothing
 * @company The Jackson Laboratory
 * @author sc
 */

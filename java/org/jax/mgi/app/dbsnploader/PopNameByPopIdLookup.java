@@ -25,7 +25,7 @@ import org.jax.mgi.dbs.mgd.MGITypeConstants;
 public class PopNameByPopIdLookup extends FullCachedLookup
 {
     /**
-     * Constructs a PopulationHandleLookup object.
+     * Constructs a PopNameByPopIdLookup object.
      * @assumes Nothing
      * @effects Nothing
      * @throws CacheException thrown if there is an error accessing the cache
@@ -41,7 +41,7 @@ public class PopNameByPopIdLookup extends FullCachedLookup
 
 
     /**
-     * Looks Population Id to find its Handle name.
+     * Looks up Population Id to find its Handle name.
      * @assumes Nothing
      * @effects Nothing
      * @param popId Population Id.

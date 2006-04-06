@@ -6,8 +6,7 @@ package org.jax.mgi.app.dbsnploader;
 import org.jax.mgi.shr.exception.MGIException;
 
     /**
-     * An MGIException thrown when there are multiple BL6 chromosomes for
-     * an RS
+     * An MGIException thrown when a C57BL/6J SNP is on multiple chromosomes
      * @has an exception message
      * @does nothing
      * @company Jackson Laboratory

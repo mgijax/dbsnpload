@@ -2,10 +2,10 @@ package org.jax.mgi.app.dbsnploader;
 
 /**
  *
- * is a data object representing a dbsnp allele 
- * @has and allele typing and its orientation to the RS flanking sequence,
+ * is a data object representing a dbsnp allele
+ * @has an allele typing and its orientation to the RS flanking sequence,
  *      forward or reverse
- * @does 
+ * @does
  * @company Jackson Laboratory
  * @author sc
  *
