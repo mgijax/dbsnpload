@@ -2,9 +2,18 @@ package org.jax.mgi.app.dbsnploader;
 
 /**
  *
- * is an object that
+ * is an object that represents a Function Set in the DBSNP NSE input file
  * @has
- * @does
+ * <OL>
+ * <LI>locusId - entrezgene id of a Marker associated with this snp
+ * <LI>fxnClass - functional class of the snp
+ * <LI>contigAllele - allele on the contig where this snp lies
+ * <LI>aaResidue - the amino acid where this snp lies on the contig
+ * <LI>aaPosition - amino acid position
+ * <LI>readingFrame - reading frame where this snp lies on the contig
+ * <LI>nuclId - RefSeq nucleotide id for the marker
+ * <LI>protId - RefSeq protein id for the marker
+ * </OL
  * @company Jackson Laboratory
  * @author sc
  *

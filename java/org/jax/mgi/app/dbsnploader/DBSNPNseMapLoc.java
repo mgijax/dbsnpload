@@ -4,9 +4,9 @@ import java.util.Vector;
 
 /**
  *
- * is an object that
- * @has
- * @does
+ * is an object that represents maplocation from a dbsnp input NSE file
+ * @has a the starting coordinate of the snp, the orientation of the snp to the
+ * chromosome, a set of DBSNPNseFxnSets for this coordinate
  * @company Jackson Laboratory
  * @author sc
  *

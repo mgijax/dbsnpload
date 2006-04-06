@@ -18,50 +18,7 @@ public class SNPLoaderExceptionFactory
     public SNPLoaderExceptionFactory() {
     }
 
-    /**
-     * Coordinate file IOException
-     */
-    public static final String CoordFileIOErr=
-        "org.jax.mgi.shr.dla.seqloader.RepeatFileIOException";
-    static {
-        exceptionsMap.put(CoordFileIOErr, new SNPLoaderException(
-            "Coordinate file IOException", false));
-    }
-
-    /**
-     * could not add qc dao object to stream
-     */
-    public static final String QCErr =
-        "org.jax.mgi.shr.dla.seqloader.QCErr";
-    static {
-        exceptionsMap.put(QCErr, new SNPLoaderException(
-            "Could not add a new qc item to the qc reporting table named ??",
-            false));
-    }
-
-    /**
-     * Error creating a MGI_SNP_Accession object
-     */
-    public static final String CreateMGISNPAccessionErr =
-        "org.jax.mgi.shr.dla.seqloader.CreateMGISNPAccessionErr";
-    static {
-        exceptionsMap.put(CreateMGISNPAccessionErr, new SNPLoaderException(
-            "Error creating MGI_SNP_AccessionDAO objects for ??",
-            false));
-    }
-
-    /**
-     * Database Error sending DBSNPNse object to stream
-     */
-    public static final String DBSNPNseSendToStreamErr =
-        "org.jax.mgi.shr.dla.seqloader.DBSNPNseSendToStreamErr";
-    static {
-        exceptionsMap.put(DBSNPNseSendToStreamErr, new SNPLoaderException(
-            "Database Error sending DBSNPNse object to stream for ??",
-            false));
-    }
-
-    /**
+     /**
      * Database Error deleting Accessions
      */
     public static final String SNPDeleteAccessionsErr =
@@ -71,19 +28,6 @@ public class SNPLoaderExceptionFactory
             "Database Error deleting SNP Accessions",
             false));
     }
-
-
-        /**
-         * Database Error deleting dbsnp Strain Set
-         */
-        public static final String SNPDeleteStrainSetErr =
-            "org.jax.mgi.shr.dla.seqloader.SNPDeleteStrainSetErr";
-        static {
-            exceptionsMap.put(SNPDeleteStrainSetErr, new SNPLoaderException(
-                "Database Error deleting SNP Strain Set",
-                false));
-        }
-
 }
 // $Log
 /**************************************************************************

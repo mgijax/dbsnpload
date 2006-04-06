@@ -15,9 +15,9 @@ import org.jax.mgi.dbs.mgd.MGITypeConstants;
 
 
 /**
- * @is An object
- * @has
- * @does
+ * @is An object that looks up a population name by its population id
+ * @has A query to get all population name/population id pairs
+ * @does Provides a method to look up a population name given a population id
  * @company The Jackson Laboratory
  * @author sc
  */
@@ -25,7 +25,7 @@ import org.jax.mgi.dbs.mgd.MGITypeConstants;
 public class PopNameByPopIdLookup extends FullCachedLookup
 {
     /**
-     * Constructs a PopulationHandleLookup object.
+     * Constructs a PopNameByPopIdLookup object.
      * @assumes Nothing
      * @effects Nothing
      * @throws CacheException thrown if there is an error accessing the cache
@@ -36,12 +36,12 @@ public class PopNameByPopIdLookup extends FullCachedLookup
      */
     public PopNameByPopIdLookup ()
         throws CacheException, ConfigException, DBException {
-        super(SQLDataManagerFactory.getShared(SchemaConstants.MGD));
+        super(SQLDataManagerFactory.getShared(SchemaConstants.SNP));
     }
 
 
     /**
-     * Looks Population Id to find its Handle name.
+     * Looks up Population Id to find its Handle name.
      * @assumes Nothing
      * @effects Nothing
      * @param popId Population Id.
@@ -64,7 +64,7 @@ public class PopNameByPopIdLookup extends FullCachedLookup
      */
     public String getFullInitQuery () {
         return new String("SELECT a.accid, p.name " +
-                          "FROM ACC_Accession a, SNP_Population p " +
+                          "FROM SNP_Accession a, SNP_Population p " +
                           "WHERE a._LogicalDB_key =  " + LogicalDBConstants.SNPPOPULATION +
                           " and a._MGITYpe_key = " + MGITypeConstants.SNPPOPULATION +
                           " and a._Object_key = p._Population_key");

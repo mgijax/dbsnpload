@@ -1,14 +1,19 @@
 package org.jax.mgi.app.dbsnploader;
 
-import java.util.HashMap;
 import java.util.Vector;
-import java.util.Iterator;
 
 /**
  *
- * is an object that
+ * is an object that represents the set of raw data for a dbSNP RefSnp
  * @has
- * @does
+ * <OL>
+ * <LI>A DBSNPNseRS
+ * <LI>An rsId
+ * <LI>A set of DBSNPNseSS objects representing SS belonging to this RS
+ * <LI>A set of 5' DBSNPNseFlank objects
+ * <LI>A set of 3' DBSNPNseFlank objects
+ * <LI>A set of DBSNPNseContigHit objects
+ * </OL>
  * @company Jackson Laboratory
  * @author sc
  *
@@ -20,10 +25,9 @@ class DBSNPNseInput {
     private String rsId;
     // set of DBSNPNseSS objects
     private Vector subSNPs;
-    //private HashMap subSNPs;
-    // set of of 5' Flanking sequence (in 255 char chunks)
+    // set of of 5' DBSNPNseFlank objects (each representing 255 char chunks)
     private Vector flank5Prime;
-    // set of 3' Flanking sequence (in 255 char chunks)
+    // set of 3' DBSNPNseFlank objects (each representing 255 char chunks)
     private Vector flank3Prime;
     // set of contig hits
     private Vector contigHits;
@@ -100,8 +104,4 @@ class DBSNPNseInput {
     public Integer getNext3PrimeSeqNum() {
         return new Integer(flank3Prime.size() + 1);
     }
-
-
-
-
 }

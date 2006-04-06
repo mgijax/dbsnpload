@@ -1,12 +1,11 @@
 package org.jax.mgi.app.dbsnploader;
 
-import java.util.HashMap;
-
 /**
  *
- * is an object that
- * @has
- * @does
+ * is an object that represents high level RS info about a SNP from the
+ * NSE input file
+ * @has and rsId, a variation class, the build in which this snp was first created,
+ * the build in which this snp was last modified
  * @company Jackson Laboratory
  * @author sc
  *
@@ -28,8 +27,8 @@ class DBSNPNseRS {
      **********************/
     // create an empty DBSNPNseRS
     public DBSNPNseRS() {
-
     }
+
     // create a DBSNPNseRS with an rsId
    public DBSNPNseRS(String s) {
         rsId = s;

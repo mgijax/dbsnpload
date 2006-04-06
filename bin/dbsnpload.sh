@@ -22,16 +22,17 @@
 #
 #      - Common configuration file (/usr/local/mgi/etc/common.config.sh)
 #      - dbsnpload.config
-#      - two XML format input files (genotypes are in seperate file)
+#      - two sets XML format input files (genotypes are in separate file set)
 #      - dbsnpload/data input files for translations and vocabs 
-#      - coordinate file created by dbsnpload is input to coordload
+#      - snp and mgd databases
+#
 #  Outputs:
 #
 #      - An archive file
 #      - Log files defined by the environment variables ${LOG_PROC},
 #        ${LOG_DIAG}, ${LOG_CUR} and ${LOG_VAL}
-#      - BCP files for for inserts to each database table to be loaded
-#      - dbsnpload outputs a coordinate file which is input to coordload
+#      - BCP files for inserts to each database table to be loaded
+#      - script files for updates to  snp MGI_dbinfo and MGI_Table
 #      - Records written to the database tables
 #      - Exceptions written to standard error
 #      - Configuration and initialization errors are written to a log file
@@ -115,8 +116,10 @@ fi
 
 echo "javaruntime:${JAVARUNTIMEOPTS}"
 echo "classpath:${CLASSPATH}"
-echo "dbserver:${MGD_DBSERVER}"
-echo "database:${MGD_DBNAME}"
+echo "mgd dbserver:${MGD_DBSERVER}"
+echo "mgd database:${MGD_DBNAME}"
+echo "snp dbserver:${SNP_DBSERVER}"
+echo echo "snp database:${SNP_DBNAME}"
 
 #
 #  Source the DLA library functions.
@@ -170,32 +173,6 @@ runsnpload ()
 	-DJOBKEY=${JOBKEY} ${DLA_START}
 }
 
-#
-# function that runs the java snp coordinate load
-#
-runcoordload ()
-{
-    #
-    # log time
-    #
-    echo "\n`date`" >> ${LOG_PROC}
-    #
-    # run dbsnp coordload
-
-    # Here we override the Configured value of DLA_LOADER
-    # and set it to the Configured coordload class
-    # we also override 
-    # and DLA_TRUNCATE_LOAD and  DLA_TRUNCATE_QC_TABLES
-    # so we don't delete the SNP tables during the coordload
-    ${JAVA} ${JAVARUNTIMEOPTS} -classpath ${CLASSPATH} \
-    -DCONFIG=${CONFIG_COMMON},${CONFIG_LOAD} \
-    -DDLA_LOADER=${COORD_DLA_LOADER} \
-    -DDLA_TRUNCATE_LOAD_TABLES="" \
-    -DDLA_TRUNCATE_QC_TABLES="" \
-    -DJOBKEY=${JOBKEY} ${DLA_START}
-}
-
-
 checkstatus ()
 {
 
@@ -219,86 +196,110 @@ checkstatus ()
 preload 
 
 #
-# rm all files/dirs from OUTPUTDIR and RPTDIR
+# put production snp database in single user mode prior to loading snps
 #
-#cleanDir ${OUTPUTDIR} ${RPTDIR}
+echo "calling  ${SNP_SGL_USER} ${PRODSNP_DBSERVER} ${PRODSNP_DBNAME} true ${SNP_SGL_USER_FILE} ${SNP_SLEEP_INTERVAL}"
 
+${SNP_SGL_USER} ${PRODSNP_DBSERVER} ${PRODSNP_DBNAME} true ${SNP_SGL_USER_FILE} ${SNP_SLEEP_INTERVAL}
+STAT=$?
+msg="${SNP_SGL_USER} "
+checkstatus ${STAT} "${msg}"
+
+#
 # run fxn class vocload?
+#
 if [ ${doFxn} = "yes" ]
 then
     ${DBSNP_VOCLOAD} -f
     STAT=$?
-    msg="dbsnp fxnClass vocabulary load"
+    msg="dbsnp fxnClass vocabulary load "
     checkstatus ${STAT} "${msg}"
 fi
 
+#
 # run variation class vocload?
+#
 if [ ${doVar} = "yes" ]
 then
     ${DBSNP_VOCLOAD} -v
     STAT=$?
-    msg="dbsnp varClass vocabulary load"
+    msg="dbsnp varClass vocabulary load "
     checkstatus ${STAT} "${msg}"
 fi
 
+#
 # always run submitter handle vocload
+#
 ${DBSNP_VOCLOAD} -h
 STAT=$?
-msg="dbsnp subHandle vocabulary load"
+msg="dbsnp subHandle vocabulary load "
 checkstatus ${STAT} "${msg}"
 
+#
 # run variation class translation load?
+#
 if [ ${doVar} = "yes" ]
 then
     ${DBSNP_TRANS_LOAD} -v
     STAT=$?
-    msg="dbsnp varClass translation load"
+    msg="dbsnp varClass translation load "
     checkstatus ${STAT} "${msg}"
 fi
 
+#
 # run fxn class translation load?
+#
 if [ ${doFxn} = "yes" ]
 then
     ${DBSNP_TRANS_LOAD} -f
     STAT=$?
-    msg="dbsnp fxnClass translation load"
+    msg="dbsnp fxnClass translation load "
     checkstatus ${STAT} "${msg}"
 fi
 
+# 
+# run population load
+#
 echo "running population load"
 ${POPULATION_LOAD}
 STAT=$?
-msg="dbsnp population load"
+msg="dbsnp population load "
 checkstatus ${STAT} "${msg}"
 
+#
+# run java dbSnp loader
+#
 echo "running dbsnp load"
 runsnpload
 STAT=$?
-msg="dbsnp load"
+msg="dbsnp load "
 checkstatus ${STAT} "${msg}"
 
-echo "running snp coordinate load"
-runcoordload
-STAT=$?
-msg="dbsnp coordload"
-checkstatus  ${STAT} "${msg}"
-
-echo "running ${SNP_COORD_CACHE_LOAD}"
-${SNP_COORD_CACHE_LOAD}
-STAT=$?
-msg="dbsnp coord cache load"
-checkstatus  ${STAT} "${msg}"
-
+#
+# run snp marker cache load
+#
 echo "running ${SNP_MARKER_CACHE_LOAD}"
 ${SNP_MARKER_CACHE_LOAD}
 STAT=$?
-msg="dbsnp marker cache load"
+msg="dbsnp marker cache load "
 checkstatus  ${STAT} "${msg}"
 
+#
+# order snp strains
+#
 echo "running snp strain order update"
 ${STRAIN_ORDER_LOAD}
 STAT=$?
-msg="snp strain order update"
+msg="snp strain order update "
+checkstatus  ${STAT} "${msg}"
+
+#
+# run postProcessing - dump/load/update mgd MGI_dbinfo
+#
+echo "running post-processing"
+${SNP_POST_PROCESS}
+STAT=$?
+msg="post-processing "
 checkstatus  ${STAT} "${msg}"
 
 # run postload cleanup and email logs

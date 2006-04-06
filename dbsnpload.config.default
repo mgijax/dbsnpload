@@ -1,27 +1,39 @@
 #format: sh
 #
-#  Configuration for dbsnpload jobstream
+#  Configuration for dbsnpload
 #
 ###########################################################################
-
-###########################################################################
-#
-#  GENERAL SETTINGS
-#
+# settings that change between loads:
+# 1) SNP_DATAVERSION
 ###########################################################################
 
 #  Installation directory for the DBSNP Data Provider load
-INSTALLDIR=/usr/local/mgi/live/dataload/dbsnpload
+INSTALLDIR=${USRLOCALMGI}/dataload/dbsnpload
 
 export INSTALLDIR 
 
 ###########################################################################
 #
-#  DATABASE SETTINGS BY DATABASE
+# Python settings
 #
 ###########################################################################
 
-# MGD Connection parameters 
+SYBASE=/opt/sybase/12.5
+PYTHONPATH=/usr/local/mgi/live/lib/python
+PATH=.:$PATH:/usr/bin:$SYBASE/ASE-12_5/bin:$SYBASE/OCS-12_5/bin:/usr/java/bin
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SYBASE/OCS-12_5/lib
+
+export SYBASE PYTHONPATH PATH LD_LIBRARY_PATH
+
+###########################################################################
+#
+#  Database settings by database
+#
+###########################################################################
+
+#
+# MGD Connection settings
+#
 
 MGD_DBSERVER=PROD_MGI
 
@@ -37,30 +49,43 @@ MGD_DBSCHEMADIR=${MGDDBSCHEMADIR}
 export MGD_DBSERVER MGD_DBURL MGD_DBNAME
 export MGD_DBUSER MGD_DBPASSWORDFILE MGD_DBSCHEMADIR
 
-# these required by loadlib.py
-DSQUERY=${MGD_DBSERVER}
-MGD=${MGD_DBNAME}
- 
-export DSQUERY MGD
+#
+# SNP Connection settings
+# - we load to this snp server/database
+#
 
-# RADAR Connection parameters 
-RADAR_DBSERVER=PROD_MGI
+SNP_DBSERVER=PROD1_MGI
 
-RADAR_DBURL=shire.informatics.jax.org:4100
+SNP_DBURL=lindon.informatics.jax.org:4100
 
-RADAR_DBNAME=radar
+SNP_DBNAME=snp
 
-RADAR_DBUSER=mgd_dbo
-RADAR_DBPASSWORDFILE=${MGIDBUTILSDIR}/.mgd_dbo_password
+SNP_DBUSER=mgd_dbo
+SNP_DBPASSWORDFILE=${MGIDBUTILSDIR}/.mgd_dbo_password
 
+SNP_DBSCHEMADIR=${USRLOCALMGI}/dbutils/snp/snpdbschema
+
+export SNP_DBSERVER SNP_DBURL SNP_DBNAME
+export SNP_DBUSER SNP__DBPASSWORDFILE SNP_DBSCHEMADIR
+
+#
+# SNP Connection settings
+# - the production snp server/database
+#   which to load the backup
+#
+PRODSNP_DBSERVER=PROD_MGI
+PRODSNP_DBNAME=snp
+
+export PRODSNP_DBSERVER PRODSNP_DBNAME
+
+# 
+# radar schema directory in order to register jobstream
+# should be configured for PROD_MGI radar
 RADAR_DBSCHEMADIR=${RADARDBSCHEMADIR}
-
-export RADAR_DBSERVER RADAR_DBURL RADAR_DBNAME RADAR_DBUSER 
-export RADAR_DBPASSWORDFILE RADAR_DBSCHEMADIR 
 
 ###########################################################################
 #
-#  SOFTWARE SETTINGS
+#  JAVA SETTINGS
 #
 ###########################################################################
 
@@ -69,7 +94,7 @@ export RADAR_DBPASSWORDFILE RADAR_DBSCHEMADIR
 # need memory from the parent process (2G max given to a process by the op sys)
 JAVARUNTIMEOPTS="-Xms1500m -Xmx1500m"
 
-JAVA_LIB=${JAVAPATH}/lib_java_core/core.jar:${JAVAPATH}/lib_java_dbsmgd/dbsmgd.jar:${JAVAPATH}/lib_java_dbsrdr/dbsrdr.jar:${JAVAPATH}/lib_java_dla/dla.jar:/usr/local/java/lib/jsr173_1.0_api.jar:/usr/local/java/lib/jsr173_1.0_ri.jar
+JAVA_LIB=${JAVAPATH}/lib_java_core/core.jar:${JAVAPATH}/lib_java_dbsmgd/dbsmgd.jar:${JAVAPATH}/lib_java_dbsrdr/dbsrdr.jar:${JAVAPATH}/lib_java_dbssnp/dbssnp.jar:${JAVAPATH}/lib_java_dla/dla.jar:/usr/local/java/lib/jsr173_1.0_api.jar:/usr/local/java/lib/jsr173_1.0_ri.jar
 
 CLASSPATH=.:${INSTALLDIR}/classes:${JAVA_LIB}:${COMMON_CLASSPATH}
 
@@ -80,6 +105,10 @@ export JAVARUNTIMEOPTS JAVA_LIB CLASSPATH
 #  LOAD SPECIFIC SETTINGS
 #
 ###########################################################################
+
+#
+# snpload output file settings
+#
 
 # Full path the the logs, reports, and archive directories
 FILEDIR=/data/loads/dbsnp/dbsnpload
@@ -92,65 +121,28 @@ OUTPUTDIR=${FILEDIR}/output
 export FILEDIR LOGDIR RPTDIR ARCHIVEDIR OUTPUTDIR
 
 #
-# snpload input file parameters
+# snpload input file settings
 #
 
-# input file directories
 INPUTDIR=/data/downloads/ftp.ncbi.nih.gov/snp/mouse
 
-# directory for the genotype xml input file
+# genotypes input file
 GENO_SNP_INFILEDIR=${INPUTDIR}/genotype
 
-# directory for the main dbSNP xml input file
+# main input file
 NSE_SNP_INFILEDIR=${INPUTDIR}/XML
 
-# input file prefixes
+# input file prefixes used for processing chr files one at a time
 GENO_SNP_INFILEPREFIX=gt_chr
 NSE_SNP_INFILEPREFIX=ds_ch
 
-# input file suffixes
+# input file suffixes used for processing chr files one at a time
 GENO_SNP_INFILESUFFIX=.xml
 NSE_SNP_INFILESUFFIX=.xml
 
-export GENO_SNP_INFILEDIR NSE_SNP_INFILEDIR 
+export GENO_SNP_INFILEDIR NSE_SNP_INFILEDIR
 export GENO_SNP_INFILEPREFIX NSE_SNP_INFILEPREFIX
 export GENO_SNP_INFILESUFFIX NSE_SNP_INFILESUFFIX
-
-# configured Java classes  for dbsnpload
-GENO_SNP_PARSER=org.jax.mgi.app.dbsnploader.DBSNPGenotypeParser
-NSE_SNP_PARSER=org.jax.mgi.app.dbsnploader.DBSNPNseParser
-DLA_LOADER=org.jax.mgi.app.dbsnploader.DBSNPLoader
-
-# DLA main application
-DLA_START=org.jax.mgi.shr.dla.loader.DLAStart
-
-export GENO_SNP_PARSER NSE_SNP_PARSER
-export DLA_LOADER DLA_START
-
-# The list of MGD tables for the load to truncate
-DLA_TRUNCATE_LOAD_TABLES=SNP_ConsensusSnp,SNP_ConsensusSnp_StrainAllele,SNP_Flank,SNP_SubSnp,SNP_SubSnp_StrainAllele
-
-# The list of RADAR tables for the load to truncate
-DLA_TRUNCATE_QC_TABLES=MGI_SNP_Accession,MGI_SNP_ConsensusSNP,MGI_SNP_Coordinate,MGI_SNP_Flank,MGI_SNP_Marker,MGI_SNP_StrainAllele,MGI_SNP_SubSNP
-
-# Ok to delete dbsnpload Accessions
-SNP_OK_TO_DELETE_ACCESSIONS=true
-
-# Ok to delete dbsnp strain set
-SNP_OK_TO_DELETE_STRAINSET=true
-
-export DLA_TRUNCATE_LOAD_TABLES DLA_TRUNCATE_QC_TABLES 
-export SNP_OK_TO_DELETE_ACCESSIONS SNP_OK_TO_DELETE_STRAINSET
-
-#
-# population, vocabulary, and translation load parameters 
-#
-
-# snp data directory for vocabs and translations that are
-# stored with the dbsnpload product 
-SNP_DATA_DIR=${INSTALLDIR}/data
-
-export SNP_DATA_DIR
 
 # list of chromosomes to load, comma delimited
 SNP_CHROMOSOMES_TOLOAD="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,X"
@@ -158,56 +150,88 @@ SNP_CHROMOSOMES_TOLOAD="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,X"
 export SNP_CHROMOSOMES_TOLOAD
 
 #
-# parameters for creating populations 
+# general snpload settings
 #
 
-# dbsnpload script to create populations
-POPULATION_LOAD=${INSTALLDIR}/bin/snpPopulation.sh
+# dbSNP build number
+SNP_DATAVERSION="dbSNP Build 125"
 
-export POPULATION_LOAD
+export SNP_DATAVERSION
 
-# the set of uniq population  lines grepped from the genotype files
-# looks like <Population popId="735" handle="WI" locPopId="MOUSE">
-POP_FILE=${OUTPUTDIR}/populations.txt
+#  Java applications
+DLA_LOADER=org.jax.mgi.app.dbsnploader.DBSNPLoader
+DLA_START=org.jax.mgi.shr.dla.loader.DLAStart
 
-POP_LOGICALDB_NAME="SubSNP Population"
-POP_MGITYPE_NAME="SNP Population"
+export DLA_LOADER DLA_START
 
-export POP_FILE POP_LOGICALDB_NAME POP_MGITYPE_NAME
+# The list of SNP tables for the java load to truncate
+# Note that snpPopulation.sh truncates SNP_Accession
+# Note that snpcacheload deals with SNP_ConsensusSnp_Marker
+DLA_TRUNCATE_SNP_TABLES=DP_SNP_Marker,SNP_ConsensusSnp,SNP_ConsensusSnp_StrainAllele,SNP_Coord_Cache,SNP_Flank,SNP_Strain,SNP_SubSnp,SNP_SubSnp_StrainAllele
 
-# population load table names
+# Ok to delete dbsnpload Accessions
+SNP_OK_TO_DELETE_ACCESSIONS=true
+
+# update MGI_Tables records for this set of tables
+SNP_UPDATE_MGITABLES=${DLA_TRUNCATE_SNP_TABLES},SNP_Population,SNP_Accession
+
+export DLA_TRUNCATE_LOAD_TABLES DLA_TRUNCATE_QC_TABLES SNP_OK_TO_DELETE_ACCESSIONS SNP_UPDATE_MGITABLES
+
+#
+# put production snp database in sql user mode settings
+#
+
+# set db in sgl user mode; does sleep loop until sgl user mode set
+SNP_SGL_USER=${INSTALLDIR}/bin/setSglUser.sh
+
+# attempts to turn sgl user mode on/off
+SNP_DO_SGL_USER=${MGIDBUTILSDIR}/bin/doSglUser.csh
+
+# path to output file (sybase output which to grep for success/failure)
+SNP_SGL_USER_FILE=${OUTPUTDIR}/sglUser.out
+
+# sleep interval (secs) when attempting to put productin snp database in single
+# user mode prior to loading snps
+SNP_SLEEP_INTERVAL=30
+
+export SNP_SINGLE_USER SNP_SLEEP_INTERVAL
+
+# table names
 POP_TABLE=SNP_Population
-ACC_TABLE=ACC_Accession
+ACC_TABLE=SNP_Accession
+STRAIN_TABLE=SNP_Strain
+MRKLOC_CACHETABLE=MRK_Location_Cache
 
-export POP_TABLE ACC_TABLE
+export POP_TABLE ACC_TABLE STRAIN_TABLE MRKLOC_CACHETABLE
 
 #
-# parameters for creating vocabularies
+# vocabulary and translation load settings
 #
 
-# vocload product directory
-VOCLOAD=/usr/local/mgi/live/dataload/vocload
+# snp data directory for vocabs and translations that are
+# stored with the dbsnpload product 
+SNP_DATA_DIR=${INSTALLDIR}/data
 
-# dbsnpload wrapper to run any/all vocabularies
-DBSNP_VOCLOAD=${INSTALLDIR}/bin/loadVoc.sh
+export SNP_DATA_DIR 
 
-# vocload script to run the simple vocab loads (varClass, subHandle)
-# called by DBSNP_VOCLOAD
+# full path to vocload product
+VOCLOAD=${USRLOCALMGI}/dataload/vocload
+
+# full path to simple vocabulary loader
 VOCSIMPLELOAD=${VOCLOAD}/runSimpleFullLoadNoArchive.sh
 
-# vocload script to run DAG vocab load (fxnClass) for the first time
+# full path to dag vocabulary loader
 VOCDAGLOAD=${VOCLOAD}/runDAGFullLoad.sh
 
-# vocload script to run DAG vocab load (fxnClass) incrementally
-#VOCDAGLOAD=${VOCLOAD}/runDAGIncLoad.sh
+# full load to wrapper to run  dbsnpload vocabularies
+DBSNP_VOCLOAD=${INSTALLDIR}/bin/loadVoc.sh
 
-export VOCLOAD VOCSIMPLELOAD DBSNP_VOCLOAD
-export VOCDAGLOAD
+export VOCLOAD VOCSIMPLELOAD VOCDAGLOAD DBSNP_VOCLOAD
 
-# submitter handle vocab parameters 
+# vocload handle vocab settings
 HANDLE_VOCAB_NAME="SNP Submitter Handle"
 
-# script that creates HANDLE_VOCAB_FILE from the xml input file
+# script that creates HANDLE_VOCAB_FILE
 HANDLE_VOCAB_FILE_CREATOR=${INSTALLDIR}/bin/snpSubHandle.py
 
 # intermediate file for creating the handle file for the
@@ -220,110 +244,57 @@ HANDLE_VOCAB_FILE=${OUTPUTDIR}/subHandle.vocab.in
 export HANDLE_VOCAB_NAME
 export HANDLE_VOCAB_FILE_CREATOR INT_HANDLE_VOCAB_FILE HANDLE_VOCAB_FILE
 
-#
-# parameters for creating translations
-#
-
-# dbsnpload script to create any/all translations
-
 # translation load
-TRANSLATION_LOAD=/usr/local/mgi/live/dataload/translationload/translationload.py
-
-# dbsnpload wrapper to run  any/all translation loads (fxnClass, varClass)
+TRANSLATION_LOAD=${USRLOCALMGI}/dataload/translationload/translationload.py
 DBSNP_TRANS_LOAD=${INSTALLDIR}/bin/loadTranslations.sh
 
 export TRANSLATION_LOAD DBSNP_TRANS_LOAD
 
-# varclass translation input file
+# varclass translation params (mode = full, fullest, or preview)
 VARCLASS_TRANS_INPUT=${SNP_DATA_DIR}/varClass.goodbad
+VARCLASS_TRANS_LOAD_MODE=fullest
 
-# varclass translation load mode (full or preview)
-VARCLASS_TRANS_LOAD_MODE=full
+export VARCLASS_TRANS_LOAD VARCLASS_TRANS_INPUT VARCLASS_TRANS_LOAD_MODE
 
-export VARCLASS_TRANS_INPUT VARCLASS_TRANS_LOAD_MODE
-
-# fxnclass translation input file
+# fxnclass translation params (mode = full,fullest, or preview)
 FXNCLASS_TRANS_INPUT=${SNP_DATA_DIR}/fxnClass.goodbad
+FXNCLASS_TRANS_LOAD_MODE=fullest
 
-# fxnclass translation load mode (full or preview)
-FXNCLASS_TRANS_LOAD_MODE=full
-
-export FXNCLASS_TRANS_INPUT FXNCLASS_TRANS_LOAD_MODE
-
-# 
-# coordinate load parameters 
-#
-
-# dbsnpload output file for coordinates (input for coordload)
-COORD_OUTPUT_FILE=${OUTPUTDIR}/dbsnpcoord.out
-
-# input file for dbsnp coordload
-INFILE_NAME=${COORD_OUTPUT_FILE}
-
-export COORD_OUTPUT_FILE INFILE_NAME
-
-# configured Java classes for coordload
-COORD_DLA_LOADER=org.jax.mgi.shr.dla.loader.coord.CoordLoader
-COORD_INTERPRETER=org.jax.mgi.shr.dla.input.mgs.MGSCoordinateFormatInterpreter
-COORD_PROCESSOR=org.jax.mgi.dbs.mgd.loads.Coord.ChromosomeCoordMapProcessor
-
-export COORD_DLA_LOADER COORD_INTERPRETER COORD_PROCESSOR
-
-# coordinate map type
-COORD_TYPE=SNP
-
-# the coordinate map units
-COORD_UNITS="base pair"
-
-# full path to coordinate repeat file
-COORD_REPEAT_FILE=${OUTPUTDIR}/coordrepeats.out
-COORD_REPEATS_OK=true
-
-export COORD_TYPE COORD_UNITS COORD_REPEAT_FILE COORD_REPEATS_OK
-
-# logical db name for this data provider
-COORD_LOGICALDB="RefSNP"
-
-# name of organism to run
-COORD_ORGANISM="mouse, laboratory"
-
-# version of the coordinate load
-COORD_VERSION="NCBI dbSNP Build 125"
-
-export COORD_LOGICALDB COORD_ORGANISM COORD_VERSION
-
-# coordinate map collection to which this load belongs
-COORD_COLLECTION_NAME="NCBI dbSNP Build 124"
-
-# abbreviation for the coordinate collection
-# if no value assigned will be same as COORD_COLLECTION
-COORD_COLLECTION_ABBREV=
-
-# MGI type name of the feature
-COORD_FEATURE_MGITYPE="Consensus SNP"
-
-export COORD_COLLECTION_NAME COORD_COLLECTION_ABBREV COORD_FEATURE_MGITYPE
+export FXNCLASS_TRANS_LOAD FXNCLASS_TRANS_INPUT FXNCLASS_TRANS_LOAD_MODE
 
 #
-# snpcacheload parameters
+# population load settings
+#
+
+# full path to population load
+POPULATION_LOAD=${INSTALLDIR}/bin/snpPopulation.sh
+
+# the set of uniq population  lines grepped from the genotype files
+# looks like <Population popId="735" handle="WI" locPopId="MOUSE">
+POP_FILE=${OUTPUTDIR}/populations.txt
+
+POP_LOGICALDB_NAME="SubSNP Population"
+POP_MGITYPE_NAME="SNP Population"
+
+export POPULATION_LOAD POP_FILE POP_LOGICALDB_NAME POP_MGITYPE_NAME
+
+#
+# snp marker cacheload settings
 #
 
 # snpcacheload product dir
-SNP_CACHELOAD_DIR=/usr/local/mgi/live/dbutils/snpcacheload
+SNP_CACHELOAD_DIR=${USRLOCALMGI}/dbutils/snpcacheload
 
-# snp coordinate cache load
-SNP_COORD_CACHE_LOAD=${SNP_CACHELOAD_DIR}/snpcoord.csh
-
-# snp marker cache load
+# snp marker load
 SNP_MARKER_CACHE_LOAD=${SNP_CACHELOAD_DIR}/snpmarker.csh
 
-export SNP_CACHELOAD_DIR COORD_CACHE_LOAD SNP_MARKER_LOAD
+export SNP_CACHELOAD_DIR SNP_MARKER_CACHE_LOAD
 
 #
-# snp strain configuration
+# update snp strain order settings
 #
 
-# strain order update script
+# strain ordering script
 STRAIN_ORDER_LOAD=${INSTALLDIR}/bin/updateSnpStrainOrder.sh
 
 # copy of the set of snp strains and keys used in updating
@@ -338,21 +309,39 @@ LOG_STRAIN=${LOGDIR}/updateSnpStrainOrder.log
 # discrepancy file
 LOG_DISCREP=${LOGDIR}/snpStrainOrderDiscrepancy.log
 
-# snp strain set name
-SNP_STRAIN_SET_NAME="SNP Strains"
-
 export STRAIN_ORDER_LOAD SNP_STRAIN_FILE MGI_STRAINORDER_FILE LOG_STRAIN
-export LOG_DISCREP SNP_STRAIN_SET_NAME
+export LOG_DISCREP
+
+#
+# post-processing settings
+# - backup loaded snp db, load production snp db,
+#   update production mgd..MGI_dbinfo
+#
+
+# post-processing script
+SNP_POST_PROCESS=${INSTALLDIR}/bin/postProcess.sh
+
+# backup name
+SNP_BACKUPNAME=snp_load.backup
+
+# full path to backup from the unix server on which the load runs; for dump
+SNP_BACKUP_LOCALPATH=/extra1/sybase/${SNP_BACKUPNAME}
+
+# full path to backup from the unix server on which we want to load the backup
+SNP_BACKUP_REMOTEPATH=/lindon/sybase/${SNP_BACKUPNAME}
+
+export SNP_POST_PROCESS SNP_BACKUPNAME 
+export SNP_BACKUP_LOCALPATH SNP_BACKUP_REMOTEPATH
 
 # SQL STREAM
 # this overrides the default BCP_Inline_Stream
 DLA_DB_PREFIX=MGD
 DLA_LOAD_STREAM=org.jax.mgi.shr.dbutils.dao.BCP_Script_Stream
-DLA_QC_STREAM=org.jax.mgi.shr.dbutils.dao.BCP_Stream
+SNP_STREAM=org.jax.mgi.shr.dbutils.dao.BCP_Script_Stream
 
-export DLA_DB_PREFIX DLA_LOAD_STREAM DLA_QC_STREAM
+export DLA_DB_PREFIX DLA_LOAD_STREAM SNP_STREAM
 
-# this load's MGI_User login value for DB tables CreatedBy and ModifiedBy column
+# this load's MGI_User login value for radar logging of jobstream
 JOBSTREAM=dbsnp_load
 
 export JOBSTREAM
@@ -364,7 +353,7 @@ LOG_CUR=${LOGDIR}/dbsnpload.cur.log
 LOG_VAL=${LOGDIR}/dbsnpload.val.log
 
 # Send debug messages to the diagnostic log
-LOG_DEBUG=false
+LOG_DEBUG=true
 DBDEBUG=false
 CACHE_DEBUG=false
 
@@ -380,9 +369,10 @@ export DBDEBUG CACHE_DEBUG LOG_FACTORY
 #
 ###########################################################################
 
-#  Settings used to create a BCP manager for the MGD database
+# Settings used to create a BCP manager for the MGD database
+# Note snpload uses only for creating lookups, no execution needed
 MGD_BCP_PATH=${OUTPUTDIR}
-MGD_BCP_PREVENT_EXECUTE=false
+MGD_BCP_PREVENT_EXECUTE=true
 MGD_BCP_TRUNCATE_LOG=true
 MGD_BCP_DROP_INDEXES=true
 MGD_BCP_RECORD_STAMPING=false
@@ -393,18 +383,35 @@ export MGD_BCP_PATH MGD_BCP_PREVENT_EXECUTE MGD_BCP_TRUNCATE_LOG
 export MGD_BCP_DROP_INDEXES MGD_BCP_RECORD_STAMPING MGD_BCP_AUTO_FLUSH
 export MGD_BCP_OK_TO_OVERWRITE
 
-#  Settings used to create a BCP manager for the RADAR database
-RADAR_BCP_PATH=${OUTPUTDIR}
-RADAR_BCP_PREVENT_EXECUTE=false
-RADAR_BCP_TRUNCATE_LOG=true
-RADAR_BCP_DROP_INDEXES=true
-RADAR_BCP_RECORD_STAMPING=false
-RADAR_BCP_AUTO_FLUSH=true
-RADAR_BCP_OK_TO_OVERWRITE=true
+#  Settings used to create a BCP manager for the SNP database
+SNP_BCP_PATH=${OUTPUTDIR}
+SNP_BCP_PREVENT_EXECUTE=false
+SNP_BCP_TRUNCATE_LOG=true
+SNP_BCP_DROP_INDEXES=true
+SNP_BCP_RECORD_STAMPING=false
+SNP_BCP_AUTO_FLUSH=true
+SNP_BCP_OK_TO_OVERWRITE=true
 
-export RADAR_BCP_PATH RADAR_BCP_PREVENT_EXECUTE RADAR_BCP_TRUNCATE_LOG
-export RADAR_BCP_DROP_INDEXES RADAR_BCP_RECORD_STAMPING RADAR_BCP_AUTO_FLUSH
-export RADAR_BCP_OK_TO_OVERWRITE
+export SNP_BCP_PATH SNP_BCP_PREVENT_EXECUTE SNP_BCP_TRUNCATE_LOG
+export SNP_BCP_DROP_INDEXES SNP_BCP_RECORD_STAMPING SNP_BCP_AUTO_FLUSH
+export SNP_BCP_OK_TO_OVERWRITE
+
+###########################################################################
+#
+#  SQL SCRIPTWRITER SETTINGS FOR MGI_dbinfo update
+#
+###########################################################################
+
+SCP_PATH=${SNP_BCP_PATH}
+SCP_PREVENT_EXECUTE=false
+SCP_OK_TO_OVERWRITE=true
+
+SCP_FILENAME=MGIdbinfo
+SCP_OUTFILENAME=MGIdbinfo
+
+export SCP_PATH SCP_PREVENT_EXECUTE SCP_OK_TO_OVERWRITE
+export SCP_FILENAME SCP_OUTFILENAME
+
 
 ###########################################################################
 #
@@ -412,10 +419,11 @@ export RADAR_BCP_OK_TO_OVERWRITE
 #
 ###########################################################################
 #  The name of the load for the subject of an email notification
-MAIL_LOADNAME="DBSNP Data Provider Load"
+MAIL_LOADNAME="DBSNP Load"
 
 #  Recipient list for mailing the log files (comma-separated)
 MAIL_LOG_PROC="sc"
 MAIL_LOG_CUR="sc"
 
 export MAIL_LOADNAME MAIL_LOG_PROC MAIL_LOG_CUR
+

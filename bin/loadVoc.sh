@@ -162,14 +162,18 @@ fi
 if [ ${doHandle} = "yes" ]
 then
     echo "Creating subHandle vocab intermediate file..." | tee -a ${VOC_LOG}
-    # transforms: <NSE-ss_handle>WI</NSE-ss_handle>
-    # into: WI
+    # transforms: <Ss ssId="4325828" handle="WIMOUSESNPS" batchId="5062" 
+    # locSnpId="M-05554-2" subSnpClass="snp" orient="forward" strand="bottom" 
+    # molType="genomic" buildId="105" methodClass="unknown" 
+    # validated="by-frequency" linkoutUrl="+M-05554-2">
+    # into: WIMOUSESNPS
     /usr/bin/cat ${NSE_SNP_INFILEDIR}/*.xml | grep "<Ss" | cut -d" " -f11 | cut -d= -f2 | cut -d'"' -f2 | sort | uniq > ${INT_HANDLE_VOCAB_FILE}
+
     # creates subHandle vocab input file which will create
     # accession records for the vocab 
     # file looks like:
-    # WI tab WI
-    # where WI is the term name AND the accession id
+    # WIMOUSESNPS tab WIMOUSESNPS
+    # where WIMOUSESNPS is the term name AND the accession id
     echo "Creating subHandle vocab input file..." | tee -a ${VOC_LOG}
     ${HANDLE_VOCAB_FILE_CREATOR}
     STAT=$?

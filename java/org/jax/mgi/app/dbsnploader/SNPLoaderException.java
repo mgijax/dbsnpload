@@ -7,7 +7,7 @@ import org.jax.mgi.shr.exception.MGIException;
 
 /**
  * An MGIException which represents exceptions occuring while processing
- * sequences
+ * snps
  * @has nothing
  * @does nothing
  * @company Jackson Laboratory

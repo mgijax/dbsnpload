@@ -16,7 +16,6 @@
 #	- new
 
 RUNTIME_DIR = /data/loads/dbsnp/dbsnpload/output/vocload/fxnClass
-#SNP_DATA_DIR = /home/sc/snp/dbsnpload/data
 SNP_DATA_DIR = /usr/local/mgi/live/dataload/dbsnpload/data
 
 # DAGs which are part of the vocabulary (for complex vocabularies)

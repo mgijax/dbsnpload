@@ -1,8 +1,5 @@
 package org.jax.mgi.app.dbsnploader;
 
-import java.util.Vector;
-import java.util.HashMap;
-import java.util.ArrayList;
 import org.jax.mgi.shr.ioutils.InputXMLDataFile;
 import org.jax.mgi.shr.ioutils.XMLDataIterator;
 import org.jax.mgi.shr.ioutils.XMLDataInterpreter;
@@ -10,7 +7,6 @@ import org.jax.mgi.shr.ioutils.XMLTagIterator;
 import org.jax.mgi.shr.ioutils.IOUException;
 import org.jax.mgi.shr.ioutils.InterpretException;
 import org.jax.mgi.shr.config.ConfigException;
-import org.jax.mgi.shr.stringutil.StringLib;
 
 /**
  * is a Representation of the 'Individuals' (strains and their ids)
@@ -22,7 +18,10 @@ import org.jax.mgi.shr.stringutil.StringLib;
  * @author sc
  */
 public class DBSNPGenotypeIndividualInputFile extends InputXMLDataFile {
+    // the XML tag we are looking for
     private String TAG =  "Individual";
+
+    // name of the file this instance represents
     private String filename = null;
 
     /**
@@ -42,7 +41,7 @@ public class DBSNPGenotypeIndividualInputFile extends InputXMLDataFile {
     /**
      * get the iterator for this file
      * @return an XMLDataIterator instance which provides iteration over
-     * dbSNP genotype Individual records in the file
+     * dbSNP genotype 'Individual' records in the file
      */
     public XMLDataIterator getIterator()
     {

@@ -1,3 +1,110 @@
+TAG: dbsnpload-3-4-4-1
+DATE: 04/06/2006
+STAFF: sc
+RELEASE: 3.44
+CHANGES: COPY, not cvs merge, build125 branch to trunk
+
+TAG: dbsnpload-build125-7
+DATE: 04/06/2006
+STAFF: sc
+RELEASE: 3.44
+CHANGES: updated Configuration.default for production
+
+TAG: dbsnpload-build125-6
+DATE: 04/06/2006
+STAFF: sc
+RELEASE: 3.44 
+CHANGES:
+1) spruced up class/method headers, removed commented out code, 
+   cleaned up imports, cleaned up debug 
+2) SNPLoaderExceptionFactory - removed old Strain Set and CoordFile
+   exceptions
+3) removed SNPLoadIterator
+4) DBSNPLOaderCfg - removed getCoordFileName and getOkToDeleteStrainSet
+5) DBSNPLoader - added count of all ss for all rs looked at 
+6) DBSNPInputProcessor - added count of ss loaded
+
+TAG: dbsnpload-build125-5
+DATE: 04/03/2006
+STAFF: sc
+RELEASE: 3.44 - Dev Build 2
+CHANGES: 
+1) dbsnpload.config.default - 
+   a) updated SNP_DBURL to correct port, 
+   b) added SNP_Population and SNP_Accession to SNP_UPDATE_MGITABLES,
+   c) changed snp backup name to snp_load.backup,
+   d) Need 2 paths to the backup one on local unix server, one on so
+        created SNP_LOCALBACKUP and SNP_REMOTEBACKUP
+   e) removed SNP_ prefix on SCP* variables so the framework
+        uses them rather than the default which creates files in the 
+        root dir of the product named script.sql and script.out
+2) dbsnpload.sh - 
+    a) need closing quote on first echo in main,
+    b) added status logging of postProcess call,
+    c) removed old runcoordload function
+    d) added more comments; echo the snp db and server as well as the mgd ones
+3) postProcess.sh setSglUser.sh - added(had forgotten to commit)
+4) postProcess.sh - updated with SNP_LOCALBACKUP and SNP_REMOTEBACKUP
+5) added system_docs directory containing dataflow.vsd an MS Visio
+    diagram documenting snp processing.
+6) DBSNPLoader - added test to be sure there were tables configured with
+    which to update MGI_Tables so don't get null ptr exception in prevent
+    execute mode.
+7) snpPopulation.sh - added $ to 'touch ${POP_LOG}
+
+TAG: dbsnpload-build125-4
+DATE: 03/27/2006
+STAFF: sc
+RELEASE: 3.44
+CHANGES: TR7461 
+1) dbsnpload.sh - removed call to coordload and coordcacheload
+     added call to mgidbutilities/doSglUser.csh and 
+     ./bin/postProcess.sh
+2) snpPopulation.py - removed calls to loadlib functions, 
+     updated to talk to  snp database
+3) snpPopulation.sh - updated from MGD to SNP config vars
+4) updateSnpStrainOrder.py - updated to talk to snp database
+5) dbsnpload.config.default - added SNP db config and config
+     for new/changed processing
+6) removed java classes: SNP.java MGDSNP 
+      DBSNPNse RADARSNP
+7) added java classes: ChrSeqNumLookup MGI_TablesLookup StrainNameLookup
+      MGI_TablesUpdater MGI_dbinfoLookup MGI_dbinfoUpdater SNPSNP
+8) SNPLoaderExceptionFactory.java - removed  old exceptions
+9) PopNameByPopIdLookup.java - updated to use snp database
+10) HandleNameByPopIdLookup.java - queries snp..SNP_Population.subHandle instead
+    of joining to mgd..VOC_Term
+11) DBSNPLoaderCfg.java - added snp db /removed radar/mgd db config get/set methods 
+12) DBSNPLoader.java DBSNPInputProcessor.java - updated to talk to snp database
+      
+TAG: dbsnpload-build125-3
+DATE: 03/02/2006
+STAFF: sc
+RELEASE: 3.44
+CHANGES: TR7461 - the following copied from the tr7392 branch
+   Note this tag is after the changes below, but before changes
+   to use new 'snp' database. This tag is dependent on lib_java_dbsmgd
+   and lib_java_dbsrdr be compiled against a MGI3.43 schema
+- the following copied from the tr7392 branch
+1) dbsnpload.config.default - 
+  A) added StAX jar file to JAVA_LIB, 
+     removed Xerces jar file from CLASSPATH, reset Collection name 
+     back to build 24 for proper deletion (this var will go away by the
+     time we're done with this release
+  B) Added SNP_OK_TO_DELETE_STRAINSET
+  C)
+2) snpPopulation.py - removed created/modified columns from bcp file 
+   creation
+3) DBSNPInputProcessor.java - 
+  A) Added fix for defect #569 - don't load refsnps with 
+     missing BL6 coordinates
+  B) Added TR7299 fix - consensus Allele isConflict determination corrected
+4) SNPLoaderConstants - updated varClass MNP and NAMED constants
+5) mgiSNPStrainOrder.txt - added 4 new strains
+6) SNP.java - removed SNP_Strain_Cache objects and sending to stream
+7) DBSNPNseInputFile.java - added debug output for physMapInt vs physMapStr
+- changes since 3.43
+1) Changes, primarily to DBSNPINputProcessor merging SNPProcessor.
 TAG: dbsnpload-3-4-3-2
 DATE: 02/10/2006
 STAFF: sc
@@ -16,7 +123,8 @@ DATE: 02/09/2006
 STAFF: sc
 RELEASE: MGI3.43 beta
 CHANGES:
-1) DBSNPInputProcessor - moved incrementing of the startCoord to the proper place
+1) DBSNPInputProcessor - moved incrementing of the startCoord to the proper plac
+e
 
 TAG: dbsnpload-tr7392-6
 DATE: 02/08/2006
@@ -55,7 +163,7 @@ DATE: 01/20/2006
 STAFF: sc
 RELEASE: MGI3.43 dev build
 CHANGES:
-1) DBSNPInputProcessor - tr7299 consensus allele isConflict 
+1) DBSNPInputProcessor - tr7299 consensus allele isConflict
    determination
 2) DBSNPNse - comment out loading all radar tables except
    MGI_SNP_Marker and MGI_SNP_Accession
@@ -68,10 +176,10 @@ RELEASE:
 CHANGES:
 1) dbsnpload.config.default - added StAX jar file to JAVA_LIB
     removed SNP_Strain_Cache from DLA_TRUNCATE_LOAD_TABLES
-2) bin/snpPopulation.py - removed created/modified from 
+2) bin/snpPopulation.py - removed created/modified from
    bcp file
 3) DBSNPInputProcessor.java - removed some debug statements
-4) SNP.java - removed SNP_Strain_Cache attributes and 
+4) SNP.java - removed SNP_Strain_Cache attributes and
    sending to stream
 5) SNPProcessor.java - removed method and call to processStrainCache
 

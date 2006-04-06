@@ -4,9 +4,8 @@ import java.util.Vector;
 
 /**
  *
- * is an object that
- * @has
- * @does
+ * is an object that represents the Contig Hit data from the dbsnp NSE input file
+ * @has a chromosome name, an assembly (e.g. C57BL/6J), and a set of locations (hits)
  * @company Jackson Laboratory
  * @author sc
  *

@@ -4,9 +4,9 @@ import java.util.HashMap;
 
 /**
  *
- * is an object that
- * @has
- * @does
+ * is an object that converts a '/' delimeted string of alleles to an IUPAC code
+ * @has a mapping of allele strings to IUPAC codes
+ * @does resolves an alleleSummary to an IUPAC code
  * @company Jackson Laboratory
  * @author sc
  *

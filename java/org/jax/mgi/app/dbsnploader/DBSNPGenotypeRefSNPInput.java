@@ -1,24 +1,21 @@
 package org.jax.mgi.app.dbsnploader;
 
-import java.util.HashMap;
 import java.util.Vector;
 import java.util.HashMap;
-import java.util.Iterator;
 
 /**
  *
  * is a data object representing the populations, by SubSnp, for a RefSnp
  * @has an rs id and a mapping of ss id to its population(s)
- * @does
  * @company Jackson Laboratory
  * @author sc
  *
  */
 
-class DBSNPGenotypeRefSNPInput {//implements DBSNPInput{
+class DBSNPGenotypeRefSNPInput {
 
     // mapping looks like: {ssId:Vector of DBSNPGenotypePopulation objects, ...}
-    private HashMap ssPopulationMap;  
+    private HashMap ssPopulationMap;
 
     // RefSnp id
     private String rsId;
