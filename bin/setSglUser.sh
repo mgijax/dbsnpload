@@ -8,7 +8,21 @@ Usage="setSglUser.sh DBSERVER DBNAME mode outputfile sleepInterval"
 #        mode is 'true' if turning on sgl user mode
 #        mode is 'false' when turning off sgl user mode
 #        sleepInterval is number of seconds to wait before trying again
+#
+# Envvars:
+# 	See the configuration file
+#
+# Inputs:
+#	1) see parameters and configuration
+#
+# Outputs:
+# 	1) file of output from attempt at updating sgl user mode
 # 
+# Exit Codes:
+#
+# Assumes:
+#     
+# Implementation:
 # This script retries when:
 # 1) not in sgl user mode and someone in the database when attempt 
 #    made to put in single user mode - output will contain 'failed'
