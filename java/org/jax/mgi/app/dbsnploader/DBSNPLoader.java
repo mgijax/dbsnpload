@@ -264,7 +264,7 @@ public class DBSNPLoader extends DLALoader {
                 catch (SNPRepeatException e) {
                     rsRepeatExceptionCtr++;
                 }
-                ssCtr++;
+                rsCtr++;
                 ssCtr += nseInput.getSubSNPs().size();
             }
         }
