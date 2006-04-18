@@ -527,6 +527,7 @@ public class DBSNPInputProcessor {
         while (alleleTokenizer.hasMoreTokens()) {
             String allele = alleleTokenizer.nextToken();
             if(!allele.equals("-")) {
+
                Integer len = new Integer(allele.length());
                if(map.keySet().contains(len)) {
                    // add allele to the map for key 'len'
@@ -691,6 +692,9 @@ public class DBSNPInputProcessor {
                      if (allele.equals(" ")) {
                          allele = "N";
                      }
+                     else if (allele.equals("--")) {
+                         allele = "-";
+                     }
                     String orient = a.getOrientation();
                     /**
                      * if in reverse orientation we need to complement
@@ -805,8 +809,8 @@ public class DBSNPInputProcessor {
                 alleles.remove("N");
 
                 /**
-                 * if we have only one allele now then we removed a 'N' allele
-                 * and we have no conflict; we don't care about 'N' when determining
+                 * if we have only one allele now that we removed a 'N' allele,
+                 * we have no conflict; we don't care about 'N' when determining
                  * conflict
                  */
                 if (alleles.size() == 1) {
@@ -1193,7 +1197,9 @@ public class DBSNPInputProcessor {
             if (allele.equals(" ")) {
                 allele = "N";
             }
-
+            if (allele.equals("--")) {
+                allele = "-";
+            }
             // resolve the strain
             SNP_StrainState strainState= resolveStrain(strain, popId);
 
@@ -1397,7 +1403,6 @@ public class DBSNPInputProcessor {
                 //resolve the chromosome sequence number; set in the state
                 Integer chrKey = chrLookupByName.lookup(chromosome);
                 coordCacheState.setSequenceNum( chrSeqNumLookupByKey.lookup(chrKey) );
-                logger.logdDebug("Used chrLookupByName for " + chromosome + " and got " + chrKey);
 
                 // dbSNP xml files now 0 based - need to add 1
                 // Note: isMultiCoord is set in snpSnp
