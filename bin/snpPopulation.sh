@@ -84,7 +84,7 @@ echo "creating population input file in ${POP_FILE}" | tee -a ${POP_LOG}
 /usr/bin/cat ${GENO_SNP_INFILEDIR}/*.xml | grep "<Population" | cut -f2-4 | sort | uniq > ${POP_FILE}
 
 echo "creating population bcp file"
-${INSTALLDIR}/bin/snpPopulation.py 
+${INSTALLDIR}/bin/snpPopulation.py tee -a ${POP_LOG}
 STAT=$?
 msg="snpPopulation.py "
 checkstatus ${STAT} "${msg}"
