@@ -25,7 +25,7 @@
 #		-${LOG_DISCREP} - discrepancies between MGI and the 
 #			order input file
 #		- ${SNP_STRAIN_FILE} - list of snp strains in MGI               
-#      - MGI_SetMember database records updated
+#      - SNP_Strain records updated
 #  Exit Codes:
 #
 #      0:  Successful completion
