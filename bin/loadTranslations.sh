@@ -2,7 +2,7 @@
 #
 #   $Header
 #   $Name
-# loadVoc.sh
+# loadTranslations.sh
 ##############################################################################
 #
 # Purpose: Load SNP translations
