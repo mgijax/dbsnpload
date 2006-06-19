@@ -147,7 +147,7 @@ def createBCP():
 	print 'and  %s/%s.bcp' % (outputdir, accTable)
 	inFile = open(os.environ['POP_FILE'], 'r')
 	primaryKey = 0
-	
+	problemHandles = ''
 	line = string.strip(inFile.readline())
 	# line looks like:
 	# <Population popId="1064" handle="ROCHEBIO" locPopId="RPAMM">
@@ -174,7 +174,7 @@ def createBCP():
 	    if handleKeyLookup.has_key(handle):
     	        handleKey = handleKeyLookup[handle]
 	    if popName == '' or handle == '' or popId == '' or handleKey == '':
-		sys.exit("Not all tokens present on line %s" % line)
+		problemHandles = '%s%s%s' % (problemHandles, NL, line)
 	    primaryKey = primaryKey + 1
 	    bcpLine = str(primaryKey) + DL + \
 		str(handle) + DL + \
@@ -186,8 +186,8 @@ def createBCP():
 
 	popBCP.close()
 	accBCP.close()
-	#handleFile.close()
-
+	if problemHandles != '':
+	    sys.exit('Problem Handles %s' % problemHandles)
 def createAccession(accid, objectKey, ldbKey, mgiTypeKey):
     global accKey
     accKey = accKey + 1
