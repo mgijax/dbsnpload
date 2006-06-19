@@ -13,8 +13,8 @@ import org.jax.mgi.shr.dbutils.SQLDataManagerFactory;
 
 /**
  * @is An object that looks up the strain name given a strain key
- * @has A query to get  _Strain_key/strain pairs
- * @does Provides a method to look up strain name given a _Strain_Key
+
+
  * @company The Jackson Laboratory
  * @author sc
  */
