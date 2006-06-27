@@ -70,7 +70,7 @@ public class MGI_TablesUpdater {
         tableDAOLookup = new MGI_TablesLookup(database);
         userKeyLookup= new MGIUserKeyLookup();
         loadedByKey = userKeyLookup.lookup(loadedBy);
-        Timestamp modDate = new Timestamp(new Date().getTime());
+        currentDate = new Timestamp(new Date().getTime());
     }
 
     /**
