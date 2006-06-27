@@ -64,6 +64,7 @@ fi
 
 # snpPopulation log
 POP_LOG=${LOGDIR}/snpPopulation.log
+rm ${POP_LOG}
 touch ${POP_LOG}
 
 checkstatus ()
@@ -71,17 +72,20 @@ checkstatus ()
 
     if [ $1 -ne 0 ]
     then
-        echo "$2 Failed. Return status: $1" >> ${POP_LOG}
+        echo "$2 Failed. Return status: $1" | tee -a ${POP_LOG}
+	date | tee -a ${POP_LOG}
         exit 1
     fi
-    echo "$2 completed successfully" >> ${POP_LOG}
+    echo "$2 completed successfully" | tee -a ${POP_LOG}
 
 }
 
 date | tee -a ${LOG} ${POP_LOG}
 
 echo "creating population input file in ${POP_FILE}" | tee -a ${POP_LOG}
-/usr/bin/cat ${GENO_SNP_INFILEDIR}/*.xml | grep "<Population" | cut -f2-4 | sort | uniq > ${POP_FILE}
+/usr/bin/cat ${GENO_SNP_INFILEDIR}/*.xml | grep "<Population" | cut -f2-4 > ${POP_FILE}.all
+/usr/bin/cat ${POP_FILE}.all | sort > ${POP_FILE}.all.sort
+/usr/bin/cat ${POP_FILE}.all.sort | uniq > ${POP_FILE}
 
 echo "creating population bcp file"
 ${INSTALLDIR}/bin/snpPopulation.py tee -a ${POP_LOG}
@@ -89,11 +93,14 @@ STAT=$?
 msg="snpPopulation.py "
 checkstatus ${STAT} "${msg}"
 
-# Allow bcp into database and truncate POP_TABLE
-echo "truncating ${POP_TABLE}"
+# Allow bcp into database
 ${MGIDBUTILSDIR}/bin/turnonbulkcopy.csh ${SNP_DBSERVER} ${SNP_DBNAME} | tee -a ${POP_LOG}
+
+echo "truncating ${POP_TABLE}"
 ${SNP_DBSCHEMADIR}/table/${POP_TABLE}_truncate.object | tee -a ${POP_LOG}
 
+echo "truncating ${ACC_TABLE}"
+${SNP_DBSCHEMADIR}/table/${ACC_TABLE}_truncate.object | tee -a ${POP_LOG}
 
 echo "dropping indexes on ${POP_TABLE}" 
 ${SNP_DBSCHEMADIR}/index/${POP_TABLE}_drop.object | tee -a ${POP_LOG}
@@ -107,6 +114,7 @@ ${SNP_DBSCHEMADIR}/index/${POP_TABLE}_create.object | tee -a ${POP_LOG}
 echo "updating statistics on ${POP_TABLE}"
 ${MGIDBUTILSDIR}/bin/updateStatistics.csh ${SNP_DBSERVER} ${SNP_DBNAME} ${POP_TABLE} | tee -a ${POP_LOG}
 
+# Note we don't drop indexes on ACC_TABLE as there aren't many records
 echo "bcp'ing data into ${ACC_TABLE}"
 cat ${MGD_DBPASSWORDFILE} | bcp ${SNP_DBNAME}..${ACC_TABLE} in ${OUTPUTDIR}/${ACC_TABLE}.pop.bcp -c -t \| -S${SNP_DBSERVER} -U${SNP_DBUSER} | tee -a ${POP_LOG}
 
