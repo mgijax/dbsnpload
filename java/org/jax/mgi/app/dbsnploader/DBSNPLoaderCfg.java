@@ -133,4 +133,13 @@ public class DBSNPLoaderCfg extends Configurator {
          return getConfigString("SNP_STREAM",
                                 "org.jax.mgi.shr.dbutils.dao.Bcp_Stream");
      }
+     /**
+     * get the current Mouse Genome Build number
+     * @return the current Mouse Genome Build number
+     */
+    public String getGenomeBuildNum() throws ConfigException
+    {
+        return getConfigString("GENOME_BUILD");
+    }
+
 }
