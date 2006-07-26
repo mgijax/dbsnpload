@@ -24,7 +24,9 @@ class DBSNPGenotypeRefSNPInput {
      * default constructor
      */
     public DBSNPGenotypeRefSNPInput() {
-        ssPopulationMap = new HashMap();
+        // build 126 lets try 2 for now. In build 125 there were very few multi-
+        //population subSnps
+        ssPopulationMap = new HashMap(2);
     }
 
     /**
