@@ -18,6 +18,7 @@ import org.jax.mgi.shr.config.ConfigException;
 import org.jax.mgi.shr.cache.KeyNotFoundException;
 
 import java.util.Iterator;
+import java.util.Vector;
 
 /**
  * is an object that parses DBSNP input files, resolves dbsnp attributes
@@ -93,6 +94,9 @@ public class DBSNPLoader extends DLALoader {
     // file path separator on this platform
     private static final String PATH_SEPARATOR = System.getProperty("file.separator");
 
+    // holds one ChromosomeStats object per chromosome
+    Vector chrStats;
+
     /**
      * Initializes instance variables
      * @effects instance variables will be instantiated
@@ -148,6 +152,8 @@ public class DBSNPLoader extends DLALoader {
         rsWithNoAlleleSummaryCtr = 0;
         rsWithVocabResolverExceptionCtr = 0;
         rsRepeatExceptionCtr = 0;
+
+        chrStats = new Vector();
     }
 
     /**
@@ -176,8 +182,14 @@ public class DBSNPLoader extends DLALoader {
         /**
          * process chromosome files one at a time
          */
-        //for (Iterator i = chrList.iterator(); i.hasNext(); ) {
         for (int i = 0; i < chromosomes.length; i++ ) {
+            // get the current time
+            long startTime = System.currentTimeMillis();
+
+            // create a statistics object for this chromosome
+            ChromosomeStats stats = new ChromosomeStats();
+            chrStats.add(stats);
+
             // reinitialize DBSNPProcessor structures for this chromosome
             dbsnpProcessor.reinitializeProcessor();
 
@@ -186,8 +198,12 @@ public class DBSNPLoader extends DLALoader {
 
             // get the next chromosome
             String chr = chromosomes[i].trim();
+            long startFreeMem = Runtime.getRuntime().freeMemory();
+            stats.setChromosome(chr);
+            stats.setStartFreeMem(startFreeMem);
+	    logger.logcInfo("Processing chr " + chr, true);
             logger.logdInfo("Processing chr " + chr, true);
-            logger.logdInfo("Free memory: " + Runtime.getRuntime().freeMemory(), false);
+            logger.logdInfo("Free memory: " + startFreeMem, false);
             /**
              * process the genotype file for the Individual data
              */
@@ -236,12 +252,17 @@ public class DBSNPLoader extends DLALoader {
             /**
              * process the NSE file
              */
+            long afterLookupFreeMem = Runtime.getRuntime().freeMemory();
+            stats.setFreeMemAfterGenoLookup(afterLookupFreeMem);
+
             System.out.println("processing NSE file " + nseFilename);
             logger.logdInfo("processing " + nseFilename + ". Free memory: " +
-			    Runtime.getRuntime().freeMemory(), true);
+			    afterLookupFreeMem, true);
             XMLDataIterator it = new DBSNPNseInputFile(nseFilename).
 		    getIterator();
+            int totalRsOnChr = 0;
             while (it.hasNext()) {
+                totalRsOnChr++;
                 DBSNPNseInput nseInput = (DBSNPNseInput)it.next();
                 try {
                     dbsnpProcessor.processInput(nseInput);
@@ -267,6 +288,21 @@ public class DBSNPLoader extends DLALoader {
                 rsCtr++;
                 ssCtr += nseInput.getSubSNPs().size();
             }
+            stats.setTotalSnpsOnChr(totalRsOnChr);
+            stats.setEndFreeMem(Runtime.getRuntime().freeMemory());
+            // set elapsed time in minutes
+
+            long endTime = System.currentTimeMillis();
+            float elapsedTime = (endTime - startTime)/60000;
+            System.out.println("Elapsed Time in minutes: " + elapsedTime);
+            logger.logdInfo("Elapsed Time in minutes: " + elapsedTime, false);
+            stats.setTimeToProcess(elapsedTime);
+            int rsLoaded = dbsnpProcessor.getRsLoadedOnChrCtr();
+            stats.setTotalRefSnpsLoaded(rsLoaded);
+            int ssLoaded = dbsnpProcessor.getSsLoadedOnChrCtr();
+            stats.setTotalSubSnpsLoaded(ssLoaded);
+            logger.logdInfo("Total RS loaded on this chr: " + rsLoaded, false);
+            logger.logdInfo("Total SS loaded on this chr: " + ssLoaded, false);
         }
     }
 
@@ -355,9 +391,22 @@ public class DBSNPLoader extends DLALoader {
         logger.logdInfo("Total RefSnps with Vocab resolving errors: " +
                         rsWithVocabResolverExceptionCtr, false);
 
-        for (Iterator i = dbsnpProcessor.getProcessedReport().iterator();
-			i.hasNext(); ) {
-            logger.logdInfo((String)i.next(), false);
+        dbsnpProcessor.getProcessedReport();
+
+        dbsnpProcessor.getDiscrepancyReport();
+
+        String tab = "\t";
+        String crt = "\n";
+        logger.logdInfo("Chr" + tab + "time (min)" + tab + "FreeMemStart (bytes)" + tab +
+                        "FreeMemAfterLookup" + tab + "FreeMemEnd" + tab +
+                        "TotalSnpsOnChr" + tab + "TotalRefSnpsLoaded" + tab + "TotalSubSnpsLoaded" + crt, false);
+        for (Iterator i = chrStats.iterator(); i.hasNext();) {
+            ChromosomeStats s  = (ChromosomeStats)i.next();
+            logger.logdInfo(s.getChromosome() + tab + s.getTimeToProcess() + tab +
+                            s.getStartFreeMem() + tab +
+                            s.getFreeMemAfterGenoLookup() + tab + s.getEndFreeMem() +
+                            tab + s.getTotalRefSnpsOnChr() + tab + s.getTotalRefSnpsLoaded()  +
+                            tab + s.getTotalSubSnpsLoaded() + crt, false);
         }
     }
 
