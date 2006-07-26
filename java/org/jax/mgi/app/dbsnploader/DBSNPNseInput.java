@@ -29,17 +29,20 @@ class DBSNPNseInput {
     private Vector flank5Prime;
     // set of 3' DBSNPNseFlank objects (each representing 255 char chunks)
     private Vector flank3Prime;
-    // set of contig hits
+    // set DBSNPNseContigHit objects
     private Vector contigHits;
 
     /**********************
      * Constructors
      **********************/
     public DBSNPNseInput() {
-        subSNPs = new Vector();
-        flank5Prime = new Vector();
-        flank3Prime = new Vector();
-        contigHits = new Vector();
+        // build 126 1.09 SubSnp per Snp
+        subSNPs = new Vector(2);
+        // build 126 2.78 flanks (3' +  5') per Snp
+        flank5Prime = new Vector(2);
+        flank3Prime = new Vector(2);
+        // build 126 1.05 coordinates per Snp
+        contigHits = new Vector(1);
     }
 
     /******************
