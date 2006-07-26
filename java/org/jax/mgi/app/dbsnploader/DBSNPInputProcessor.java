@@ -59,6 +59,9 @@ public class DBSNPInputProcessor {
     // get a sequence load configurator
     private DBSNPLoaderCfg loadCfg;
 
+    // current mouse genome build
+    private String currGenomeBuildNum;
+
     // Compound object holding all the DAOs representing an RS
     private SNPSNP snpSnp;
 
@@ -71,19 +74,22 @@ public class DBSNPInputProcessor {
     // the current rsId we are processing
     private String rsId;
 
-    // current number of RefSNPs processed
+    // current number of RefSNPs processed and will be loaded
     private int rsCtr = 0;
 
+    // current number of RefSNPs processed on current chromosome and will be loaded
+    private int rsLoadedOnChrCtr = 0;
+    private int ssLoadedOnChrCtr = 0;
     // current number of SubSNPs processed
     private int ssCtr = 0;
 
     // current number of radar snp/marker relationships process
-    private int rdrMkrCtr = 0;
+    private int mkrCtr = 0;
 
     // current number of snp coordinates processed
     private int snpCoordCtr = 0;
 
-     // current number of ss (for BL6 RS) w/o strain alleles)
+     // current number of ss (for BL6 RS we are loading) w/o strain alleles)
     private int ssNoStAllele = 0;
 
     /**
@@ -124,9 +130,6 @@ public class DBSNPInputProcessor {
     private VocabKeyLookup varClassKeyLookup;
 
     // lookup fxn class key given a fxn class
-    // we use this for verification only; fxnClassName
-    // is loaded to DP_SNP_Marker. snpcacheload then
-    // resolves the fxn class to a key.
     private VocabKeyLookup fxnClassKeyLookup;
 
     // lookup MRK_Chromosome._Chromosome_key by name
@@ -134,6 +137,33 @@ public class DBSNPInputProcessor {
 
     // get a chromosome sequenceNum given a _Chromosome_key
     private ChrSeqNumLookup chrSeqNumLookupByKey;
+
+    /**
+     * QC maps
+     */
+    // new variation classes found
+    // varClass:count
+    HashMap newVarClass;
+
+    // new allele characters found
+    // allele:count
+    HashMap newAlleleChar;
+
+    // new submitter handle
+    // subHandle:count
+    HashMap newSubHandle;
+
+    // new strains
+    // strain:count
+    HashMap newStrains;
+
+    // new function class
+    // fxnClass:count
+    HashMap newFxnClass;
+
+    // RS IDs with ConsensusSnp Allele Summary too long
+    // rsID;alleleSummary
+    HashMap csAlleleSummTooLong;
 
     /**
      * Helper classes
@@ -173,8 +203,12 @@ public class DBSNPInputProcessor {
         // configurator
         loadCfg = new DBSNPLoaderCfg();
 
+        // get current genome build number
+        currGenomeBuildNum = loadCfg.getGenomeBuildNum();
+
         // initialize HashMap for populations
-        rsPopulationsBySS = new HashMap();
+        // holds all strain alleles for a chromosome
+        rsPopulationsBySS = new HashMap(50000);
 
         // to lookup a strain key in mgd given a strain name and
         // initialize now, so we can close the mgd connection
@@ -235,13 +269,22 @@ public class DBSNPInputProcessor {
         rsIdSet = new HashSet();
 
         // strain id to strain name map {strainId:strainName, ...}
-        individualMap = new HashMap();
+        // build 126 there are 86 strains lets set initial to 100 to avoid rehash
+        individualMap = new HashMap(100);
 
         // orders a set of alleles
         alleleOrderer = new AlleleOrderer();
 
         // resolves an allele string to an iupac code
         iupacResolver = new IUPACResolver();
+
+        // create QC objects
+        newVarClass = new HashMap();
+        newAlleleChar = new HashMap();
+        newSubHandle = new HashMap();
+        newStrains = new HashMap();
+        newFxnClass = new HashMap();
+        csAlleleSummTooLong = new HashMap();
 
         // close the mgd connection provided by superclass now that we have
         // created the lookups
@@ -250,10 +293,15 @@ public class DBSNPInputProcessor {
 
     /**
      * reinitialize the individual and ss population maps
+     * reset the stats by chromosome
      */
     public void reinitializeProcessor() {
-        individualMap = new HashMap();
-        rsPopulationsBySS = new HashMap();
+        // build 126 there are 86 strains lets set initial to 100 to avoid rehash
+        individualMap = new HashMap(100);
+        // build 126 let's try 2, build 125 very few SubSnps had > 1 population
+        rsPopulationsBySS = new HashMap(50000);
+        rsLoadedOnChrCtr = 0;
+        ssLoadedOnChrCtr = 0;
     }
 
     /**
@@ -261,6 +309,7 @@ public class DBSNPInputProcessor {
      * @param input - a DBSNPGenotypeIndividualInput object
      */
     public void processGenoIndivInput(DBSNPGenotypeIndividualInput input) {
+
         individualMap.put(input.getStrainId(), input.getStrain());
     }
 
@@ -336,6 +385,7 @@ public class DBSNPInputProcessor {
         // file for this rs) throw an exception so the loader
         // can decide what to do (load or not load that is the question)
         if (currentSSPopulationMap == null) {
+            logger.logcInfo("RS NO STRAIN/ALLELES for RS" + rsId, false);
             SNPNoStrainAlleleException e = new
                 SNPNoStrainAlleleException();
             e.bind(rsId);
@@ -369,7 +419,7 @@ public class DBSNPInputProcessor {
             // Added 11/1 build 125 genotype file does not list ss
             // w/o strain/alleles
             if (popsForSSVector == null) {
-                logger.logcInfo("No strain/alleles for RS" + rsId + " SS" +
+                logger.logcInfo("SS NO STRAIN/ALLELES for RS" + rsId + " SS" +
                                 ss.getSSId(), false);
                 ssNoStAllele++;
                 continue;
@@ -394,12 +444,29 @@ public class DBSNPInputProcessor {
         // resolve the remaining SNP_ConsensusSnpState attributes
         finishConsensusSnp(orderedAlleleSummary, rs.getRsVarClass());
 
-        // if we have gotten this far, we have complete snp and mgd SNP objects
-        // send them to their streams.
+        /**
+         * We have a completed snp, write to bcp files and get counts
+         */
+        // write to bcp files
         snpSnp.sendToStream();
 
         // incr ctr, we've added another snp
         rsCtr++;
+        rsLoadedOnChrCtr++;
+        // incrmement the markers
+        mkrCtr += snpSnp.dpMarker.size();
+        // increment the subSnps
+        ssCtr += snpSnp.subSnps.size();
+        ssLoadedOnChrCtr += snpSnp.subSnps.size();
+        // increment the coordinates
+        snpCoordCtr += snpSnp.coordCache.size();
+    }
+
+    public int getRsLoadedOnChrCtr() {
+        return rsLoadedOnChrCtr;
+    }
+    public int getSsLoadedOnChrCtr() {
+        return ssLoadedOnChrCtr;
     }
 
     /**
@@ -413,22 +480,107 @@ public class DBSNPInputProcessor {
      * <LI>Statistics from the mgd SNPProcessor
      * </OL>
      */
-    public Vector getProcessedReport() {
-        Vector report = new Vector();
-        report.add("Total RefSNPs created: " + rsCtr);
-        report.add("Total SubSNPs created: " + ssCtr);
-        report.add("Total SS with no strain alleles: " + ssNoStAllele);
-        report.add("Total snp/marker relationships created: " + rdrMkrCtr);
-        report.add("Total snp coordinates created: " + snpCoordCtr);
-        /*
-        for (Iterator i = snpProcessor.getProcessedReport().iterator();
-             i.hasNext(); ) {
-            report.add( (String) i.next());
-        }
-*/
-        return report;
+    public void getProcessedReport() {
+        logger.logdInfo("Total RefSNPs created: " + rsCtr, false);
+        logger.logcInfo("Total RefSNPs created: " + rsCtr, false);
+        logger.logdInfo("Total SubSNPs created: " + ssCtr, false);
+        logger.logcInfo("Total SubSNPs created: " + ssCtr, false);
+        logger.logdInfo("Total SS loaded with no strain alleles: " + ssNoStAllele, false);
+        logger.logcInfo("Total SS loaded with no strain alleles: " + ssNoStAllele, false);
+        logger.logdInfo("Total dbSNP snp/marker relationships created: " + mkrCtr, false);
+        logger.logcInfo("Total dbSNP snp/marker relationships created: " + mkrCtr, false);
+        logger.logdInfo("Total snp coordinates created: " + snpCoordCtr, false);
+        logger.logcInfo("Total snp coordinates created: " + snpCoordCtr, false);
     }
 
+    public void getDiscrepancyReport() {
+            logger.logdInfo("New variation classes: ", false);
+            for (Iterator i = newVarClass.keySet().iterator(); i.hasNext();) {
+                String key = (String)i.next();
+                logger.logdInfo("    " + key + " " + newVarClass.get(key), false);
+            }
+            logger.logdInfo("New allele characters: ", false);
+            for (Iterator i = newAlleleChar.keySet().iterator(); i.hasNext();) {
+                String key = (String)i.next();
+                logger.logdInfo("    " + key + " " + newAlleleChar.get(key), false);
+            }
+            logger.logdInfo("New submitter handles: ", false);
+            for (Iterator i = newSubHandle.keySet().iterator(); i.hasNext();) {
+                String key = (String)i.next();
+                logger.logdInfo("    " + key + " " + newSubHandle.get(key), false);
+            }
+            logger.logdInfo("New strains: ", false);
+            for (Iterator i = newStrains.keySet().iterator(); i.hasNext();) {
+                String key = (String)i.next();
+                logger.logdInfo("    " + key + " " + newStrains.get(key), false);
+            }
+            logger.logdInfo("New function classes: ", false);
+            for (Iterator i = newFxnClass.keySet().iterator(); i.hasNext();) {
+                String key = (String)i.next();
+               logger.logdInfo("    " + key + " " + newFxnClass.get(key), false);
+            }
+            logger.logdInfo("Allele Summary too long: " , false);
+            for (Iterator i = csAlleleSummTooLong.keySet().iterator(); i.hasNext();) {
+                String key = (String)i.next();
+                logger.logdInfo("    RS" + key + " " + csAlleleSummTooLong.get(key), false);
+            }
+        }
+
+    /**
+   * Gets a Vector of Strings reporting various discrepancies
+   * @assumes nothing
+   * @effects nothing
+   * @return Vector of Strings for reporting
+   * <OL>
+   * <LI>New variation classes
+   * <LI>New allele characters
+   * <LI>new submitter handles
+   * <LI>new strains
+   * <LI>new function classes
+   * <LI>allele summaries that are too long
+   * <LI>Statistics from the mgd SNPProcessor
+   * </OL>
+   */
+/*
+    public Vector getDiscrepancyReport() {
+        Vector report = new Vector();
+        report.add("New variation classes: ");
+        for (Iterator i = newVarClass.keySet().iterator(); i.hasNext();) {
+            String key = (String)i.next();
+            report.add("    " + key + " " + newVarClass.get(key));
+        }
+        report.add("New allele characters: ");
+        for (Iterator i = newAlleleChar.keySet().iterator(); i.hasNext();) {
+            String key = (String)i.next();
+            report.add("    " + key + " " + newAlleleChar.get(key));
+        }
+        report.add("New submitter handles: ");
+        for (Iterator i = newSubHandle.keySet().iterator(); i.hasNext();) {
+            String key = (String)i.next();
+            report.add("    " + key + " " + newSubHandle.get(key));
+        }
+        report.add("New strains: ");
+        for (Iterator i = newStrains.keySet().iterator(); i.hasNext();) {
+            String key = (String)i.next();
+            report.add("    " + key + " " + newStrains.get(key));
+        }
+        report.add("New function classes: ");
+        for (Iterator i = newFxnClass.keySet().iterator(); i.hasNext();) {
+            String key = (String)i.next();
+            report.add("    " + key + " " + newFxnClass.get(key));
+        }
+        report.add("Allele Summary too long: " );
+        for (Iterator i = csAlleleSummTooLong.keySet().iterator(); i.hasNext();) {
+            String key = (String)i.next();
+            report.add("    " + key + " " + csAlleleSummTooLong.get(key));
+        }
+
+
+
+
+        return report;
+    }
+ */
     /**
      * creates an SNP_ConsensusSNPDAO object and sets in the SNPSNP object
      * @param rs a DBSNPNseRS object
@@ -478,7 +630,7 @@ public class DBSNPInputProcessor {
         csState.setVarClassKey(varClassKey);
         csState.setIupacCode(iupacCode);
 
-        // get the set of SNP_Coord_CacheDAOs from the MGDSNP so we can add
+        // get the set of SNP_Coord_CacheDAOs from the SNPSNP so we can add
         // alleleSummary, variation class key, and iupac code
         Vector v = snpSnp.getCoordCacheDaos();
         for(Iterator i = v.iterator(); i.hasNext();) {
@@ -486,7 +638,6 @@ public class DBSNPInputProcessor {
             ccState.setAlleleSummary(orderedAlleleSummary);
             ccState.setVarClassKey(varClassKey);
             ccState.setIupacCode(iupacCode);
-            snpCoordCtr++;
         }
     }
 
@@ -511,7 +662,7 @@ public class DBSNPInputProcessor {
         throws DBException, CacheException, TranslationException,
             ConfigException, SNPVocabResolverException {
         String varClass = null;
-        // for testing
+
         Integer varClassKey = null;
 
         // mapping of length of allele to alleles with that length
@@ -613,6 +764,18 @@ public class DBSNPInputProcessor {
                 varClassKey = varClassKeyLookup.lookup(varClass);
             }
             catch (KeyNotFoundException e) {
+                /**
+                 * track number of each new varClass
+                 */
+                Integer count = new Integer(1);
+                if(newVarClass.containsKey(varClass)) {
+                   count = incrementInteger((Integer)newVarClass.get(varClass));
+                }
+                newVarClass.put(varClass, count);
+
+                /**
+                 * log all RS without varClass to curator log
+                 */
                 logger.logcInfo("UNRESOLVED CS VARCLASS " + varClass +
                                 " RS" + rsId, false);
                 SNPVocabResolverException e1 = new
@@ -680,11 +843,13 @@ public class DBSNPInputProcessor {
                  */
                 for (Iterator k = alleleMap.keySet().iterator(); k.hasNext(); ) {
                     String strain = ((String) k.next()).trim()  ;
-                    Integer strainKey = resolveStrain(strain, pop.getPopId()).getMgdStrainKey();
-                    // if we can't resolve the strain, continue
-                    if (strainKey == null) {
+                    //System.out.println("strain: " + strain);
+                    SNP_StrainState strState = resolveStrain(strain, pop.getPopId());
+                    if (strState == null) {
                         continue;
                     }
+                    Integer strainKey = strState.getMgdStrainKey();
+
                     // get the allele string from the Allele object
                      Allele a = (Allele) alleleMap.get(strain);
                      String allele = a.getAllele();
@@ -742,7 +907,7 @@ public class DBSNPInputProcessor {
          * 2) the only allele is 'N'
          */
         if (len < 1) {
-            logger.logcInfo("No ConsensusSnp Summary Allele for RS" + rsId, false);
+            logger.logcInfo("NO ALLELE SUMMARY for RS" + rsId, false);
             SNPNoConsensusAlleleSummaryException e = new
                 SNPNoConsensusAlleleSummaryException();
             e.bind(rsId);
@@ -751,8 +916,12 @@ public class DBSNPInputProcessor {
         // remove the trailing '/'
         summaryString.deleteCharAt(len - 1);
         if (summaryString.length() > 100) {
-            logger.logcInfo("ALLELE SUMMARY: for RS" + rsId + " is " +
-                summaryString.length(), false);
+            /**
+             * track rsID of each long allele summary
+             */
+
+            csAlleleSummTooLong.put(rsId, summaryString + " length: " + summaryString.length());
+
         }
         // order the allele summary
         String orderedAlleleSummary = alleleOrderer.order(summaryString.toString());
@@ -985,7 +1154,16 @@ public class DBSNPInputProcessor {
                     convertedAllele.append("-");
                     break;
                 default:
-                    logger.logcInfo("Bad allele char for SS" +
+                    /**
+                     * track number of each new allele charachter
+                     */
+                    Integer count = new Integer(1);
+                    if(newAlleleChar.containsKey(allele)) {
+                        count = incrementInteger((Integer)newAlleleChar.get(allele));
+                    }
+                    newAlleleChar.put(allele, count);
+                    // log SS ID of new allele character
+                    logger.logcInfo("UNRECOGNIZED ALLELE CHARACTER for SS" +
                                     ssId + " allele " + alArray[ctr], false);
             }
         }
@@ -1066,6 +1244,15 @@ public class DBSNPInputProcessor {
                    getSubmitterHandle()));
         } catch (KeyNotFoundException e) {
             String h = ss.getSubmitterHandle();
+            /**
+             * track number of each new varClass
+             */
+            Integer count = new Integer(1);
+            if(newSubHandle.containsKey(h)) {
+                count = incrementInteger((Integer)newSubHandle.get(h));
+            }
+            newSubHandle.put(h, count);
+
             logger.logcInfo("UNRESOLVED SUBMITTERHANDLE " + h +
                     " RS" + rsId, false);
             SNPVocabResolverException e1 = new
@@ -1077,12 +1264,21 @@ public class DBSNPInputProcessor {
         try {
             state.setVarClassKey(varClassKeyLookup.lookup(ss.getSSVarClass()));
         } catch (KeyNotFoundException e) {
-            String v = ss.getSSVarClass();
-            logger.logcInfo("UNRESOLVED SS VARCLASS " + v +
+            String varClass = ss.getSSVarClass();
+            /**
+             * track number of each new varClass
+             */
+            Integer count = new Integer(1);
+            if(newVarClass.containsKey(varClass)) {
+                count = incrementInteger((Integer)newVarClass.get(varClass));
+            }
+            newVarClass.put(varClass, count);
+
+            logger.logcInfo("UNRESOLVED SS VARCLASS " + varClass +
                 " RS" + rsId, false);
             SNPVocabResolverException e1 = new
                 SNPVocabResolverException("VarClass");
-            e1.bind("RS" + rsId + " varClass " + v);
+            e1.bind("RS" + rsId + " varClass " + varClass);
             throw e1;
         }
         // resolve and set orientation
@@ -1110,8 +1306,6 @@ public class DBSNPInputProcessor {
           // set ss state object in the snp object, this returns the ssKey
           // for use creating accession and strain allele objects
           Integer ssKey = snpSnp.addSubSNP(state);
-          // count of the total ss loaded
-          ssCtr++;
 
           // create an accession object for the ssId
           processAccession(SNPLoaderConstants.PREFIX_SSNP + ssId, LogicalDBConstants.SUBSNP,
@@ -1206,7 +1400,16 @@ public class DBSNPInputProcessor {
             // if we can't resolve strain, write it to the curation log
             // and go on to the next
             if (strainState == null) {
-                logger.logcInfo("BAD STRAIN " + strain + " RS" + rsId + " SS" +
+                /**
+                 * track number of each new strain
+                 */
+                Integer count = new Integer(1);
+                if(newStrains.containsKey(strain)) {
+                    count = incrementInteger((Integer)newStrains.get(strain));
+                }
+                newStrains.put(strain, count);
+
+                logger.logcInfo("UNRESOLVED STRAIN " + strain + " RS" + rsId + " SS" +
                                 ssId + "PopId" + popId, false);
                 continue;
             }
@@ -1350,17 +1553,36 @@ public class DBSNPInputProcessor {
         HashSet bl6ChrSet = new HashSet();
         //StringBuffer coord = new StringBuffer();
 
+        // we want to know if a BL6 hit doesn't have a current genome build
+        // coordinate
+        boolean oldBuild = false;
+        boolean currentBuild = false;
+
         // iterate over the contig hits
         for (Iterator i = contigHits.iterator(); i.hasNext(); ) {
             DBSNPNseContigHit cHit = (DBSNPNseContigHit) i.next();
 
             // get the assembly of this contig hit
             String assembly = cHit.getAssembly();
-
+	    //System.out.println("Assembly: " + assembly);
             // skip it if not BL6
             if (!assembly.equals(SNPLoaderConstants.DBSNP_BL6)) {
+		 //System.out.println("reject assembly");
                 continue;
             }
+
+            String buildNum = cHit.getBuildNum();
+	     //System.out.println("BuildNum: " + buildNum);
+            // skip it if not current genome build
+            if (! buildNum.equals(currGenomeBuildNum)) {
+                // flag it and continue
+                oldBuild = true;
+		 //System.out.println("reject build");
+		continue;
+            }
+            // if we've gotten this far we know this is a BL6 hit on
+            // the current genome
+            currentBuild = true;
 
             // get the chromosome on which this contig hit is found
             String chromosome = cHit.getChromosome();
@@ -1441,7 +1663,7 @@ public class DBSNPInputProcessor {
                 // chromosome + coord + locusId + fxnClass + nucleotideId + proteinId
                 // uset this so we don't load dup fxn classes
                 HashSet fxnSetSet = new HashSet();
-
+                //System.out.println("FxnClass for " + rsId);
                 // iterate over the FxnSets
                 for (Iterator k = fxnSets.iterator(); k.hasNext(); ) {
                     DBSNPNseFxnSet fSet = (DBSNPNseFxnSet) k.next();
@@ -1458,9 +1680,20 @@ public class DBSNPInputProcessor {
                     fxnSetSet.add(join);
                     Integer fxnKey = fxnClassKeyLookup.lookup(fxnClass);
                     if (fxnKey == null) {
-                        logger.logcInfo("UNRESOLVED FXNCLASS " + fxnClass, false);
+                        /**
+                         * track number of each new varClass
+                         */
+                        Integer count = new Integer(1);
+                        if(newFxnClass.containsKey(fxnClass)) {
+                            count = incrementInteger((Integer)newFxnClass.get(fxnClass));
+                        }
+                        newFxnClass.put(fxnClass, count);
+
+                        logger.logcInfo("UNRESOLVED FXNCLASS " + fxnClass +
+                                        "for  RS" + rsId, false);
                         continue;
                     }
+                    //System.out.println("fxnClass " + fxnClass);
 
                     // create the DP_SNP_MarkerState object
                     DP_SNP_MarkerState mState = new DP_SNP_MarkerState();
@@ -1476,23 +1709,16 @@ public class DBSNPInputProcessor {
                     mState.setAaPosition(fSet.getAAPostition());
                     mState.setReadingFrame(fSet.getReadingFrame());
                     snpSnp.addMarker(mState);
-
-                    rdrMkrCtr++;
                 }
             }
         }
-           // throw an exception if > 1 BL6 chromosome
-           if (bl6ChrSet.size() > 1) {
-               SNPMultiBL6ChrException e = new
-                   SNPMultiBL6ChrException();
-               e.bind("rsId=" + rsId);
-               throw e;
-           }
 
-        // log that there is a BL6 MapLoc w/o a coordinate value
-        if(bl6NoCoordFlag == true) {
-            logger.logcInfo("RS" + rsId +
-                            " has at least one null BL6 startcoord ", false);
+        // throw an exception if > 1 BL6 chromosome
+        if (bl6ChrSet.size() > 1) {
+            SNPMultiBL6ChrException e = new
+                SNPMultiBL6ChrException();
+            e.bind("rsId=" + rsId);
+            throw e;
         }
         // throw an exception if no BL6
         if (bl6Flag != true) {
@@ -1501,6 +1727,17 @@ public class DBSNPInputProcessor {
             e.bind("rsId=" + rsId);
             throw e;
         }
+        if (oldBuild == true && currentBuild == false) {
+            logger.logcInfo("OLD BUILD COORDINATE ONLY for RS" + rsId, false);
+        }
+        // log that there is a BL6 MapLoc w/o a coordinate value
+        if(bl6NoCoordFlag == true) {
+            logger.logcInfo("MISSING BL6 STARTCOORD for RS" + rsId , false);
+        }
+
+    }
+    private Integer incrementInteger(Integer i) {
+        return new Integer(i.intValue() + 1);
     }
 }
 
