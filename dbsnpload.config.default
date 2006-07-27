@@ -154,9 +154,15 @@ export SNP_CHROMOSOMES_TOLOAD
 #
 
 # dbSNP build number
-SNP_DATAVERSION="dbSNP Build 125"
+SNP_DATAVERSION="dbSNP Build 126"
 
-export SNP_DATAVERSION
+# current mouse genome build as specified in "<Assembly" tag "genomeBuild" 
+# attribute in NSE input file. As of Build 126 there are coordinates for 
+# Build 35 and Build 36.
+
+GENOME_BUILD=36_1
+
+export SNP_DATAVERSION GENOME_BUILD
 
 #  Java applications
 DLA_LOADER=org.jax.mgi.app.dbsnploader.DBSNPLoader
@@ -170,7 +176,9 @@ export DLA_LOADER DLA_START
 DLA_TRUNCATE_SNP_TABLES=DP_SNP_Marker,SNP_ConsensusSnp,SNP_ConsensusSnp_StrainAllele,SNP_Coord_Cache,SNP_Flank,SNP_Strain,SNP_SubSnp,SNP_SubSnp_StrainAllele
 
 # Ok to delete dbsnpload Accessions
-SNP_OK_TO_DELETE_ACCESSIONS=true
+# The population load truncates SNP_Accession
+# set to true during development if you don't run population load first
+SNP_OK_TO_DELETE_ACCESSIONS=false
 
 # update MGI_Tables records for this set of tables
 SNP_UPDATE_MGITABLES=${DLA_TRUNCATE_SNP_TABLES},SNP_Population,SNP_Accession
