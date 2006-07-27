@@ -8,12 +8,16 @@
 #
 #  Purpose:  This script controls the execution of the DB SNP load
 #
-   Usage="dbsnpload.sh [-f -v]"
+   Usage="dbsnpload.sh [-s -f -v -h -p -c -r]"
 #
 #         where:
+#	        -s put front-end snp db in sgl user mode 
 #		-f run the fxnClass vocload and translation load
 #               -v run the varClass vocload and translation load
-#               note: subHandle vocload is always run
+#               -h run the  subHandle vocload 
+#		-p run Population load
+#		-c run snpcacheload
+#		-r run post Processing
 #  Env Vars:
 #
 #      See the configuration file
@@ -22,7 +26,6 @@
 #
 #      - Common configuration file (/usr/local/mgi/etc/common.config.sh)
 #      - dbsnpload.config
-#      - two sets XML format input files (genotypes are in separate file set)
 #      - dbsnpload/data input files for translations and vocabs 
 #      - snp and mgd databases
 #
@@ -64,21 +67,31 @@ rm -f ${LOG}
 #
 #  Verify the argument(s) to the shell script.
 #
+doSgl=no
 doFxn=no
 doVar=no
+doHandle=no
+doPop=no
+doCache=no
+doPost=no
 
-set -- `getopt fv $*`
+set -- `getopt sfvhpcr $*`
 if [ $? != 0 ]
 then
     echo ${usage}
     exit 2
 fi
-
+echo 'testing'
 for i in $*
 do
     case $i in
+	-s) doSgl=yes; shift;;
         -f) doFxn=yes; shift;;
         -v) doVar=yes; shift;;
+	-h) doHandle=yes; shift;;
+	-p) doPop=yes; shift;;
+	-c) doCache=yes; shift;;
+	-r) doPost=yes; shift;;
         --) shift; break;;
     esac
 done
@@ -198,12 +211,15 @@ preload
 #
 # put production snp database in single user mode prior to loading snps
 #
-echo "calling  ${SNP_SGL_USER} ${PRODSNP_DBSERVER} ${PRODSNP_DBNAME} true ${SNP_SGL_USER_FILE} ${SNP_SLEEP_INTERVAL}"
+if [ ${doSgl} = "yes" ]
+then
+    echo "calling  ${SNP_SGL_USER} ${PRODSNP_DBSERVER} ${PRODSNP_DBNAME} true ${SNP_SGL_USER_FILE} ${SNP_SLEEP_INTERVAL}"
 
-${SNP_SGL_USER} ${PRODSNP_DBSERVER} ${PRODSNP_DBNAME} true ${SNP_SGL_USER_FILE} ${SNP_SLEEP_INTERVAL}
-STAT=$?
-msg="${SNP_SGL_USER} "
-checkstatus ${STAT} "${msg}"
+    ${SNP_SGL_USER} ${PRODSNP_DBSERVER} ${PRODSNP_DBNAME} true ${SNP_SGL_USER_FILE} ${SNP_SLEEP_INTERVAL}
+    STAT=$?
+    msg="${SNP_SGL_USER} "
+    checkstatus ${STAT} "${msg}"
+fi
 
 #
 # run fxn class vocload?
@@ -228,12 +244,15 @@ then
 fi
 
 #
-# always run submitter handle vocload
+# run submitter handle vocload?
 #
-${DBSNP_VOCLOAD} -h
-STAT=$?
-msg="dbsnp subHandle vocabulary load "
-checkstatus ${STAT} "${msg}"
+if [ ${doHandle} = "yes" ]
+then
+    ${DBSNP_VOCLOAD} -h
+    STAT=$?
+    msg="dbsnp subHandle vocabulary load "
+    checkstatus ${STAT} "${msg}"
+fi
 
 #
 # run variation class translation load?
@@ -260,11 +279,14 @@ fi
 # 
 # run population load
 #
-echo "running population load"
-${POPULATION_LOAD}
-STAT=$?
-msg="dbsnp population load "
-checkstatus ${STAT} "${msg}"
+if [ ${doPop} = "yes" ]
+then
+    echo "running population load"
+    ${POPULATION_LOAD}
+    STAT=$?
+    msg="dbsnp population load "
+    checkstatus ${STAT} "${msg}"
+fi
 
 #
 # run java dbSnp loader
@@ -276,15 +298,6 @@ msg="dbsnp load "
 checkstatus ${STAT} "${msg}"
 
 #
-# run snp marker cache load
-#
-echo "running ${SNP_MARKER_CACHE_LOAD}"
-${SNP_MARKER_CACHE_LOAD}
-STAT=$?
-msg="dbsnp marker cache load "
-checkstatus  ${STAT} "${msg}"
-
-#
 # order snp strains
 #
 echo "running snp strain order update"
@@ -294,14 +307,27 @@ msg="snp strain order update "
 checkstatus  ${STAT} "${msg}"
 
 #
+# run snp marker cache load
+#
+if [ ${doCache} = "yes" ]
+then
+    echo "running ${SNP_MARKER_CACHE_LOAD}"
+    ${SNP_MARKER_CACHE_LOAD}
+    STAT=$?
+    msg="dbsnp marker cache load "
+    checkstatus  ${STAT} "${msg}"
+fi
+#
 # run postProcessing - dump/load/update mgd MGI_dbinfo
 #
-echo "running post-processing"
-${SNP_POST_PROCESS}
-STAT=$?
-msg="post-processing "
-checkstatus  ${STAT} "${msg}"
-
+if [ ${doPost} = "yes" ]
+then
+    echo "running post-processing"
+    ${SNP_POST_PROCESS}
+    STAT=$?
+    msg="post-processing "
+    checkstatus  ${STAT} "${msg}"
+fi
 # run postload cleanup and email logs
 #
 shutDown
