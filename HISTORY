@@ -1,3 +1,34 @@
+TAG: dbsnpload-build36-1
+DATE: 07-27-2006	 
+STAFF: sc
+CHANGES:
+1a) ./bin/snpPopulation.py - capture set of unrecognized handles and send to std
+   err to be redirected by wrapper to log. Formerly the script failed when 
+   unrecognized handles. Removed deleteAccessions method, snpPopulation.sh now
+   truncates.
+1b) ./bin/snpPopulations.sh - truncates SNP_Accession
+2) MGI_TablesUpdater - TR7739 - fixed modification date bug.
+3) Set initial HashMap and Vector capacity to save memory.
+4) DBSNPNseInputFile - added parsing of genome build number (file includes build
+   35 and 36 coordinates)
+5) DBSNPNseContigHit - added genome build number attribute and set Vector to
+   initial capacity.
+6) DBSNPLoaderCfg - get method for genome build number
+7) DBSNPLoader - added/updated statistics, added ChromosomeStats object, more
+   free memory reporting
+8) new ChromosomeStats object - data object tracking statistics by chromosome.
+9) DBSNPInputProcessor - add 1) current genome build, stats by chr, update 
+   curation log reporting tags 
+10) ./data/mgiSnpStrainOrder.txt - removed 129P3/J, CAST/Ei, added
+   SAMP1, SAMP8, SAMR1
+11a) ./bin/loadVoc.sh - remove creation of vocload subhandle input file. We 
+    now maintain input file and config file as part of this product.
+11b) ./data/subHandle.vocab.in - new
+12) dbsnpload.config.default - updated SNP_DATAVERSION="dbSNP, added 
+    GENOME_BUILD, updated SNP_OK_TO_DELETE_ACCESSIONS to false because 
+    snpPopulations.sh does it now.
+13) dbsnpload.sh - added command line options for sglUserMode, subHandle vocload, population load, snpcacheload, postprocessing 
+
 TAG: dbsnpload-build36-BP
 DATE: 06/13/2006
 STAFF: sc
