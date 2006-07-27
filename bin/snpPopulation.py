@@ -126,22 +126,6 @@ def getSnpAccessionKey():
 	if accKey == None:
 	    accKey = 0
 
-def deleteAccessions(mgiTypeKey, ldbKey):
-    cmds = []
-    cmds.append('select a._Accession_key ' + \
-    'into #todelete ' + \
-    'from SNP_Accession a ' + \
-    'where a._MGIType_key = %s ' % mgiTypeKey + \
-    'and a._LogicalDB_key = %s' % ldbKey)
-
-    cmds.append('create index idx1 on #todelete(_Accession_key)')
-
-    cmds.append('delete SNP_Accession ' + \
-    'from #todelete d, SNP_Accession a ' + \
-    'where d._Accession_key = a._Accession_key')
-
-    results = db.sql(cmds, 'auto')
-
 def createBCP():
 	print 'Creating %s/%s.bcp' % (outputdir, popTable)
 	print 'and  %s/%s.bcp' % (outputdir, accTable)
@@ -206,7 +190,6 @@ def createAccession(accid, objectKey, ldbKey, mgiTypeKey):
 print '%s' % mgi_utils.date()
 setup()
 print 'deleting population accessions'
-deleteAccessions(snpPopmgiTypeKey, snpPopLdbKey)
 createBCP()
 print '%s' % mgi_utils.date()
 
