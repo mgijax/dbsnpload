@@ -10,14 +10,19 @@
 #
    Usage="dbsnpload.sh [-s -f -v -h -p -c -r]"
 #
+#         These options provided primarily for development purposes, however
+#         vocabs often do not change between dbsnp builds, so we provide
+#         these options to avoid reloading them unnecessarily.
+#
 #         where:
-#	        -s put front-end snp db in sgl user mode 
-#		-f run the fxnClass vocload and translation load
-#               -v run the varClass vocload and translation load
-#               -h run the  subHandle vocload 
-#		-p run Population load
-#		-c run snpcacheload
-#		-r run post Processing
+#	        -s DO NOT put front-end snp db in sgl user mode 
+#		-f DO NOT run the fxnClass vocload and translation load
+#               -v DO NOT run the varClass vocload and translation load
+#               -h DO NOT run the  subHandle vocload 
+#		-p DO NOT run Population load - !warning! if you use this option
+#		    be sure to configure SNP_OK_TO_DELETE_ACCESSIONS=true
+#		-c DO NOT run snpcacheload
+#		-r DO NOT run post Processing
 #  Env Vars:
 #
 #      See the configuration file
@@ -67,13 +72,13 @@ rm -f ${LOG}
 #
 #  Verify the argument(s) to the shell script.
 #
-doSgl=no
-doFxn=no
-doVar=no
-doHandle=no
-doPop=no
-doCache=no
-doPost=no
+doSgl=yes
+doFxn=yes
+doVar=yes
+doHandle=yes
+doPop=yes
+doCache=yes
+doPost=yes
 
 set -- `getopt sfvhpcr $*`
 if [ $? != 0 ]
@@ -81,35 +86,29 @@ then
     echo ${usage}
     exit 2
 fi
-echo 'testing'
 for i in $*
 do
     case $i in
-	-s) doSgl=yes; shift;;
-        -f) doFxn=yes; shift;;
-        -v) doVar=yes; shift;;
-	-h) doHandle=yes; shift;;
-	-p) doPop=yes; shift;;
-	-c) doCache=yes; shift;;
-	-r) doPost=yes; shift;;
+	-s) doSgl=no; shift;;
+        -f) doFxn=no; shift;;
+        -v) doVar=no; shift;;
+	-h) doHandle=no; shift;;
+	-p) doPop=no; shift;;
+	-c) doCache=no; shift;;
+	-r) doPost=no; shift;;
         --) shift; break;;
     esac
 done
 
 #
-#  Establish the configuration file names.
+#  Establish load configuration file name.
 #
-CONFIG_COMMON=`pwd`/common.config.sh
+
 CONFIG_LOAD=`pwd`/dbsnpload.config
 
 #
-#  Make sure the configuration files are readable.
+# Make sure load configuration file is readable
 #
-if [ ! -r ${CONFIG_COMMON} ]
-then
-    echo "Cannot read configuration file: ${CONFIG_COMMON}" | tee -a ${LOG}
-    exit 1
-fi
 
 if [ ! -r ${CONFIG_LOAD} ]
 then
@@ -118,21 +117,21 @@ then
 fi
 
 #
-# Source the common configuration files
-#
-. ${CONFIG_COMMON}
-
-#
-# Source the DBSNP Load configuration files
+# Source the load configuration file
 #
 . ${CONFIG_LOAD}
+
+#
+#  Establish master configuration file name, we pass this to java
+#
+CONFIG_MASTER=${MGICONFIG}/master.config.sh
 
 echo "javaruntime:${JAVARUNTIMEOPTS}"
 echo "classpath:${CLASSPATH}"
 echo "mgd dbserver:${MGD_DBSERVER}"
 echo "mgd database:${MGD_DBNAME}"
-echo "snp dbserver:${SNP_DBSERVER}"
-echo echo "snp database:${SNP_DBNAME}"
+echo "snp dbserver:${SNPBE_DBSERVER}"
+echo echo "snp database:${SNPBE_DBNAME}"
 
 #
 #  Source the DLA library functions.
@@ -182,7 +181,7 @@ runsnpload ()
     # run dbsnpload
     #
     ${JAVA} ${JAVARUNTIMEOPTS} -classpath ${CLASSPATH} \
-	-DCONFIG=${CONFIG_COMMON},${CONFIG_LOAD} \
+	-DCONFIG=${CONFIG_MASTER},${CONFIG_LOAD} \
 	-DJOBKEY=${JOBKEY} ${DLA_START}
 }
 
@@ -213,9 +212,9 @@ preload
 #
 if [ ${doSgl} = "yes" ]
 then
-    echo "calling  ${SNP_SGL_USER} ${PRODSNP_DBSERVER} ${PRODSNP_DBNAME} true ${SNP_SGL_USER_FILE} ${SNP_SLEEP_INTERVAL}"
+    echo "calling  ${SNP_SGL_USER} ${SNP_DBSERVER} ${SNP_DBNAME} true ${SNP_SGL_USER_FILE} ${SNP_SLEEP_INTERVAL}"
 
-    ${SNP_SGL_USER} ${PRODSNP_DBSERVER} ${PRODSNP_DBNAME} true ${SNP_SGL_USER_FILE} ${SNP_SLEEP_INTERVAL}
+    ${SNP_SGL_USER} ${SNP_DBSERVER} ${SNP_DBNAME} true ${SNP_SGL_USER_FILE} ${SNP_SLEEP_INTERVAL}
     STAT=$?
     msg="${SNP_SGL_USER} "
     checkstatus ${STAT} "${msg}"
