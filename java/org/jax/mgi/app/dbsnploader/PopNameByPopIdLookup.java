@@ -36,7 +36,7 @@ public class PopNameByPopIdLookup extends FullCachedLookup
      */
     public PopNameByPopIdLookup ()
         throws CacheException, ConfigException, DBException {
-        super(SQLDataManagerFactory.getShared(SchemaConstants.SNP));
+        super(SQLDataManagerFactory.getShared(SchemaConstants.SNPBE));
     }
 
 
