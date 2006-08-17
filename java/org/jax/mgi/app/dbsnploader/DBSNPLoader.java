@@ -9,6 +9,7 @@ import org.jax.mgi.dbs.mgd.LogicalDBConstants;
 import org.jax.mgi.shr.ioutils.XMLDataIterator;
 import org.jax.mgi.shr.dla.loader.DLALoaderHelper;
 import org.jax.mgi.shr.dbutils.SQLDataManager;
+import org.jax.mgi.shr.dbutils.SQLDataManagerFactory;
 import org.jax.mgi.shr.config.DatabaseCfg;
 import org.jax.mgi.shr.dbutils.bcp.BCPManager;
 import org.jax.mgi.shr.config.BCPManagerCfg;
@@ -19,6 +20,11 @@ import org.jax.mgi.shr.cache.KeyNotFoundException;
 
 import java.util.Iterator;
 import java.util.Vector;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
+
 
 /**
  * is an object that parses DBSNP input files, resolves dbsnp attributes
@@ -51,6 +57,9 @@ public class DBSNPLoader extends DLALoader {
     // bcp files
     private DBSNPInputProcessor dbsnpProcessor;
 
+    // writer to reports rsIds not loaded
+    private BufferedWriter snpsNotLoadedWriter;
+
     // current number of RefSNPs processed
     private int rsCtr;
 
@@ -65,6 +74,9 @@ public class DBSNPLoader extends DLALoader {
 
     // current number of SNPs with multiple BL6 chromosomes
     private int rsMultiBL6ChrCtr;
+
+    // current number of SNPs with multiple BL6 coordinates on same chromosome
+    private int rsMultiBL6ChrCoordCtr;
 
     // current number of SNPs with no allele summary
     // (means no strain resolved or all alleles are 'N' or ' ')
@@ -117,14 +129,32 @@ public class DBSNPLoader extends DLALoader {
         chromosomes = loadCfg.getChromosomesToLoad();
 
         // create SQLStream for snp database
-        snpDBMgr = new SQLDataManager(new DatabaseCfg("SNP"));
+        snpDBMgr = SQLDataManagerFactory.getShared(SchemaConstants.SNPBE);
         snpDBMgr.setLogger(logger);
-        snpBCPMgr = new BCPManager(new BCPManagerCfg("SNP"));
+        logger.logdDebug("DBSNPLoader snpDBMgr.server " + snpDBMgr.getServer());
+        logger.logdDebug("DBSNPLoader snpDBMgr.database " + snpDBMgr.getDatabase());
+
+        snpBCPMgr = new BCPManager(new BCPManagerCfg("SNPBE"));
         snpBCPMgr.setLogger(logger);
         snpStream = createSQLStream(loadCfg.getSnpStreamName(),
                                    snpDBMgr, snpBCPMgr);
-       // create snp processor
-        dbsnpProcessor = new DBSNPInputProcessor(snpStream);
+
+        // create writer for rs ids not loaded
+        try {
+           snpsNotLoadedWriter = new BufferedWriter(new FileWriter(loadCfg.getSnpNotLoadedFileName()));
+        }
+        catch (IOException e){
+           throw new MGIException(e.getMessage());
+        }
+
+        // create snp processor
+        try {
+            dbsnpProcessor = new DBSNPInputProcessor(snpStream,
+                snpsNotLoadedWriter);
+        }
+        catch (IOException e) {
+            throw new MGIException(e.getMessage());
+        }
 
         // close radar connection provided by super class, don't need it
         // Note we need the mgd connection to load the lookups
@@ -149,6 +179,7 @@ public class DBSNPLoader extends DLALoader {
         rsWithNoAllelesCtr = 0;
         rsWithNoBL6Ctr = 0;
         rsMultiBL6ChrCtr = 0;
+        rsMultiBL6ChrCoordCtr = 0;
         rsWithNoAlleleSummaryCtr = 0;
         rsWithVocabResolverExceptionCtr = 0;
         rsRepeatExceptionCtr = 0;
@@ -201,7 +232,7 @@ public class DBSNPLoader extends DLALoader {
             long startFreeMem = Runtime.getRuntime().freeMemory();
             stats.setChromosome(chr);
             stats.setStartFreeMem(startFreeMem);
-	    logger.logcInfo("Processing chr " + chr, true);
+            logger.logcInfo("Processing chr " + chr, true);
             logger.logdInfo("Processing chr " + chr, true);
             logger.logdInfo("Free memory: " + startFreeMem, false);
             /**
@@ -276,6 +307,9 @@ public class DBSNPLoader extends DLALoader {
                 catch (SNPMultiBL6ChrException e) {
                     rsMultiBL6ChrCtr++;
                 }
+                catch (SNPMultiBL6ChrCoordException e) {
+                    rsMultiBL6ChrCoordCtr++;
+                }
                 catch (SNPNoConsensusAlleleSummaryException e) {
                     rsWithNoAlleleSummaryCtr++;
                 }
@@ -318,6 +352,10 @@ public class DBSNPLoader extends DLALoader {
 
         // do updates on MGI_Tables in the 'snp' database
         if(loadCfg.getUpdateMGITables() != null) {
+            // reopen mgd connection provided by superclass -
+            logger.logdInfo("Re-opening mgd resource in order to update MGI_dbinfo " +
+                            "and MGI_Tables", true);
+            SQLDataManagerFactory.getShared(SchemaConstants.MGD).reconnect();
             updateMGITables();
         }
 
@@ -325,8 +363,16 @@ public class DBSNPLoader extends DLALoader {
         logger.logdInfo("Closing snp stream", false);
         this.snpStream.close();
 
+        //logger.logdInfo("Closing mgd stream", false);
+        this.loadStream.close();
+
         // report load statistics
         reportLoadStatistics();
+        try {
+            snpsNotLoadedWriter.close();
+        } catch (IOException e) {
+            throw new MGIException(e.getMessage());
+        }
         logger.logdInfo("DBSNPLoader complete", true);
     }
 
@@ -374,20 +420,20 @@ public class DBSNPLoader extends DLALoader {
     /**
      * Reports load statistics
      */
-    private void reportLoadStatistics() {
+    private void reportLoadStatistics() throws ConfigException {
         logger.logdInfo("Total RefSnps Looked at: " + rsCtr, false);
         logger.logdInfo("Total SubSnps for the RefSnps Looked at: " + ssCtr, false);
         logger.logdInfo("Total RefSnp records repeated in the input " +
             "(can be multiple per RefSnp): " +
                         rsRepeatExceptionCtr, false);
-        logger.logdInfo("Total RefSnps with no Strain Alleles: " +
-                        rsWithNoAllelesCtr, false);
-        logger.logdInfo("Total RefSnps with multi chromosome BL6 coordinates: " +
+        logger.logdInfo("Total RefSnps with no defined strain/alleles for any assay of the SNP: " +
+                        (rsWithNoAllelesCtr + rsWithNoAlleleSummaryCtr), false);
+        logger.logdInfo("Total RefSnps mapped to more than 1 chromosome in the C57BL/6J genome: " +
                         rsMultiBL6ChrCtr, false);
-        logger.logdInfo("Total RefSnps with no BL6 coordinates: " +
+        logger.logdInfo("Total RefSnps mapped to > " + loadCfg.getMaxChrCoordCt()
+                         + " coordinates on the same chromosome: " + rsMultiBL6ChrCoordCtr, false);
+        logger.logdInfo("Total RefSnps unmapped in the C57BL/6J genome: " +
                         rsWithNoBL6Ctr, false);
-        logger.logdInfo("Total RefSnps with no ConsensusSnpAlleleSummary: " +
-                        rsWithNoAlleleSummaryCtr, false);
         logger.logdInfo("Total RefSnps with Vocab resolving errors: " +
                         rsWithVocabResolverExceptionCtr, false);
 
@@ -420,7 +466,7 @@ public class DBSNPLoader extends DLALoader {
          String dataVersion = loadCfg.getSnpDataVersion();
 
          // create updater for the snp database
-         MGI_dbinfoUpdater snpUpdater = new MGI_dbinfoUpdater(SchemaConstants.SNP);
+         MGI_dbinfoUpdater snpUpdater = new MGI_dbinfoUpdater(SchemaConstants.SNPBE);
 
          // writes update out to script file
          snpStream.update((org.jax.mgi.dbs.snp.dao.MGI_dbinfoDAO)snpUpdater.
@@ -439,7 +485,7 @@ public class DBSNPLoader extends DLALoader {
 
         // get an updater for the 'snp' database
         MGI_TablesUpdater snpUpdater =
-            new MGI_TablesUpdater(SchemaConstants.SNP, loadCfg.getJobstreamName());
+            new MGI_TablesUpdater(SchemaConstants.SNPBE, loadCfg.getJobstreamName());
 
         // get the set of SNP database tables to update
         String[] tables = loadCfg.getUpdateMGITables();

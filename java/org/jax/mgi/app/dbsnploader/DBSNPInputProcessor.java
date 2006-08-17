@@ -1,6 +1,3 @@
-// $Header
-// $Name
-
 package org.jax.mgi.app.dbsnploader;
 
 import org.jax.mgi.shr.timing.Stopwatch;
@@ -35,6 +32,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.io.BufferedWriter;
+import java.io.IOException;
 
 /**
  * is an object that processes a DBSNPInput object. It resolves and/or
@@ -62,11 +61,28 @@ public class DBSNPInputProcessor {
     // current mouse genome build
     private String currGenomeBuildNum;
 
+    // max allowable snp coordinates on a single chromsome
+    private int maxChrCoordCt;
+
     // Compound object holding all the DAOs representing an RS
     private SNPSNP snpSnp;
 
     // Set of RS ids we have processed (so we don't load dups)
     private HashSet rsIdSet;
+
+    /**
+     * Report rsIds of RefSnps not loaded along with the reason why
+     */
+    // writer to report RefSnps not loaded
+    private BufferedWriter snpsNotLoadedWriter;
+
+    // reasons not loaded
+    private static String SNP_NOTLOADED_MULTICHR;
+    private static String SNP_NOTLOADED_MULTICHR_COORD;
+    private static String SNP_NOTLOADED_NO_BL6;
+    private static String SNP_NOTLOADED_NO_STRAINALLELE;
+    private static final String NL = "\n";
+    private static final String TAB = "\t";
 
     /**
      * Counters for logging statistics
@@ -181,6 +197,7 @@ public class DBSNPInputProcessor {
      * Constructs a DBSNPInputProcessor with a snp stream
      * @assumes Nothing
      * @param snpSqlStream stream for writing snp bcp files
+     * @param writer - for reporting RefSnps not loaded
      * @throws CacheException - if lookup caching erro
      * @throws KeyNotFoundException - if error creating ChromosomeKeyLookup
      * @throws TranslationException - if error creating any VocabKeyLookup
@@ -190,21 +207,33 @@ public class DBSNPInputProcessor {
      * @throws DLALoggingException if error creating a logger
      */
 
-      public DBSNPInputProcessor(SQLStream snpSqlStream) throws
+      public DBSNPInputProcessor(SQLStream snpSqlStream, BufferedWriter writer) throws
         CacheException, KeyNotFoundException, TranslationException,
-        DBException, ConfigException, DLALoggingException {
+        DBException, ConfigException, DLALoggingException, IOException {
 
         // set the streams
         snpStream = snpSqlStream;
 
-        // get a logger
-        logger = DLALogger.getInstance();
+        // Writes out RefSnps not loaded
+        snpsNotLoadedWriter = writer;
+        writer.write("RefSNP ID" + TAB + "Reason" + NL);
 
         // configurator
         loadCfg = new DBSNPLoaderCfg();
 
+        SNP_NOTLOADED_MULTICHR = loadCfg.getSnpNotLoadedMultChr();
+        SNP_NOTLOADED_MULTICHR_COORD = loadCfg.getSnpNotLoadedMultiChrCoord();
+        SNP_NOTLOADED_NO_BL6 = loadCfg.getSnpNotLoadedNoBL6();
+        SNP_NOTLOADED_NO_STRAINALLELE = loadCfg.getSnpNotLoadedNoStrainAllele();
+
+        // get a logger
+        logger = DLALogger.getInstance();
+
         // get current genome build number
         currGenomeBuildNum = loadCfg.getGenomeBuildNum();
+
+        // get max allowabl coordinates on a chromosome
+        maxChrCoordCt = loadCfg.getMaxChrCoordCt().intValue();
 
         // initialize HashMap for populations
         // holds all strain alleles for a chromosome
@@ -213,7 +242,6 @@ public class DBSNPInputProcessor {
         // to lookup a strain key in mgd given a strain name and
         // initialize now, so we can close the mgd connection
         strainKeyLookup = new StrainKeyLookup();
-        strainKeyLookup.initCache();
 
 	    // lookup strain name by strain key
         strainNameLookup = new StrainNameLookup();
@@ -231,7 +259,6 @@ public class DBSNPInputProcessor {
 
         // to lookup a submitter handle name in snp given a population id and
         handleNameLookupByPopId = new HandleNameByPopIdLookup();
-
         // to lookup a population key in snp given a population id
         populationKeyLookupByPopId = new SNPAccessionLookup(LogicalDBConstants.SNPPOPULATION,
                 MGITypeConstants.SNPPOPULATION);
@@ -288,7 +315,7 @@ public class DBSNPInputProcessor {
 
         // close the mgd connection provided by superclass now that we have
         // created the lookups
-        //SQLDataManagerFactory.getShared(SchemaConstants.MGD).closeResources();
+        SQLDataManagerFactory.getShared(SchemaConstants.MGD).closeResources();
     }
 
     /**
@@ -386,6 +413,12 @@ public class DBSNPInputProcessor {
         // can decide what to do (load or not load that is the question)
         if (currentSSPopulationMap == null) {
             logger.logcInfo("RS NO STRAIN/ALLELES for RS" + rsId, false);
+            try {
+                snpsNotLoadedWriter.write(rsId + TAB +
+                                          SNP_NOTLOADED_NO_STRAINALLELE + NL);
+            } catch (IOException e) {
+                throw new MGIException(e.getMessage());
+            }
             SNPNoStrainAlleleException e = new
                 SNPNoStrainAlleleException();
             e.bind(rsId);
@@ -397,7 +430,11 @@ public class DBSNPInputProcessor {
 
         // process coordinates first; RS with no C57BL/6J coordinates are
         // rejected by this method
-        processCoordinates(consensusKey, contigHits, rsId);
+        try {
+            processCoordinates(consensusKey, contigHits, rsId);
+        } catch (IOException e) {
+            throw new MGIException(e.getMessage());
+        }
 
         // create ACC_AccesssionDAO for the rs id
 
@@ -527,61 +564,6 @@ public class DBSNPInputProcessor {
         }
 
     /**
-   * Gets a Vector of Strings reporting various discrepancies
-   * @assumes nothing
-   * @effects nothing
-   * @return Vector of Strings for reporting
-   * <OL>
-   * <LI>New variation classes
-   * <LI>New allele characters
-   * <LI>new submitter handles
-   * <LI>new strains
-   * <LI>new function classes
-   * <LI>allele summaries that are too long
-   * <LI>Statistics from the mgd SNPProcessor
-   * </OL>
-   */
-/*
-    public Vector getDiscrepancyReport() {
-        Vector report = new Vector();
-        report.add("New variation classes: ");
-        for (Iterator i = newVarClass.keySet().iterator(); i.hasNext();) {
-            String key = (String)i.next();
-            report.add("    " + key + " " + newVarClass.get(key));
-        }
-        report.add("New allele characters: ");
-        for (Iterator i = newAlleleChar.keySet().iterator(); i.hasNext();) {
-            String key = (String)i.next();
-            report.add("    " + key + " " + newAlleleChar.get(key));
-        }
-        report.add("New submitter handles: ");
-        for (Iterator i = newSubHandle.keySet().iterator(); i.hasNext();) {
-            String key = (String)i.next();
-            report.add("    " + key + " " + newSubHandle.get(key));
-        }
-        report.add("New strains: ");
-        for (Iterator i = newStrains.keySet().iterator(); i.hasNext();) {
-            String key = (String)i.next();
-            report.add("    " + key + " " + newStrains.get(key));
-        }
-        report.add("New function classes: ");
-        for (Iterator i = newFxnClass.keySet().iterator(); i.hasNext();) {
-            String key = (String)i.next();
-            report.add("    " + key + " " + newFxnClass.get(key));
-        }
-        report.add("Allele Summary too long: " );
-        for (Iterator i = csAlleleSummTooLong.keySet().iterator(); i.hasNext();) {
-            String key = (String)i.next();
-            report.add("    " + key + " " + csAlleleSummTooLong.get(key));
-        }
-
-
-
-
-        return report;
-    }
- */
-    /**
      * creates an SNP_ConsensusSNPDAO object and sets in the SNPSNP object
      * @param rs a DBSNPNseRS object
      * @return SNP_ConsensusSNP._ConsensusSNP_key
@@ -662,7 +644,6 @@ public class DBSNPInputProcessor {
         throws DBException, CacheException, TranslationException,
             ConfigException, SNPVocabResolverException {
         String varClass = null;
-
         Integer varClassKey = null;
 
         // mapping of length of allele to alleles with that length
@@ -698,23 +679,33 @@ public class DBSNPInputProcessor {
         if(dbsnpVarClass.equals(SNPLoaderConstants.VARCLASS_NAMED)) {
            varClass = dbsnpVarClass;
         }
-        // if there is a deletion ('-')
+
+        /**
+         * if there is a deletion ('-')
+         */
         else if(orderedAlleleSummary.startsWith("-")) {
             // if '-' is the only allele, or if there are only 2 alleles:
             if(orderedAlleleSummary.equals("-") ||  numAlleles == 2){
                varClass = SNPLoaderConstants.VARCLASS_INDEL;
+               //logger.logDebug("Case 1");
             }
-            // if there are >2 alleles and all alleles, excluding '-',
-            // are of different sizes (numAlleles - 1 because we have excluded
-            // the '-' allele from the map)
+            /** if there are >2 alleles and all alleles, excluding '-',
+             *  are of different sizes (numAlleles - 1 because we have excluded
+             *  the '-' allele from the map)
+             */
             else if ( (numAlleles > 2) && (alleleSizes.size() == numAlleles - 1)) {
-                varClass = SNPLoaderConstants.VARCLASS_INDEL;
+                //logger.logdDebug("Case 2");
+                varClass = determineVarClass(orderedAlleleSummary, true);
             }
-            // if there are >2 alleles and >1 of the same size
+            /**
+             * if there are >2 alleles and >1 of the same size
+             */
             else if ( (numAlleles > 2)) {
+                //logger.logdDebug("Case 3");
                 for (Iterator i = alleleSizes.iterator(); i.hasNext();) {
                     if ( ( (Vector) map.get( ( (Integer) i.next()))).size() > 1) {
                         varClass = SNPLoaderConstants.VARCLASS_MIXED;
+                       // logger.logdDebug("Case 3b");
                     }
                 }
             }
@@ -725,7 +716,10 @@ public class DBSNPInputProcessor {
             }
 
         }
-        // if there is NOT a deletion
+        /**
+         * if there is NOT a deletion
+         */
+
         else {
             // if all alleles are singletons (same size and that size is 1)
             if (alleleSizes.size() == 1 && alleleSizes.contains(new Integer(1))) {
@@ -737,7 +731,7 @@ public class DBSNPInputProcessor {
             }
             // if all alleles are of different sizes
             else if (alleleSizes.size() == numAlleles) {
-                varClass = SNPLoaderConstants.VARCLASS_INDEL;
+                varClass = determineVarClass(orderedAlleleSummary, false);
             }
             // if >2 alleles and > 1 of the same size
             else if((numAlleles > 2)) {
@@ -752,6 +746,7 @@ public class DBSNPInputProcessor {
                                  " alleleSummary: " + orderedAlleleSummary);
             }
         }
+        //logger.logdDebug("RS" + rsId + "CSVarClass = " + varClass);
         // now resolve if not null
         if (varClass == null) {
             // case not covered; log it
@@ -785,6 +780,35 @@ public class DBSNPInputProcessor {
             }
         }
         return varClassKey;
+    }
+
+private String determineVarClass ( String orderedAlleleSummary, boolean hasDeletion ) {
+        if (hasDeletion == true) {
+            orderedAlleleSummary = orderedAlleleSummary.substring(1);
+        }
+        // If all the nucleotides across all alleles are the same
+        // this is an 'in-del', else it is 'mixed'
+        StringTokenizer t = new StringTokenizer(orderedAlleleSummary, "/");
+
+        // Assume all same (in-del), we'll change it if we find a different one
+        String varClass = SNPLoaderConstants.VARCLASS_INDEL;
+        String nuclString = "";
+       // If we find another nucl, change varclass to mixed
+        while (t.hasMoreTokens()) {
+            nuclString = nuclString + t.nextToken();
+        }
+        char[] a = nuclString.toCharArray();
+        char compareNucl = a[0];
+        char currentNucl;
+        for (int ctr = 1; ctr < a.length; ctr++) {
+            currentNucl = a[ctr];
+            if (! (compareNucl == currentNucl)) {
+                //logger.logdDebug("Case 2b");
+                varClass = SNPLoaderConstants.VARCLASS_MIXED;
+                break;
+            }
+        }
+        return varClass;
     }
 
     /**
@@ -854,8 +878,9 @@ public class DBSNPInputProcessor {
                      Allele a = (Allele) alleleMap.get(strain);
                      String allele = a.getAllele();
                      // BUILD 125 - map " " allele to "N" for now.
-                     if (allele.equals(" ")) {
-                         allele = "N";
+                     // BUILD 126 - don't consider
+                     if (allele.equals(" ") || allele.equals("N")) {
+                         continue;
                      }
                      else if (allele.equals("--")) {
                          allele = "-";
@@ -873,9 +898,7 @@ public class DBSNPInputProcessor {
                      * Add the allele to alleleSummary set (proper set,
                      * no repeats)
                      */
-                    if (!allele.equals("N")) {
-                        alleleSummarySet.add(allele);
-                    }
+                    alleleSummarySet.add(allele);
                     addToConsensusAlleleMap(strainKey, allele,
                                             consensusAlleleMap);
                 }
@@ -903,11 +926,21 @@ public class DBSNPInputProcessor {
         int len = summaryString.length();
         /**
          * if we have 0 length summary allele it is because
+         *  BUILD 125
          * 1) no strains resolve, therefore no alleles.
          * 2) the only allele is 'N'
+         * BUILD 126
+         * 1) no strains resolve, therefore no alleles.
          */
         if (len < 1) {
             logger.logcInfo("NO ALLELE SUMMARY for RS" + rsId, false);
+            try {
+                snpsNotLoadedWriter.write(rsId + TAB +
+                                          SNP_NOTLOADED_NO_STRAINALLELE + NL);
+            } catch (IOException e) {
+                throw new MGIException(e.getMessage());
+            }
+
             SNPNoConsensusAlleleSummaryException e = new
                 SNPNoConsensusAlleleSummaryException();
             e.bind(rsId);
@@ -915,7 +948,7 @@ public class DBSNPInputProcessor {
         }
         // remove the trailing '/'
         summaryString.deleteCharAt(len - 1);
-        if (summaryString.length() > 100) {
+        if (summaryString.length() > 200) {
             /**
              * track rsID of each long allele summary
              */
@@ -963,80 +996,83 @@ public class DBSNPInputProcessor {
              * to '?'
              */
             if (alleles.size() == 1) {
-                String allele = (String)alleles.keySet().iterator().next();
-                if(allele.equals("N")) {
-                    currentConsensusAllele = "?";
-                }
-                else {
-                    currentConsensusAllele = allele;
-                }
-                // consensus allele determined without using a majority
+                currentConsensusAllele = (String)alleles.keySet().iterator().next();
                 isConflict = Boolean.FALSE;
+                // Strike this for Build 126
+                // String allele = = (String)alleles.keySet().iterator().next();
+                //if(allele.equals("N")) {
+                //    currentConsensusAllele = "?";
+                //}
+                //else {
+                //    currentConsensusAllele = allele;
+                //}
+                // consensus allele determined without using a majority
+                //isConflict = Boolean.FALSE;
             }
             else {
+                // strike this for BUILD 126
                 // remove 'N' allele (if it exists) from consideration
-                alleles.remove("N");
+                //alleles.remove("N");
 
                 /**
                  * if we have only one allele now that we removed a 'N' allele,
-                 * we have no conflict; we don't care about 'N' when determining
+                     * we have no conflict; we don't care about 'N' when determining
                  * conflict
                  */
-                if (alleles.size() == 1) {
-                    String allele = (String) alleles.keySet().iterator().next();
-                    currentConsensusAllele = allele;
-                    // consensus allele determined without using a majority
-                    isConflict = Boolean.FALSE;
-                }
+                //if (alleles.size() == 1) {
+                //    String allele = (String) alleles.keySet().iterator().next();
+                //    currentConsensusAllele = allele;
+                //    // consensus allele determined without using a majority
+                //    isConflict = Boolean.FALSE;
+                //}
                 /**
                  * we have > 1 allele which means we have a conflict
                  * now determine whether we have a majority; if not set
                  * consensusAllele to '?'
                  */
-                else {
-                    // consensus allele deterimined by majority rule has a conflict
-                    isConflict = Boolean.TRUE;
 
-                    // the count of instances of the current allele
-                    int currentCt = 0;
+                // consensus allele deterimined by majority rule has a conflict
+                isConflict = Boolean.TRUE;
 
-                    // true  if current comparison of allele counts are not equal
-                    Boolean isMajority = null;
+                // the count of instances of the current allele
+                int currentCt = 0;
 
-                    // iterate thru the alleles of this strain
-                    for (Iterator j = alleles.keySet().iterator(); j.hasNext(); ) {
-                        // get an allele for this strain
-                        String allele = (String) j.next();
+                // true  if current comparison of allele counts are not equal
+                Boolean isMajority = null;
 
-                        // get number of instances of this allele
-                        int count = ( (Integer) alleles.get(allele)).intValue();
+                // iterate thru the alleles of this strain
+                for (Iterator j = alleles.keySet().iterator(); j.hasNext(); ) {
+                    // get an allele for this strain
+                    String allele = (String) j.next();
 
-                        /** if currentCt < count, the currentConsensusAllele was
-                         * determined by majority
-                         * if we have 2 alleles e.g. A, T that each have 1 instance
-                         * we do not have a majority therefore no consensus
-                         * if we have 2 alleles A=2, T=1 A is consensus allele
-                         */
-                        if (currentCt < count) {
-                            currentCt = count;
-                            currentConsensusAllele = allele;
-                            isMajority = Boolean.TRUE;
-                        }
-                        else if (currentCt == count) {
-                            isMajority = Boolean.FALSE;
-                        }
+                    // get number of instances of this allele
+                    int count = ( (Integer) alleles.get(allele)).intValue();
+
+                    /** if currentCt < count, the currentConsensusAllele was
+                     * determined by majority
+                     * if we have 2 alleles e.g. A, T that each have 1 instance
+                     * we do not have a majority therefore no consensus
+                     * if we have 2 alleles A=2, T=1 A is consensus allele
+                     */
+                    if (currentCt < count) {
+                        currentCt = count;
+                        currentConsensusAllele = allele;
+                        isMajority = Boolean.TRUE;
                     }
-
-                    if (isMajority == null) {
-
-                        throw new MGIException(
-                            "ERROR determining consensus allele for " +
-                            "rs" + rsId + " isMajority == null");
+                    else if (currentCt == count) {
+                        isMajority = Boolean.FALSE;
                     }
-                    // if there is no majority we assign a "?" to the consensus allele
-                    if (isMajority.equals(Boolean.FALSE)) {
-                        currentConsensusAllele = "?";
-                    }
+                }
+
+                if (isMajority == null) {
+
+                    throw new MGIException(
+                        "ERROR determining consensus allele for " +
+                        "rs" + rsId + " isMajority == null");
+                }
+                // if there is no majority we assign a "?" to the consensus allele
+                if (isMajority.equals(Boolean.FALSE)) {
+                    currentConsensusAllele = "?";
                 }
             }
             if (isConflict == null) {
@@ -1211,7 +1247,7 @@ public class DBSNPInputProcessor {
 
    /**
     * creates SNP_SubSnpDAO(s), SNP_AccessionDAOs for submitter snp id and SubSnp id,
-    * SNP_SubSnp_StrainAlleleDAO(s), and MGI_SetMemberDAO(s) for SNP Strain set
+    * SNP_SubSnp_StrainAlleleDAO(s), and SNP_StrainDAO(s)
     * @param consensusKey _ConsensusSNP_key to which 'ss' belongs
     * @param ss DBSNPNseSS (raw dbsnp ss data) object
     * @param populations the set of populations for 'ss'
@@ -1387,9 +1423,10 @@ public class DBSNPInputProcessor {
             // get the allele, translate blank alleles to "N"
             Allele a = (Allele) alleleMap.get(strain);
             String allele = a.getAllele();
-            // BUILD 125 - map it to "N" for now.
-            if (allele.equals(" ")) {
-                allele = "N";
+            // BUILD 125 - map " " to "N" for now.
+            // BUILD 126 - don't load " " or "N" alleles
+            if (allele.equals(" ") || allele.equals("N")) {
+                continue;
             }
             if (allele.equals("--")) {
                 allele = "-";
@@ -1538,13 +1575,14 @@ public class DBSNPInputProcessor {
     private void processCoordinates(Integer consensusKey, Vector contigHits,
                                     String rsId) throws DBException,
         ConfigException, CacheException, KeyNotFoundException,
-        SNPNoBL6Exception, SNPMultiBL6ChrException, TranslationException{
+        SNPNoBL6Exception, SNPMultiBL6ChrException, SNPMultiBL6ChrCoordException,
+        TranslationException, IOException {
 
         // We're going to need some SNP_ConsensusSnpState attributes in this processing
         SNP_ConsensusSnpState csState = (SNP_ConsensusSnpState)snpSnp.getConsensusSnpDao().getState();
 
-        // true if this SNP has a BL6 coordinate
-        boolean bl6Flag = false;
+        // # BL6 coordinates for this snp
+        int bl6CoordCtr = 0;
 
         // true if this SNP has a  BL6 MapLoc with no coordinate value
         boolean bl6NoCoordFlag = false;
@@ -1564,21 +1602,21 @@ public class DBSNPInputProcessor {
 
             // get the assembly of this contig hit
             String assembly = cHit.getAssembly();
-	    //System.out.println("Assembly: " + assembly);
+            //System.out.println("Assembly: " + assembly);
             // skip it if not BL6
             if (!assembly.equals(SNPLoaderConstants.DBSNP_BL6)) {
-		 //System.out.println("reject assembly");
+                //System.out.println("reject assembly");
                 continue;
             }
 
             String buildNum = cHit.getBuildNum();
-	     //System.out.println("BuildNum: " + buildNum);
+            //System.out.println("BuildNum: " + buildNum);
             // skip it if not current genome build
             if (! buildNum.equals(currGenomeBuildNum)) {
                 // flag it and continue
                 oldBuild = true;
-		 //System.out.println("reject build");
-		continue;
+                //System.out.println("reject build");
+                continue;
             }
             // if we've gotten this far we know this is a BL6 hit on
             // the current genome
@@ -1601,11 +1639,10 @@ public class DBSNPInputProcessor {
                 // get the start coordinate
                 Double startCoord = mloc.getStartCoord();
 
-               // when we get here we know we are looking at BL6
+                // when we get here we know we are looking at BL6
                 // and have at least one coordinate
                 if (startCoord != null) {
-                    bl6Flag = true;
-                }
+                    bl6CoordCtr++;                }
 
                 // flag that there is at least one BL6 MapLoc where coordinate
                 // is null
@@ -1715,15 +1752,26 @@ public class DBSNPInputProcessor {
 
         // throw an exception if > 1 BL6 chromosome
         if (bl6ChrSet.size() > 1) {
+            snpsNotLoadedWriter.write(rsId + TAB +
+                              SNP_NOTLOADED_MULTICHR + NL);
             SNPMultiBL6ChrException e = new
                 SNPMultiBL6ChrException();
             e.bind("rsId=" + rsId);
             throw e;
         }
         // throw an exception if no BL6
-        if (bl6Flag != true) {
+        if (bl6CoordCtr == 0) {
+            snpsNotLoadedWriter.write(rsId + TAB +
+                              SNP_NOTLOADED_NO_BL6 + NL);
             SNPNoBL6Exception e = new
                 SNPNoBL6Exception();
+            e.bind("rsId=" + rsId);
+            throw e;
+        }
+        else if (bl6CoordCtr > maxChrCoordCt) {
+            snpsNotLoadedWriter.write(rsId + TAB +
+                                      SNP_NOTLOADED_MULTICHR_COORD + NL);
+            SNPMultiBL6ChrCoordException e = new SNPMultiBL6ChrCoordException();
             e.bind("rsId=" + rsId);
             throw e;
         }
@@ -1740,27 +1788,3 @@ public class DBSNPInputProcessor {
         return new Integer(i.intValue() + 1);
     }
 }
-
-// $Log
-/**************************************************************************
-*
-* Warranty Disclaimer and Copyright Notice
-*
-*  THE JACKSON LABORATORY MAKES NO REPRESENTATION ABOUT THE SUITABILITY OR
-*  ACCURACY OF THIS SOFTWARE OR DATA FOR ANY PURPOSE, AND MAKES NO WARRANTIES,
-*  EITHER EXPRESS OR IMPLIED, INCLUDING MERCHANTABILITY AND FITNESS FOR A
-*  PARTICULAR PURPOSE OR THAT THE USE OF THIS SOFTWARE OR DATA WILL NOT
-*  INFRINGE ANY THIRD PARTY PATENTS, COPYRIGHTS, TRADEMARKS, OR OTHER RIGHTS.
-*  THE SOFTWARE AND DATA ARE PROVIDED "AS IS".
-*
-*  This software and data are provided to enhance knowledge and encourage
-*  progress in the scientific community and are to be used only for research
-*  and educational purposes.  Any reproduction or use for commercial purpose
-*  is prohibited without the prior express written permission of The Jackson
-*  Laboratory.
-*
-* Copyright \251 1996, 1999, 2002, 2003 by The Jackson Laboratory
-*
-* All Rights Reserved
-*
-**************************************************************************/

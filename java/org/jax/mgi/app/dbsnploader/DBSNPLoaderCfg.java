@@ -30,7 +30,7 @@ public class DBSNPLoaderCfg extends Configurator {
      * @param prefix prepend this prefix on all parameters
      * @throws ConfigException if a configuration manager cannot be obtained
      */
-    public DBSNPLoaderCfg(String prefix) throws ConfigException{
+    public DBSNPLoaderCfg(String prefix) throws ConfigException {
          super.parameterPrefix = prefix;
     }
 
@@ -111,8 +111,7 @@ public class DBSNPLoaderCfg extends Configurator {
       * get the list of table names to truncate for the snp stream
       * @return the list of table names to truncate for the snp stream
       */
-     public String[] getTruncateSnpTables()
-     {
+     public String[] getTruncateSnpTables() {
          return getConfigStringArrayNull("DLA_TRUNCATE_SNP_TABLES");
      }
 
@@ -128,8 +127,7 @@ public class DBSNPLoaderCfg extends Configurator {
       * get the name of the SQLStream for snp data (the snp stream)
       * @return the name of the SQLStream
       */
-     public String getSnpStreamName()
-     {
+     public String getSnpStreamName() {
          return getConfigString("SNP_STREAM",
                                 "org.jax.mgi.shr.dbutils.dao.Bcp_Stream");
      }
@@ -137,9 +135,51 @@ public class DBSNPLoaderCfg extends Configurator {
      * get the current Mouse Genome Build number
      * @return the current Mouse Genome Build number
      */
-    public String getGenomeBuildNum() throws ConfigException
-    {
+    public String getGenomeBuildNum() throws ConfigException {
         return getConfigString("GENOME_BUILD");
     }
 
+    /**
+     * get the max allowable coordinates for a snp on a single chr
+     * @return max allowable coordinates
+     */
+    public Integer getMaxChrCoordCt() throws ConfigException {
+        return getConfigInteger("MAX_CHR_COORD_CT");
+    }
+    /**
+    * get the name of the file to report snps not loaded
+    * @return the name of the file to report snps not loaded
+    */
+   public String getSnpNotLoadedFileName() throws ConfigException {
+       return getConfigString("SNP_NOTLOADED");
+   }
+   /**
+   * get the text to report snps not loaded because multi chromosomes
+   * @return the text for snps with multi chromosomes that are not loaded
+   */
+   public String getSnpNotLoadedMultChr() throws ConfigException {
+       return getConfigString("SNP_NOTLOADED_MULTICHR");
+   }
+
+   /**
+    * get the text to report snps not loaded because multi coords on same chromosome
+    * @return the text to report snps not loaded because multi coords on same chromosome
+    */
+   public String getSnpNotLoadedMultiChrCoord() throws ConfigException {
+       return getConfigString("SNP_NOTLOADED_MULTICHR_COORD");
+   }
+   /**
+    * get the text to report snps not loaded because no BL6 coordinates
+    * @returnthe text to report snps not loaded because no BL6 coordinates
+    */
+   public String getSnpNotLoadedNoBL6() throws ConfigException {
+       return getConfigString("SNP_NOTLOADED_NO_BL6");
+   }
+   /**
+    * get the text to report snps not loaded because no strain/alleles
+    * @return the text to report snps not loaded because no strain/alleles
+    */
+   public String getSnpNotLoadedNoStrainAllele() throws ConfigException {
+       return getConfigString("SNP_NOTLOADED_NO_STRAINALLELE");
+   }
 }
