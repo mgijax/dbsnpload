@@ -1,3 +1,20 @@
+TAG: dbsnpload-build36-2
+DATE: 08-17-2006
+STAFF: sc
+CHANGES: MGI3.51, build 36, dbSNP build 126
+1) Added Install (mgiconfig)
+2) dbsnpload.config.default - update SNP prefix (that frameworks expects)
+   to SNPBE, removed all vars redundant with mgiconfig, added SNP_NOTLOADED*
+3) dbsnpload.sh - updated for mgiconfig
+4) ./bin updated to use mgiconfig
+5) DBSNPInputProcessor - several changes in logic (see build 36 TR's)
+6) DBSNPLoaderCfg - added SNP_NOTLOADED_* and MAC_CHR_COORD_CT accessors
+7) HandleNameByPopIdLookup , MGI_TablesLookup.java, MGI_TablesUpdater, 
+    MGI_dbinfoUpdater.java, MGI_dbinfoLookup, PopNameByPopIdLookup.java - SNP to SNPBE
+8) added SNPMultiBL6ChrCoordException.java for snps with > configurable # of 
+   coords on same chr (currently > 2 for build 126)
+9) removed all copyright notices and cvs directives.
+
 TAG: dbsnpload-build36-1
 DATE: 07-27-2006	 
 STAFF: sc
