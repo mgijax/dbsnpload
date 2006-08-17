@@ -65,9 +65,8 @@ do
 done
 
 #
-#  Establish general configuration file names
+#  Establish configuration file
 #
-CONFIG_COMMON=`pwd`/common.config.sh
 CONFIG_LOAD=`pwd`/dbsnpload.config
 
 #
@@ -78,13 +77,8 @@ FXNCLASS_VOCAB_CONFIG=`pwd`/fxnClassDag.config
 VARCLASS_VOCAB_CONFIG=`pwd`/varClassVocab.config
 HANDLE_VOCAB_CONFIG=`pwd`/subHandleVocab.config
 #
-#  Make sure the configuration files are readable.
+#  Make sure the configuration file is readable.
 #
-if [ ! -r ${CONFIG_COMMON} ]
-then
-    echo "Cannot read configuration file: ${CONFIG_COMMON}" | tee -a ${LOG}
-    exit 1
-fi
 
 if [ ! -r ${CONFIG_LOAD} ]
 then
@@ -111,9 +105,8 @@ then
 fi
 
 #
-# Source general configuration files
+# Source the configuration file
 #
-. ${CONFIG_COMMON}
 . ${CONFIG_LOAD}
 
 # loadVoc log

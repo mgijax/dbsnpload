@@ -29,29 +29,17 @@ then
 fi
 
 #
-#  Establish the configuration file names.
+#  Establish the configuration file name
 #
-CONFIG_COMMON=`pwd`/common.config.sh
 CONFIG_LOAD=`pwd`/dbsnpload.config
 #
-#  Make sure the configuration files are readable.
+#  Make sure the configuration file is readable.
 #
-if [ ! -r ${CONFIG_COMMON} ]
-then
-    echo "Cannot read configuration file: ${CONFIG_COMMON}" | tee -a ${LOG}
-    exit 1
-fi
-
 if [ ! -r ${CONFIG_LOAD} ]
 then
     echo "Cannot read configuration file: ${CONFIG_LOAD}" | tee -a ${LOG}
     exit 1
 fi
-
-#
-# Source the common configuration files
-#
-. ${CONFIG_COMMON}
 
 #
 # Source the DBSNP Load configuration files
@@ -70,22 +58,22 @@ date | tee -a ${PP_LOG}
 #
 # dump
 #
-echo "dumping ${SNP_DBSERVER} ${SNP_DBNAME} to ${SNP_BACKUP_LOCALPATH}" | tee -a ${PP_LOG}
-${MGIDBUTILSDIR}/bin/dump_db.csh ${SNP_DBSERVER} ${SNP_DBNAME} ${SNP_BACKUP_LOCALPATH}
+echo "dumping ${SNPBE_DBSERVER} ${SNPBE_DBNAME} to ${SNP_BACKUP_LOCALPATH}" | tee -a ${PP_LOG}
+${MGI_DBUTILS}/bin/dump_db.csh ${SNPBE_DBSERVER} ${SNPBE_DBNAME} ${SNP_BACKUP_LOCALPATH}
 
 #
 # load
 # Note: this also takes the database OUT of sgl user mode
 #
 
-echo "loading ${PRODSNP_DBSERVER} ${PRODSNP_DBNAME} from ${SNP_BACKUP_REMOTEPATH}" | tee -a ${PP_LOG}
+echo "loading ${SNP_DBSERVER} ${SNP_DBNAME} from ${SNP_BACKUP_REMOTEPATH}" | tee -a ${PP_LOG}
 echo ""
-${MGIDBUTILSDIR}/bin/load_db.csh ${PRODSNP_DBSERVER} ${PRODSNP_DBNAME} ${SNP_BACKUP_REMOTEPATH}
+${MGI_DBUTILS}/bin/load_db.csh ${SNP_DBSERVER} ${NP_DBNAME} ${SNP_BACKUP_REMOTEPATH}
 
 #
 # update production mgd MGI_dbinfo snp_data_version
 #
 echo "updating mgd MGI_dbinfo snp_data_version" | tee -a ${PP_LOG}
-${MGIDBUTILSDIR}/bin/updateSnpDataVersion.csh ${MGD_DBSCHEMADIR} "${SNP_DATAVERSION}"
+${MGI_DBUTILS}/bin/updateSnpDataVersion.csh ${MGD_DBSCHEMADIR} "${SNP_DATAVERSION}"
 
 date | tee -a ${LOG}  ${PP_LOG}

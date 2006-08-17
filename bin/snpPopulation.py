@@ -112,10 +112,10 @@ def getSnpAccessionKey():
 
         print 'Getting max SNP_Accession key'
 	# set up connection to the snp database
-        server = os.environ['SNP_DBSERVER']
-        snpDB = os.environ['SNP_DBNAME']
-        user = os.environ['SNP_DBUSER']
-        password = string.strip(open(os.environ['MGD_DBPASSWORDFILE'], 'r').readline())
+        server = os.environ['SNPBE_DBSERVER']
+        snpDB = os.environ['SNPBE_DBNAME']
+        user = os.environ['SNPBE_DBUSER']
+        password = string.strip(open(os.environ['SNPBE_DBPASSWORDFILE'], 'r').readline())
         db.set_sqlLogin(user, password, server, snpDB)
 
         cmd = 'select max(_Accession_key) as accMax ' + \

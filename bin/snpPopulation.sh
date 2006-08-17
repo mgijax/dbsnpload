@@ -34,28 +34,15 @@ fi
 #
 #  Establish the configuration file names.
 #
-CONFIG_COMMON=`pwd`/common.config.sh
 CONFIG_LOAD=`pwd`/dbsnpload.config
 #
-#  Make sure the configuration files are readable.
+#  Make sure the configuration file is readable.
 #
-if [ ! -r ${CONFIG_COMMON} ]
-then
-    echo "Cannot read configuration file: ${CONFIG_COMMON}" | tee -a ${LOG}
-    exit 1
-fi
-
 if [ ! -r ${CONFIG_LOAD} ]
 then
     echo "Cannot read configuration file: ${CONFIG_LOAD}" | tee -a ${LOG}
     exit 1
 fi
-
-
-#
-# Source the common configuration files
-#
-. ${CONFIG_COMMON}
 
 #
 # Source the DBSNP Load configuration files
@@ -94,28 +81,28 @@ msg="snpPopulation.py "
 checkstatus ${STAT} "${msg}"
 
 # Allow bcp into database
-${MGIDBUTILSDIR}/bin/turnonbulkcopy.csh ${SNP_DBSERVER} ${SNP_DBNAME} | tee -a ${POP_LOG}
+${MGIDBUTILSDIR}/bin/turnonbulkcopy.csh ${SNPBE_DBSERVER} ${SNPBE_DBNAME} | tee -a ${POP_LOG}
 
 echo "truncating ${POP_TABLE}"
-${SNP_DBSCHEMADIR}/table/${POP_TABLE}_truncate.object | tee -a ${POP_LOG}
+${SNPBE_DBSCHEMADIR}/table/${POP_TABLE}_truncate.object | tee -a ${POP_LOG}
 
 echo "truncating ${ACC_TABLE}"
-${SNP_DBSCHEMADIR}/table/${ACC_TABLE}_truncate.object | tee -a ${POP_LOG}
+${SNPBE_DBSCHEMADIR}/table/${ACC_TABLE}_truncate.object | tee -a ${POP_LOG}
 
 echo "dropping indexes on ${POP_TABLE}" 
-${SNP_DBSCHEMADIR}/index/${POP_TABLE}_drop.object | tee -a ${POP_LOG}
+${SNPBE_DBSCHEMADIR}/index/${POP_TABLE}_drop.object | tee -a ${POP_LOG}
 
 echo "bcp'ing data into ${POP_TABLE}"
-cat ${MGD_DBPASSWORDFILE} | bcp ${SNP_DBNAME}..${POP_TABLE} in ${OUTPUTDIR}/${POP_TABLE}.bcp -c -t\| -S${SNP_DBSERVER} -U${SNP_DBUSER} | tee -a  ${POP_LOG}
+cat ${MGD_DBPASSWORDFILE} | bcp ${SNPBE_DBNAME}..${POP_TABLE} in ${OUTPUTDIR}/${POP_TABLE}.bcp -c -t\| -S${SNPBE_DBSERVER} -U${SNPBE_DBUSER} | tee -a  ${POP_LOG}
 
 echo "creating indexes on ${POP_TABLE}"
-${SNP_DBSCHEMADIR}/index/${POP_TABLE}_create.object | tee -a ${POP_LOG}
+${SNPBE_DBSCHEMADIR}/index/${POP_TABLE}_create.object | tee -a ${POP_LOG}
 
 echo "updating statistics on ${POP_TABLE}"
-${MGIDBUTILSDIR}/bin/updateStatistics.csh ${SNP_DBSERVER} ${SNP_DBNAME} ${POP_TABLE} | tee -a ${POP_LOG}
+${MGIDBUTILSDIR}/bin/updateStatistics.csh ${SNPBE_DBSERVER} ${SNPBE_DBNAME} ${POP_TABLE} | tee -a ${POP_LOG}
 
 # Note we don't drop indexes on ACC_TABLE as there aren't many records
 echo "bcp'ing data into ${ACC_TABLE}"
-cat ${MGD_DBPASSWORDFILE} | bcp ${SNP_DBNAME}..${ACC_TABLE} in ${OUTPUTDIR}/${ACC_TABLE}.pop.bcp -c -t \| -S${SNP_DBSERVER} -U${SNP_DBUSER} | tee -a ${POP_LOG}
+cat ${MGD_DBPASSWORDFILE} | bcp ${SNPBE_DBNAME}..${ACC_TABLE} in ${OUTPUTDIR}/${ACC_TABLE}.pop.bcp -c -t \| -S${SNPBE_DBSERVER} -U${SNPBE_DBUSER} | tee -a ${POP_LOG}
 
 date | tee -a ${LOG}  ${POP_LOG}
