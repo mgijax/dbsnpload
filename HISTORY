@@ -1,3 +1,9 @@
+TAG: 
+DATE: 08-18-2006
+STAFF: sc
+CHANGES: MGI3.5
+1) dbsnpload.config.default - corrected typo in value of SNP_NOTLOADED
+
 TAG: dbsnpload-build36-2
 DATE: 08-17-2006
 STAFF: sc
