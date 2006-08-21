@@ -91,7 +91,7 @@ export GENO_SNP_INFILESUFFIX NSE_SNP_INFILESUFFIX
 SNP_CHROMOSOMES_TOLOAD="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,X,Y"
 
 # full path to 'SNPs not loaded' report
-SNP_NOTLOADED=${RPTDIR}RefSnpsNotLoaded.txt
+SNP_NOTLOADED=${RPTDIR}/RefSnpsNotLoaded.txt
 
 export SNP_CHROMOSOMES_TOLOAD SNP_NOTLOADED
 
@@ -393,7 +393,7 @@ MAIL_LOADNAME="DBSNP Load"
 
 #  Recipient list for mailing the log files (comma-separated)
 MAIL_LOG_PROC="mgiadmin"
-MAIL_LOG_CUR="sc"
+MAIL_LOG_CUR=""
 
 export MAIL_LOADNAME MAIL_LOG_PROC MAIL_LOG_CUR
 
