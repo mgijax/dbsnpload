@@ -68,12 +68,12 @@ ${MGI_DBUTILS}/bin/dump_db.csh ${SNPBE_DBSERVER} ${SNPBE_DBNAME} ${SNP_BACKUP_LO
 
 echo "loading ${SNP_DBSERVER} ${SNP_DBNAME} from ${SNP_BACKUP_REMOTEPATH}" | tee -a ${PP_LOG}
 echo ""
-${MGI_DBUTILS}/bin/load_db.csh ${SNP_DBSERVER} ${NP_DBNAME} ${SNP_BACKUP_REMOTEPATH}
+${MGI_DBUTILS}/bin/load_db.csh ${SNP_DBSERVER} ${SNP_DBNAME} ${SNP_BACKUP_REMOTEPATH}
 
 #
 # update production mgd MGI_dbinfo snp_data_version
 #
 echo "updating mgd MGI_dbinfo snp_data_version" | tee -a ${PP_LOG}
-${MGI_DBUTILS}/bin/updateSnpDataVersion.csh ${MGD_DBSCHEMADIR} "${SNP_DATAVERSION}"
+${MGI_DBUTILS}/bin/updateSnpDataVersion.csh ${MGD_DBSERVER} ${MGD_DBNAME} "${SNP_DATAVERSION}"
 
 date | tee -a ${LOG}  ${PP_LOG}

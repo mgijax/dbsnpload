@@ -155,7 +155,7 @@ export DLA_TRUNCATE_LOAD_TABLES DLA_TRUNCATE_QC_TABLES SNP_OK_TO_DELETE_ACCESSIO
 SNP_SGL_USER=${INSTALLDIR}/bin/setSglUser.sh
 
 # attempts to turn sgl user mode on/off
-SNP_DO_SGL_USER=${MGIDBUTILSDIR}/bin/doSglUser.csh
+SNP_DO_SGL_USER=${MGI_DBUTILS}/bin/doSglUser.csh
 
 # path to output file (sybase output which to grep for success/failure)
 SNP_SGL_USER_FILE=${OUTPUTDIR}/sglUser.out
@@ -256,7 +256,7 @@ export POPULATION_LOAD POP_FILE POP_LOGICALDB_NAME POP_MGITYPE_NAME
 SNP_CACHELOAD_DIR=${DBUTILS}/snpcacheload
 
 # snp marker load
-SNP_MARKER_CACHE_LOAD=${SNP_CACHELOAD_DIR}/snpmarker.csh
+SNP_MARKER_CACHE_LOAD=${SNP_CACHELOAD_DIR}/snpmarker.sh
 
 export SNP_CACHELOAD_DIR SNP_MARKER_CACHE_LOAD
 
@@ -291,17 +291,10 @@ export LOG_DISCREP
 # post-processing script
 SNP_POST_PROCESS=${INSTALLDIR}/bin/postProcess.sh
 
-# backup name
-SNP_BACKUPNAME=snp_load.backup
-
 # full path to backup from the unix server on which the load runs; for dump
-SNP_BACKUP_LOCALPATH=/extra1/sybase/${SNP_BACKUPNAME}
+SNP_BACKUP_LOCALPATH=/extra1/sybase/snp.backup
 
-# full path to backup from the unix server on which we want to load the backup
-SNP_BACKUP_REMOTEPATH=/lindon/sybase/${SNP_BACKUPNAME}
-
-export SNP_POST_PROCESS SNP_BACKUPNAME 
-export SNP_BACKUP_LOCALPATH SNP_BACKUP_REMOTEPATH
+export SNP_POST_PROCESS SNP_BACKUP_LOCALPATH 
 
 # SQL STREAM
 # this overrides the default BCP_Inline_Stream

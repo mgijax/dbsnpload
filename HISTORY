@@ -1,8 +1,17 @@
-TAG: 
+TAG: dbsnpload-build36-3
 DATE: 08-18-2006
 STAFF: sc
-CHANGES: MGI3.5
-1) dbsnpload.config.default - corrected typo in value of SNP_NOTLOADED
+CHANGES: MGI3.51
+1) dbsnpload.config.default 
+        - corrected typo in value of SNP_NOTLOADED
+	- changed MGIDBUTILSDIR to MGI_DBUTILS
+	- changed snpmarker.csh to snpmarker.sh 
+	- removed SNP_BACKUPNAME
+2) ./bin/postProcess.sh
+	- updated call to mgidbutilities updateSnpDataVersion.csh to pass 
+          server and database name instead of ${MGD_DBSCHEMADIR}
+3) ./bin/snpPopulation.sh
+	- updated MGIDBUTILSDIR to MGI_DBUTILS
 
 TAG: dbsnpload-build36-2
 DATE: 08-17-2006

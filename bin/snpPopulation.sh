@@ -81,7 +81,7 @@ msg="snpPopulation.py "
 checkstatus ${STAT} "${msg}"
 
 # Allow bcp into database
-${MGIDBUTILSDIR}/bin/turnonbulkcopy.csh ${SNPBE_DBSERVER} ${SNPBE_DBNAME} | tee -a ${POP_LOG}
+${MGI_DBUTILS}/bin/turnonbulkcopy.csh ${SNPBE_DBSERVER} ${SNPBE_DBNAME} | tee -a ${POP_LOG}
 
 echo "truncating ${POP_TABLE}"
 ${SNPBE_DBSCHEMADIR}/table/${POP_TABLE}_truncate.object | tee -a ${POP_LOG}
@@ -99,7 +99,7 @@ echo "creating indexes on ${POP_TABLE}"
 ${SNPBE_DBSCHEMADIR}/index/${POP_TABLE}_create.object | tee -a ${POP_LOG}
 
 echo "updating statistics on ${POP_TABLE}"
-${MGIDBUTILSDIR}/bin/updateStatistics.csh ${SNPBE_DBSERVER} ${SNPBE_DBNAME} ${POP_TABLE} | tee -a ${POP_LOG}
+${MGI_DBUTILS}/bin/updateStatistics.csh ${SNPBE_DBSERVER} ${SNPBE_DBNAME} ${POP_TABLE} | tee -a ${POP_LOG}
 
 # Note we don't drop indexes on ACC_TABLE as there aren't many records
 echo "bcp'ing data into ${ACC_TABLE}"
