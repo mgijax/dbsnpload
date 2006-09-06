@@ -1,2 +1,36 @@
-dataflow.vsd is a MS Visio file conatining data flow diagrams
-for snp processing
+Outline of documents in this directory:
+
+Current dbSNP build is 126  
+
+The following documents reflect Build 126
+* snp_system_doc_book.pdf - open this pdf to read the document. This 
+   book consists of snp_system_docTOC.pdf and snp_system_doc_build126.pdf
+   Its frame counterpart is snp_system_doc_book.book
+* snp_system_doc_build126.pdf - the main document, other documents in
+   this directory are either linked to our referred to from this document
+   Its Frame counterpart is snp_system_doc_build126.fm
+* snp_system_docTOC.pdf - table of contents for snp_system_doc_build126.pdf
+   Its Frame counterpart is snp_system_docTOC.fm
+* snp_db_arch.svg - imported into snp_system_doc_build126.pdf. 
+   Its MS Visio counterpart is snp_db_arch.vsd
+* snp_schema_doc.pdf - linked to from snp_system_doc_build126.pdf
+   Its Frame counterpart is snp_schema_doc.fm
+* SnpERDiagram.wmf - imported  into snp_system_doc_build126.pdf.
+   Its MS Visio counterpart is SnpERDiagram.vsd
+* build126data.pdf - linked to from snp_system_doc_build126.pdf.
+   Its Frame counterpart is build126data.fm
+* snp_data_requirements_build126.pdf - linked to from 
+   snp_system_doc_build126.pdf.
+   Its Frame counterpart is snp_data_requirements_build126.fm
+* dbsnpload_dataflow.vsd - referred to in snp_system_doc_build126.pdf. This 
+    diagram is too large to import.
+* dbsnpload_java_classes.pdf - linked to from snp_system_doc_build126.pdf.
+   Its Frame counterpart is dbsnpload_java_classes.fm
+* dbsnpload_class_diagram.gif - referred to in snp_system_doc_build126.pdf. It 
+   was created from Borland Together. 
+
+Archived documents in ./archive
+* build125data.fm - build 125 version of build126data.fm
+* snp_data_requirements_build125.fm
+* snp_system_doc_build125.fm
+* snpmrkwithin_algorithm.vsd 
