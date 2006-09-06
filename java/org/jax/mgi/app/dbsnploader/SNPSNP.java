@@ -47,27 +47,36 @@ public class SNPSNP {
         private Integer consensusSnpKey;
 
         // the set of SNP_AccessionDAO's for a SNP_ConsensusSNP and its SNP_SubSNPs
-        private Vector accessions = new Vector();
+        // dbSNP Build 126 1 RefSnp id + 4  (1.09 subSnps per RefSnp each with 2 accessions)
+        private Vector accessions = new Vector(5);
 
         // set of SNP_FlankDAO's
-        private Vector flanks = new Vector();
+        // build 126 2.78 flanks (3' +  5') per Snp
+        protected Vector flanks = new Vector(3);
 
         // the SubSNP DAO's
-        private Vector subSnps = new Vector();
+        // build 126 1.09 SubSnp per Snp
+        protected Vector subSnps = new Vector(2);
 
         // the consensus and SubSNP strain allele DAO's
-        private Vector csStrainAlleles = new Vector();
-        private Vector ssStrainAlleles = new Vector();
+        // build 126 11 strain alleles per ConsensusSnp
+        // keep initial capacity at default (10)
+        protected Vector csStrainAlleles = new Vector();
+        // build 126 11 strain alleles per SubSnp
+        protected Vector ssStrainAlleles = new Vector();
 
         // The SNP_Coord_CacheDAOs for this SNP
-        private Vector coordCache = new Vector();
+        // protected so we can get count of coordinates
+        // build 126 1.05 coordinates per Snp
+        protected Vector coordCache = new Vector(2);
 
         // The DP_SNP_MarkerDAOs for this SNP
-        private Vector dpMarker = new Vector();
+        // protected so we can get count of markers
+        protected Vector dpMarker = new Vector(1);
 
         // new SNP_Strain objects representing strains we haven't yet
         // added to SNP_Strain
-        private Vector strains = new Vector();
+        private Vector strains = new Vector(1);
 
         /**
           * Constructs a SNPSNP object with just a stream

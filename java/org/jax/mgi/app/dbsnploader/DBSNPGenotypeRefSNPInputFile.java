@@ -124,7 +124,7 @@ public class DBSNPGenotypeRefSNPInputFile extends InputXMLDataFile {
             Allele currentAllele = null;
 
             // set of DBSNPGenotypePopulation objects for the current SS
-            Vector currentSSPopulationVector = new Vector();
+            Vector currentSSPopulationVector = new Vector(1);
 
             // current population of the current SS
             DBSNPGenotypePopulation currentPopulation = null;
@@ -148,7 +148,7 @@ public class DBSNPGenotypeRefSNPInputFile extends InputXMLDataFile {
                     // Beginning of an SS
                     else if (it.getTagName().equals("SsInfo")) {
                         // SS can have multiple populations, create a pop Vector
-                        currentSSPopulationVector = new Vector();
+                        currentSSPopulationVector = new Vector(1);
                         for (int i = 0; i < attsCt; i++) {
                             // get the ssId
                             if (atts[i] != null && atts[i].equals("ssId")) {

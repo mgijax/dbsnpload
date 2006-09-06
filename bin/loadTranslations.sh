@@ -2,7 +2,7 @@
 #
 #   $Header
 #   $Name
-# loadVoc.sh
+# loadTranslations.sh
 ##############################################################################
 #
 # Purpose: Load SNP translations
@@ -64,7 +64,6 @@ done
 #
 #  Establish the configuration file names
 #
-CONFIG_COMMON=`pwd`/common.config.sh
 CONFIG_LOAD=`pwd`/dbsnpload.config
 CONFIG_VARCLASS=`pwd`/varClassTrans.config
 CONFIG_FXNCLASS=`pwd`/fxnClassTrans.config
@@ -72,12 +71,6 @@ CONFIG_FXNCLASS=`pwd`/fxnClassTrans.config
 #
 #  Make sure the configuration files are readable.
 #
-if [ ! -r ${CONFIG_COMMON} ]
-then
-    echo "Cannot read configuration file: ${CONFIG_COMMON}" | tee -a ${LOG}
-    exit 1
-fi
-
 if [ ! -r ${CONFIG_LOAD} ]
 then
     echo "Cannot read configuration file: ${CONFIG_LOAD}" | tee -a ${LOG}
@@ -97,9 +90,8 @@ then
 fi
 
 #
-# Source configuration files
+# Source load configuration file
 #
-. ${CONFIG_COMMON}
 . ${CONFIG_LOAD}
 
 # create translation output directory, if necessary

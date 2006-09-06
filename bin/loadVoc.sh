@@ -65,9 +65,8 @@ do
 done
 
 #
-#  Establish general configuration file names
+#  Establish configuration file
 #
-CONFIG_COMMON=`pwd`/common.config.sh
 CONFIG_LOAD=`pwd`/dbsnpload.config
 
 #
@@ -78,13 +77,8 @@ FXNCLASS_VOCAB_CONFIG=`pwd`/fxnClassDag.config
 VARCLASS_VOCAB_CONFIG=`pwd`/varClassVocab.config
 HANDLE_VOCAB_CONFIG=`pwd`/subHandleVocab.config
 #
-#  Make sure the configuration files are readable.
+#  Make sure the configuration file is readable.
 #
-if [ ! -r ${CONFIG_COMMON} ]
-then
-    echo "Cannot read configuration file: ${CONFIG_COMMON}" | tee -a ${LOG}
-    exit 1
-fi
 
 if [ ! -r ${CONFIG_LOAD} ]
 then
@@ -111,9 +105,8 @@ then
 fi
 
 #
-# Source general configuration files
+# Source the configuration file
 #
-. ${CONFIG_COMMON}
 . ${CONFIG_LOAD}
 
 # loadVoc log
@@ -161,25 +154,6 @@ fi
 
 if [ ${doHandle} = "yes" ]
 then
-    echo "Creating subHandle vocab intermediate file..." | tee -a ${VOC_LOG}
-    # transforms: <Ss ssId="4325828" handle="WIMOUSESNPS" batchId="5062" 
-    # locSnpId="M-05554-2" subSnpClass="snp" orient="forward" strand="bottom" 
-    # molType="genomic" buildId="105" methodClass="unknown" 
-    # validated="by-frequency" linkoutUrl="+M-05554-2">
-    # into: WIMOUSESNPS
-    /usr/bin/cat ${NSE_SNP_INFILEDIR}/*.xml | grep "<Ss" | cut -d" " -f11 | cut -d= -f2 | cut -d'"' -f2 | sort | uniq > ${INT_HANDLE_VOCAB_FILE}
-
-    # creates subHandle vocab input file which will create
-    # accession records for the vocab 
-    # file looks like:
-    # WIMOUSESNPS tab WIMOUSESNPS
-    # where WIMOUSESNPS is the term name AND the accession id
-    echo "Creating subHandle vocab input file..." | tee -a ${VOC_LOG}
-    ${HANDLE_VOCAB_FILE_CREATOR}
-    STAT=$?
-    msg="subHandle vocab file creator"
-    checkstatus  ${STAT} "${msg}"
-
     echo "Creating subHandle vocab ..." | tee -a ${VOC_LOG}
     ${VOCSIMPLELOAD} ${HANDLE_VOCAB_CONFIG}
     STAT=$?

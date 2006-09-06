@@ -22,6 +22,8 @@ public class DBSNPGenotypePopulation {
      * default constructor creates the strain/allele map
      */
     public DBSNPGenotypePopulation () {
+        // build 126 11 strain alleles per SubSnp default initial
+        // HashMap capacity = 16
         strainAllelesMap = new HashMap();
     }
 

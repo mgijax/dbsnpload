@@ -1,2 +1,64 @@
-dataflow.vsd is a MS Visio file conatining data flow diagrams
-for snp processing
+Outline of documents in this directory:
+
+Current dbSNP build is 126  
+
+The following documents reflect Build 126
+* snp_system_doc_book.pdf - open this pdf to read the document. This 
+   book consists of snp_system_docTOC.pdf and snp_system_doc_build126.pdf
+   Its frame counterpart is snp_system_doc_book.book
+* snp_system_doc_build126.pdf - the main document, other documents in
+   this directory are either linked to our referred to from this document
+   Its Frame counterpart is snp_system_doc_build126.fm
+* snp_system_docTOC.pdf - table of contents for snp_system_doc_build126.pdf
+   Its Frame counterpart is snp_system_docTOC.fm
+* snp_db_arch.svg - imported into snp_system_doc_build126.pdf. 
+   Its MS Visio counterpart is snp_db_arch.vsd
+* snp_schema_doc.pdf - linked to from snp_system_doc_build126.pdf
+   Its Frame counterpart is snp_schema_doc.fm
+* SnpERDiagram.wmf - imported  into snp_system_doc_build126.pdf.
+   Its MS Visio counterpart is SnpERDiagram.vsd
+* build126data.pdf - linked to from snp_system_doc_build126.pdf.
+   Its Frame counterpart is build126data.fm
+* snp_data_requirements_build126.pdf - linked to from 
+   snp_system_doc_build126.pdf.
+   Its Frame counterpart is snp_data_requirements_build126.fm
+* dbsnpload_dataflow.vsd - referred to in snp_system_doc_build126.pdf. This 
+    diagram is too large to import.
+* dbsnpload_java_classes.pdf - linked to from snp_system_doc_build126.pdf.
+   Its Frame counterpart is dbsnpload_java_classes.fm
+* dbsnpload_class_diagram.gif - referred to in snp_system_doc_build126.pdf. It 
+   was created from Borland Together. 
+* toc_templateTOC.fm - template for the table of contents. To rebuild the TOC -
+   this is courtesy of Diane, and is for the Windows version of Frame.
+   1. Open the doc you want to create a TOC for. NOTE: to toggle
+      between/among open docs, use Window menu & select doc name to
+      bring to foreground. Docs must be open to show up on the list.
+   2. In doc needing TOC, go to Special-->Table of Contents. For
+      "Standalone?" click Yes.
+   3. In box that appears, click *1Section*, click arrow to move it to
+      the left. Repeat for *2Section,* & *3Section*, if desired. (I only
+      formatted down to the 3rd level in the TOC template I sent you. If
+      you need a 4Section, let me know). Check "create hypertext links?"
+      Click Set.
+   4. TOC doc shows up in your window....UNFORMATTED. Click
+      File-->Import-->Formats--Import from Document and & select the TOC
+      template. Leave all the check marks (or click everything if those
+      check marks don't appear). Click Import.
+   5. The resulting doc should have the new formats BUT the page numbers
+      will not be right justified...YET. Save this document. It should
+      have the name of your original document (i.e., foo) with TOC
+      appended to it (i.e., fooTOC.fm).
+   6. Go to the Window menu & bring the original to the fore (i.e.,
+      foo). Regenerate the TOC (follow steps 3&4). NOW the fooTOC.fm doc
+      should reappear with right-justified  numbering with ellipses
+      leading to the page numbers. If not, you have to screw around with
+      the reference page. Let me know if this happens & I'll tell you how.
+
+      Whenever you change the original & want to regenerate a TOC, don't 
+      forget to save, save, save everything.
+
+Archived documents in ./archive
+* build125data.fm - build 125 version of build126data.fm
+* snp_data_requirements_build125.fm
+* snp_system_doc_build125.fm
+* snpmrkwithin_algorithm.vsd 

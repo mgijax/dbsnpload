@@ -79,8 +79,10 @@ public class DBSNPNseInputFile extends InputXMLDataFile
             String currentExemplar = null;
             // The current subSNP being built
             DBSNPNseSS currentSS = null;
-            // the current assembly
+            // the current assembly e.g. C57BL/6J
             String currentAssembly = null;
+            // the current assembly build number
+            String currentBuildNum = null;
             // The current contig hit being built
             DBSNPNseContigHit currentContigHit = null;
             // The current map location for this contigHit
@@ -190,7 +192,10 @@ public class DBSNPNseInputFile extends InputXMLDataFile
 
                      else if (it.getTagName().equals("Assembly")) {
                          for (int i = 0; i < attsCt; i++) {
-                             if (atts[i] != null && atts[i].equals("groupLabel")) {
+                             if (atts[i] != null && atts[i].equals("genomeBuild")) {
+                                 currentBuildNum = it.getAttributeValue(i);
+                             }
+                             else if (atts[i] != null && atts[i].equals("groupLabel")) {
                                  currentAssembly = it.getAttributeValue(i);
                              }
                          }
@@ -206,6 +211,7 @@ public class DBSNPNseInputFile extends InputXMLDataFile
                          // add the ContigHit object to the current Input object
                          currentNseInput.addContigHit(currentContigHit);
                          currentContigHit.setAssembly(currentAssembly);
+                         currentContigHit.setBuildNum(currentBuildNum);
                          for (int i = 0; i < attsCt; i++) {
                              if (atts[i] != null && atts[i].equals("chromosome")) {
                                  currentContigHit.setChromosome(it.getAttributeValue(i));

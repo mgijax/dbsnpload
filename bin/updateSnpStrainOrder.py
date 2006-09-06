@@ -25,7 +25,7 @@
 #		-${LOG_DISCREP} - discrepancies between MGI and the 
 #			order input file
 #		- ${SNP_STRAIN_FILE} - list of snp strains in MGI               
-#      - MGI_SetMember database records updated
+#      - SNP_Strain records updated
 #  Exit Codes:
 #
 #      0:  Successful completion
@@ -66,10 +66,10 @@ snpStrainDict = {}
 snpStrainOrderDict = {}
 
 # set up connection to the snp database
-server = os.environ['SNP_DBSERVER']
-snpDB = os.environ['SNP_DBNAME']
-user = os.environ['SNP_DBUSER']
-password = string.strip(open(os.environ['MGD_DBPASSWORDFILE'], 'r').readline())
+server = os.environ['SNPBE_DBSERVER']
+snpDB = os.environ['SNPBE_DBNAME']
+user = os.environ['SNPBE_DBUSER']
+password = string.strip(open(os.environ['SNPBE_DBPASSWORDFILE'], 'r').readline())
 db.set_sqlLogin(user, password, server, snpDB)
 
 print 'querying for snp strains in mgi...%s' % CRT

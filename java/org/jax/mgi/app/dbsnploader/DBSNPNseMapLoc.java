@@ -24,7 +24,8 @@ public class DBSNPNseMapLoc{
      * Constructors
      **********************/
     public DBSNPNseMapLoc() {
-        fxnSets = new Vector();
+        // build 126 ? genes per Snp
+        fxnSets = new Vector(1);
     }
 
     /******************

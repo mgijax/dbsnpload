@@ -17,12 +17,14 @@ public class DBSNPNseContigHit{
     private String chromosome;
     // the assembly on which this coordinate is found
     private String assembly;
+    // the assembly build number
+    private String buildNum;
 
     // set of DBSNPMapLoc for this contig hit
     private Vector mapLocations;
 
     public DBSNPNseContigHit() {
-        mapLocations = new Vector();
+        mapLocations = new Vector(1);
     }
     /******************
       * Set methods
@@ -35,6 +37,9 @@ public class DBSNPNseContigHit{
         assembly = a;
     }
 
+    public void setBuildNum (String b) {
+        buildNum = b;
+    }
     public void addMapLocation(DBSNPNseMapLoc mLoc) {
         mapLocations.add(mLoc);
     }
@@ -48,6 +53,9 @@ public class DBSNPNseContigHit{
 
     public String getAssembly() {
         return assembly;
+    }
+    public String getBuildNum() {
+        return buildNum;
     }
     public Vector getMapLocations() {
         return mapLocations;

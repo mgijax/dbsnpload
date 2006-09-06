@@ -112,10 +112,10 @@ def getSnpAccessionKey():
 
         print 'Getting max SNP_Accession key'
 	# set up connection to the snp database
-        server = os.environ['SNP_DBSERVER']
-        snpDB = os.environ['SNP_DBNAME']
-        user = os.environ['SNP_DBUSER']
-        password = string.strip(open(os.environ['MGD_DBPASSWORDFILE'], 'r').readline())
+        server = os.environ['SNPBE_DBSERVER']
+        snpDB = os.environ['SNPBE_DBNAME']
+        user = os.environ['SNPBE_DBUSER']
+        password = string.strip(open(os.environ['SNPBE_DBPASSWORDFILE'], 'r').readline())
         db.set_sqlLogin(user, password, server, snpDB)
 
         cmd = 'select max(_Accession_key) as accMax ' + \
@@ -126,28 +126,12 @@ def getSnpAccessionKey():
 	if accKey == None:
 	    accKey = 0
 
-def deleteAccessions(mgiTypeKey, ldbKey):
-    cmds = []
-    cmds.append('select a._Accession_key ' + \
-    'into #todelete ' + \
-    'from SNP_Accession a ' + \
-    'where a._MGIType_key = %s ' % mgiTypeKey + \
-    'and a._LogicalDB_key = %s' % ldbKey)
-
-    cmds.append('create index idx1 on #todelete(_Accession_key)')
-
-    cmds.append('delete SNP_Accession ' + \
-    'from #todelete d, SNP_Accession a ' + \
-    'where d._Accession_key = a._Accession_key')
-
-    results = db.sql(cmds, 'auto')
-
 def createBCP():
 	print 'Creating %s/%s.bcp' % (outputdir, popTable)
 	print 'and  %s/%s.bcp' % (outputdir, accTable)
 	inFile = open(os.environ['POP_FILE'], 'r')
 	primaryKey = 0
-	
+	problemHandles = ''
 	line = string.strip(inFile.readline())
 	# line looks like:
 	# <Population popId="1064" handle="ROCHEBIO" locPopId="RPAMM">
@@ -174,7 +158,7 @@ def createBCP():
 	    if handleKeyLookup.has_key(handle):
     	        handleKey = handleKeyLookup[handle]
 	    if popName == '' or handle == '' or popId == '' or handleKey == '':
-		sys.exit("Not all tokens present on line %s" % line)
+		problemHandles = '%s%s%s' % (problemHandles, NL, line)
 	    primaryKey = primaryKey + 1
 	    bcpLine = str(primaryKey) + DL + \
 		str(handle) + DL + \
@@ -186,8 +170,8 @@ def createBCP():
 
 	popBCP.close()
 	accBCP.close()
-	#handleFile.close()
-
+	if problemHandles != '':
+	    sys.exit('Problem Handles %s' % problemHandles)
 def createAccession(accid, objectKey, ldbKey, mgiTypeKey):
     global accKey
     accKey = accKey + 1
@@ -206,7 +190,6 @@ def createAccession(accid, objectKey, ldbKey, mgiTypeKey):
 print '%s' % mgi_utils.date()
 setup()
 print 'deleting population accessions'
-deleteAccessions(snpPopmgiTypeKey, snpPopLdbKey)
 createBCP()
 print '%s' % mgi_utils.date()
 
