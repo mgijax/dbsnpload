@@ -1,3 +1,8 @@
+TAG: dbsnpload-3-5-1-4
+DATE: 10-13-2006
+STAFF: sc
+CHANGES:tr7894 - mgiconfig changes
+
 TAG: dbsnpload-3-5-1-3
 TAG: dbsnpload-3-5-1-2
 DATE: 09-07-2006
@@ -501,4 +506,4 @@ STAFF: sc
 RELEASE: dev
 CHANGES: initial dev tag - still to do: changes/additions
 that came out of 8/4 meeting
- 
+
