@@ -122,9 +122,14 @@ fi
 . ${CONFIG_LOAD}
 
 #
-#  Establish master configuration file name, we pass this to java
+#  Make sure the master configuration file is readable
 #
-CONFIG_MASTER=${MGICONFIG}/master.config.sh
+
+if [ ! -r ${CONFIG_MASTER} ]
+then
+    echo "Cannot read configuration file: ${CONFIG_MASTER}"
+    exit 1
+fi
 
 echo "javaruntime:${JAVARUNTIMEOPTS}"
 echo "classpath:${CLASSPATH}"
