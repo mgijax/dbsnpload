@@ -36,7 +36,7 @@ JAVARUNTIMEOPTS="-Xms1500m -Xmx1500m"
 
 JAVA_LIB=${MGI_JAVALIB}/lib_java_core/core.jar:${MGI_JAVALIB}/lib_java_dbsmgd/dbsmgd.jar:${MGI_JAVALIB}/lib_java_dbsrdr/dbsrdr.jar:${MGI_JAVALIB}/lib_java_dbssnp/dbssnp.jar:${MGI_JAVALIB}/lib_java_dla/dla.jar:${STAXAPI}:${STAXRI}
 
-CLASSPATH=.:${INSTALLDIR}/dbsnpload.jar:${JAVA_LIB}:${COMMON_CLASSPATH}
+CLASSPATH=.:${DBSNPLOAD}/dbsnpload.jar:${JAVA_LIB}:${COMMON_CLASSPATH}
 
 export JAVARUNTIMEOPTS JAVA_LIB CLASSPATH
 
@@ -51,7 +51,7 @@ export JAVARUNTIMEOPTS JAVA_LIB CLASSPATH
 #
 
 # Full path the the logs, reports, and archive directories
-FILEDIR=/data/loads/dbsnp/dbsnpload
+FILEDIR=${DATALOADSOUTPUT}/dbsnp/dbsnpload
 
 LOGDIR=${FILEDIR}/logs
 RPTDIR=${FILEDIR}/reports
@@ -64,7 +64,7 @@ export FILEDIR LOGDIR RPTDIR ARCHIVEDIR OUTPUTDIR
 # snpload input file settings
 #
 
-INPUTDIR=/data/downloads/ftp.ncbi.nih.gov/snp/mouse
+INPUTDIR=${DATADOWNLOADS}/ftp.ncbi.nih.gov/snp/mouse
 
 # genotypes input file
 GENO_SNP_INFILEDIR=${INPUTDIR}/genotype
@@ -149,7 +149,7 @@ export DLA_TRUNCATE_LOAD_TABLES DLA_TRUNCATE_QC_TABLES SNP_OK_TO_DELETE_ACCESSIO
 #
 
 # set db in sgl user mode; does sleep loop until sgl user mode set
-SNP_SGL_USER=${INSTALLDIR}/bin/setSglUser.sh
+SNP_SGL_USER=${DBSNPLOAD}/bin/setSglUser.sh
 
 # attempts to turn sgl user mode on/off
 SNP_DO_SGL_USER=${MGI_DBUTILS}/bin/doSglUser.csh
@@ -177,7 +177,7 @@ export POP_TABLE ACC_TABLE STRAIN_TABLE MRKLOC_CACHETABLE
 
 # snp data directory for vocabs and translations that are
 # stored with the dbsnpload product 
-SNP_DATA_DIR=${INSTALLDIR}/data
+SNP_DATA_DIR=${DBSNPLOAD}/data
 
 export SNP_DATA_DIR 
 
@@ -188,7 +188,7 @@ VOCSIMPLELOAD=${VOCLOAD}/runSimpleFullLoadNoArchive.sh
 VOCDAGLOAD=${VOCLOAD}/runDAGFullLoad.sh
 
 # full load to wrapper to run  dbsnpload vocabularies
-DBSNP_VOCLOAD=${INSTALLDIR}/bin/loadVoc.sh
+DBSNP_VOCLOAD=${DBSNPLOAD}/bin/loadVoc.sh
 
 export VOCLOAD VOCSIMPLELOAD VOCDAGLOAD DBSNP_VOCLOAD
 
@@ -196,7 +196,7 @@ export VOCLOAD VOCSIMPLELOAD VOCDAGLOAD DBSNP_VOCLOAD
 HANDLE_VOCAB_NAME="SNP Submitter Handle"
 
 # script that creates HANDLE_VOCAB_FILE
-HANDLE_VOCAB_FILE_CREATOR=${INSTALLDIR}/bin/snpSubHandle.py
+HANDLE_VOCAB_FILE_CREATOR=${DBSNPLOAD}/bin/snpSubHandle.py
 
 # intermediate file for creating the handle file for the
 # handle vocab load; simply raw lines grepped from the xml file
@@ -210,7 +210,7 @@ export HANDLE_VOCAB_FILE_CREATOR INT_HANDLE_VOCAB_FILE HANDLE_VOCAB_FILE
 
 # translation load
 TRANSLATION_LOAD=${TRANSLATIONLOAD}
-DBSNP_TRANS_LOAD=${INSTALLDIR}/bin/loadTranslations.sh
+DBSNP_TRANS_LOAD=${DBSNPLOAD}/bin/loadTranslations.sh
 
 export TRANSLATION_LOAD DBSNP_TRANS_LOAD
 
