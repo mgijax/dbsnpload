@@ -1,3 +1,14 @@
+TAG: dbsnpload-3-5-1-6
+DATE: 11-6-2006
+STAFF: sc
+CHANGES:
+1) Install - creates output subdirectory for translationload
+2) dbsnpload.config.default - removed some vars out to individual translation
+    config files as translationload now takes config file as param
+3) fxnClassTrans.config, varClassTrans.config - removed some vars from 
+    dbsnpload.config to here
+4) loadTranslations.sh - updated call to translationload with new parameters
+
 TAG: dbsnpload-3-5-1-5
 TAG: dbsnpload-3-5-1-4
 DATE: 10-13-2006
