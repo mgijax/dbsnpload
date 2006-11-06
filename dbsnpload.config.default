@@ -370,8 +370,7 @@ export INSTALLDIR
 MAIL_LOADNAME="DBSNP Load"
 
 #  Recipient list for mailing the log files (comma-separated)
-MAIL_LOG_PROC="mgiadmin"
 MAIL_LOG_CUR=""
 
-export MAIL_LOADNAME MAIL_LOG_PROC MAIL_LOG_CUR
+export MAIL_LOADNAME MAIL_LOG_CUR
 
