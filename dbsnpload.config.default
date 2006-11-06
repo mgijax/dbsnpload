@@ -209,22 +209,11 @@ export HANDLE_VOCAB_NAME
 export HANDLE_VOCAB_FILE_CREATOR INT_HANDLE_VOCAB_FILE HANDLE_VOCAB_FILE
 
 # translation load
-TRANSLATION_LOAD=${TRANSLATIONLOAD}
 DBSNP_TRANS_LOAD=${DBSNPLOAD}/bin/loadTranslations.sh
+TRANSOUTPUTDIR=${OUTPUTDIR}/translationload
+LOADTRANSLOG=${LOGDIR}/loadTranslations.log
 
-export TRANSLATION_LOAD DBSNP_TRANS_LOAD
-
-# varclass translation params (mode = full, fullest, or preview)
-VARCLASS_TRANS_INPUT=${SNP_DATA_DIR}/varClass.goodbad
-VARCLASS_TRANS_LOAD_MODE=fullest
-
-export VARCLASS_TRANS_LOAD VARCLASS_TRANS_INPUT VARCLASS_TRANS_LOAD_MODE
-
-# fxnclass translation params (mode = full,fullest, or preview)
-FXNCLASS_TRANS_INPUT=${SNP_DATA_DIR}/fxnClass.goodbad
-FXNCLASS_TRANS_LOAD_MODE=fullest
-
-export FXNCLASS_TRANS_LOAD FXNCLASS_TRANS_INPUT FXNCLASS_TRANS_LOAD_MODE
+export DBSNP_TRANS_LOAD TRANSOUTPUTDIR LOADTRANSLOG 
 
 #
 # population load settings
