@@ -63,3 +63,13 @@ fi
 # run DLAInstall
 #
 ${DLAINSTALL} ${DEV}
+
+#
+# create translationload output directory
+#
+if [ ! -d ${TRANSOUTPUTDIR} ]
+then
+  echo "...creating translation output directory ${TRANSOUTPUTDIR}"
+  mkdir -p ${TRANSOUTPUTDIR}
+fi
+
