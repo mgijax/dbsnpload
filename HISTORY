@@ -1,3 +1,19 @@
+TAG: dbsnpload-tr8582-1
+DATE: 01-24-2008
+STAFF: sc
+CHANGES:
+1) data/mgiSnpStrainOrder.txt - removed SAMP1, SAMP8, SAMR1
+         - renamed NOD/LtJ to NOD/ShiLtJ and NON/LtJ to NON/ShiLtJ
+         - added BALB/cA and TSOD
+2) data/subHandle.vocab.in - removed ABI 164 and NCBI-GENBANK-VAR
+      - added MATINLAB-MDACC
+3) DBSNPGenotypeRefSNPInput - changed population Vector to an array
+4) DBSNPGenotypeRefSNPInputFile - changed population Vector to an array
+5) DBSNPInputProcessor - updated to iterate through genotype and NSE files
+   in parallel rather than loading the genotype file into memory upfront
+   - changed population Vector to an array
+6) DBSNPLoader - updated to iterate through genotype and NSE files in parallel
+
 TAG: dbsnpload-tr8582-BP
 DATE: 01-24-2008
 STAFF: sc

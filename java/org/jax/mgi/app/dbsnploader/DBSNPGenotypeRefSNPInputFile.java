@@ -1,6 +1,5 @@
 package org.jax.mgi.app.dbsnploader;
 
-import java.util.Vector;
 import java.util.HashMap;
 import java.util.ArrayList;
 
@@ -72,10 +71,10 @@ public class DBSNPGenotypeRefSNPInputFile extends InputXMLDataFile {
          * @return the newly created DBSNPGenotypeRefSnpInput object
          * @throws InterpretException thrown if there is an error when
          * interpreting
-	   * @note
-	   * example XML (there can be multi 'ByPop' nested within
-       * each 'SsInfo' tag
-       * <SnpInfo rsId="2020458">
+         * @note
+         * example XML (there can be multi 'ByPop' nested within
+         * each 'SsInfo' tag
+         * <SnpInfo rsId="2020458">
               <SnpLoc genomicAssembly="0:C57BL/6J" chrom="1" start="172997799"
                            locType="2" rsOrientToChrom="fwd"/>
                    <SsInfo ssId="1565680" locSnpId="ERO23-241e3r_1"
@@ -100,8 +99,8 @@ public class DBSNPGenotypeRefSNPInputFile extends InputXMLDataFile {
                     </SsInfo>
                     <GTypeFreq gtype="C/C" freq="0.9"/>
                     <GTypeFreq gtype="T/T" freq="0.1"/>
-        * </SnpInfo>
-        */
+         * </SnpInfo>
+         */
 
         public Object interpret(XMLTagIterator it) throws InterpretException {
 
@@ -124,7 +123,10 @@ public class DBSNPGenotypeRefSNPInputFile extends InputXMLDataFile {
             Allele currentAllele = null;
 
             // set of DBSNPGenotypePopulation objects for the current SS
-            Vector currentSSPopulationVector = new Vector(1);
+            DBSNPGenotypePopulation[] currentSSPopulationArray = null;
+
+            // current index of population array
+            int currentPopArrIndex = 0;
 
             // current population of the current SS
             DBSNPGenotypePopulation currentPopulation = null;
@@ -147,8 +149,10 @@ public class DBSNPGenotypeRefSNPInputFile extends InputXMLDataFile {
                     }
                     // Beginning of an SS
                     else if (it.getTagName().equals("SsInfo")) {
-                        // SS can have multiple populations, create a pop Vector
-                        currentSSPopulationVector = new Vector(1);
+                        // SS can have multiple populations, create a pop array
+                        // Build 126 had < 3 pops/ss
+                        currentSSPopulationArray = new DBSNPGenotypePopulation[5];
+                        currentPopArrIndex = 0;
                         for (int i = 0; i < attsCt; i++) {
                             // get the ssId
                             if (atts[i] != null && atts[i].equals("ssId")) {
@@ -163,17 +167,20 @@ public class DBSNPGenotypeRefSNPInputFile extends InputXMLDataFile {
                     }
                     // Beginning of a Population
                     else if (it.getTagName().equals("ByPop")) {
-                        // add the population vector for the current ss
+                        // add the population array for the current ss
                         //  to the input object
                         currentInput.addPopulation(currentSSId,
-                            currentSSPopulationVector);
+                            currentSSPopulationArray);
+          
                         for (int i = 0; i < attsCt; i++) {
                             // when we find the popId attribute, create a new
                             // population adding it to the current SS population
-                            // vector and set the popId
+                            // array and set the popId
                             if (atts[i] != null && atts[i].equals("popId")) {
                                 currentPopulation = new DBSNPGenotypePopulation();
-                                currentSSPopulationVector.add(currentPopulation);
+                                currentSSPopulationArray[currentPopArrIndex] =
+                                    currentPopulation;
+                                currentPopArrIndex++;
                                 currentPopulation.setPopId(it.getAttributeValue(
                                     i));
                             }
