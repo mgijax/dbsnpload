@@ -108,13 +108,13 @@ export SNP_NOTLOADED_NO_BL6 SNP_NOTLOADED_NO_STRAINALLELE
 #
 
 # dbSNP build number
-SNP_DATAVERSION="dbSNP Build 126"
+SNP_DATAVERSION="dbSNP Build 128"
 
 # current mouse genome build as specified in "<Assembly" tag "genomeBuild" 
 # attribute in NSE input file. As of Build 126 there are coordinates for 
 # Build 35 and Build 36.
 
-GENOME_BUILD=36_1
+GENOME_BUILD=37_1
 
 export SNP_DATAVERSION GENOME_BUILD
 
