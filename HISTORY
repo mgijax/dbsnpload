@@ -1,3 +1,9 @@
+TAG: dbsnpload-tr8582-2
+DATE: 05-15-2008
+STAFF: sc
+CHANGES:
+1) updated dbsnpload.config.default for dbSNP Build 128, Genome Build 37 
+
 TAG: dbsnpload-tr8582-1
 DATE: 01-24-2008
 STAFF: sc
