@@ -1,6 +1,5 @@
 package org.jax.mgi.app.dbsnploader;
 
-import java.util.Vector;
 import java.util.HashMap;
 
 /**
@@ -14,7 +13,7 @@ import java.util.HashMap;
 
 class DBSNPGenotypeRefSNPInput {
 
-    // mapping looks like: {ssId:Vector of DBSNPGenotypePopulation objects, ...}
+    // mapping looks like: {ssId:Array of DBSNPGenotypePopulation objects, ...}
     private HashMap ssPopulationMap;
 
     // RefSnp id
@@ -48,10 +47,10 @@ class DBSNPGenotypeRefSNPInput {
     /**
      * adds a set of populations for an ss id
      * @param ssId - an ss id
-     * @param pops - a Vector of DBSNPGenotypePopulation objects for 'ssId'
+     * @param pops - an array of DBSNPGenotypePopulation objects for 'ssId'
      */
-    public void addPopulation(String ssId, Vector pops) {
-        ssPopulationMap.put(ssId, pops);
+    public void addPopulation(String ssId, DBSNPGenotypePopulation[] pops) {
+        ssPopulationMap.put(Integer.valueOf(ssId), pops);
     }
 
     /**
@@ -64,10 +63,10 @@ class DBSNPGenotypeRefSNPInput {
 
     /**
      * gets the set of population objects for 'ssId'
-     * @return Vector of DBSNPGenotypePopulation objects
+     * @return array of DBSNPGenotypePopulation objects
      */
-    public Vector getPopulationsForSS(String ssId) {
-        return (Vector)ssPopulationMap.get(ssId);
+    public DBSNPGenotypePopulation[] getPopulationsForSS(String ssId) {
+        return (DBSNPGenotypePopulation[])ssPopulationMap.get(Integer.valueOf(ssId));
     }
 
     /**

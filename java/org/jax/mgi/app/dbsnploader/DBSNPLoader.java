@@ -66,7 +66,7 @@ public class DBSNPLoader extends DLALoader {
     // current number of SubSnps for the RefSnps processed
     private int ssCtr;
 
-    // current number of SNPs with no strain alleles
+    // current number of SNPs with no strain alleles in the genotype file
     private int rsWithNoAllelesCtr;
 
     // current number of SNPs with no BL6 coordinates
@@ -106,6 +106,11 @@ public class DBSNPLoader extends DLALoader {
     // file path separator on this platform
     private static final String PATH_SEPARATOR = System.getProperty("file.separator");
 
+    // reasons not to load; most reasons handled by processor
+    private static String SNP_NOTLOADED_NO_STRAINALLELE;
+    private static final String NL = "\n";
+    private static final String TAB = "\t";
+
     // holds one ChromosomeStats object per chromosome
     Vector chrStats;
 
@@ -141,7 +146,8 @@ public class DBSNPLoader extends DLALoader {
 
         // create writer for rs ids not loaded
         try {
-           snpsNotLoadedWriter = new BufferedWriter(new FileWriter(loadCfg.getSnpNotLoadedFileName()));
+           snpsNotLoadedWriter = new BufferedWriter(
+		new FileWriter(loadCfg.getSnpNotLoadedFileName()));
         }
         catch (IOException e){
            throw new MGIException(e.getMessage());
@@ -184,6 +190,10 @@ public class DBSNPLoader extends DLALoader {
         rsWithVocabResolverExceptionCtr = 0;
         rsRepeatExceptionCtr = 0;
 
+	// initialize reasons not to load (others determined in processor)
+	SNP_NOTLOADED_NO_STRAINALLELE = loadCfg.getSnpNotLoadedNoStrainAllele();
+
+	// initialize the statistics container
         chrStats = new Vector();
     }
 
@@ -235,8 +245,9 @@ public class DBSNPLoader extends DLALoader {
             logger.logcInfo("Processing chr " + chr, true);
             logger.logdInfo("Processing chr " + chr, true);
             logger.logdInfo("Free memory: " + startFreeMem, false);
+
             /**
-             * process the genotype file for the Individual data
+             * process genotype file for the Individual data
              */
 
             // create the genotype filename for this chromosome
@@ -244,9 +255,6 @@ public class DBSNPLoader extends DLALoader {
                 PATH_SEPARATOR +
                 genoConfig.getInfilePrefix() + chr +
                 genoConfig.getInfileSuffix();
-            /**
-             * process the genotype file for Individual data
-             */
             logger.logdInfo("processing genotype file for Individual data " +
 			    genotypeFilename + ". Free memory: " +
 			    Runtime.getRuntime().freeMemory(), true);
@@ -258,30 +266,29 @@ public class DBSNPLoader extends DLALoader {
 				(DBSNPGenotypeIndividualInput)indivIterator.
 				next());
             }
-            /**
-             * process the genotype file for SNP data
-             */
 
-            logger.logdInfo("processing genotype file for Snp data " +
-			    genotypeFilename + ". Free memory: " +
-			    Runtime.getRuntime().freeMemory(), true);
-            XMLDataIterator genoSNPIterator =
+            /**
+             * create iterator over genotype file 
+             */
+	    XMLDataIterator genoSNPIterator =
 		    new DBSNPGenotypeRefSNPInputFile(
                  genotypeFilename, dbsnpProcessor.getIndividualMap()).
 		    getIterator();
-            while (genoSNPIterator.hasNext()) {
-                dbsnpProcessor.processGenoRefSNPInput((DBSNPGenotypeRefSNPInput)
-				genoSNPIterator.next());
-            }
 
-            // create the nse filename for this chromosome
+            /**
+             * create iterator over NSE file
+             */
+ 
             String nseFilename = nseConfig.getInfileDir()  +
                 PATH_SEPARATOR +
                 nseConfig.getInfilePrefix() + chr +
                 nseConfig.getInfileSuffix();
 
-            /**
-             * process the NSE file
+            XMLDataIterator it = new DBSNPNseInputFile(nseFilename).
+                    getIterator();
+
+	    /**
+	     * report available memory
              */
             long afterLookupFreeMem = Runtime.getRuntime().freeMemory();
             stats.setFreeMemAfterGenoLookup(afterLookupFreeMem);
@@ -289,36 +296,92 @@ public class DBSNPLoader extends DLALoader {
             System.out.println("processing NSE file " + nseFilename);
             logger.logdInfo("processing " + nseFilename + ". Free memory: " +
 			    afterLookupFreeMem, true);
-            XMLDataIterator it = new DBSNPNseInputFile(nseFilename).
-		    getIterator();
+
+	    /**
+             * iterate through all snps on this chromosome
+             */
             int totalRsOnChr = 0;
+
+	    // rsId from the genotype file
+	    String genoRSId = null;
+
+	    // true, if geno rsId and nse rsId match for this iteration
+            // we prime it with true
+            boolean goToNextGenotype = true;
+           
+            // Create the two input objects
+	    DBSNPGenotypeRefSNPInput genoInput = null;
+	    DBSNPNseInput nseInput = null;
+
             while (it.hasNext()) {
                 totalRsOnChr++;
-                DBSNPNseInput nseInput = (DBSNPNseInput)it.next();
-                try {
-                    dbsnpProcessor.processInput(nseInput);
-                }
-                catch (SNPNoStrainAlleleException e) {
-                    rsWithNoAllelesCtr++;
-                }
-                catch (SNPNoBL6Exception e) {
-                    rsWithNoBL6Ctr++;
-                }
-                catch (SNPMultiBL6ChrException e) {
-                    rsMultiBL6ChrCtr++;
-                }
-                catch (SNPMultiBL6ChrCoordException e) {
-                    rsMultiBL6ChrCoordCtr++;
-                }
-                catch (SNPNoConsensusAlleleSummaryException e) {
-                    rsWithNoAlleleSummaryCtr++;
-                }
-                catch (SNPVocabResolverException e) {
-                    rsWithVocabResolverExceptionCtr++;
-                }
-                catch (SNPRepeatException e) {
-                    rsRepeatExceptionCtr++;
-                }
+                nseInput = (DBSNPNseInput)it.next();
+		String nseRSId = nseInput.getRS().getRsId();
+		// get first submitter handle for later reporting
+		String handle = ((DBSNPNseSS)nseInput.getSubSNPs().firstElement()).getSubmitterHandle();
+		if (genoSNPIterator.hasNext() && goToNextGenotype == true) {
+		    genoInput = 
+			(DBSNPGenotypeRefSNPInput)genoSNPIterator.next();
+		    genoRSId = genoInput.getRsId();
+		}
+	        //logger.logdDebug("nseRS:" + nseRSId + " genoRS:" + genoRSId + "goToNext: " + goToNextGenotype);
+		if (genoRSId != null && nseRSId.equals(genoRSId)) {
+		    // we have a genotype for this RS 
+		    goToNextGenotype = true;
+		    
+		    try {
+			dbsnpProcessor.processInput(nseInput, genoInput);
+		    }
+		    /*
+		     * Build 128 - determined below now that we are iterating 
+		     * through the genotype file in parallel to the nse file
+		    // if the RS is not represented in the genotype file
+		    catch (SNPNoStrainAlleleException e) {
+			rsWithNoAllelesCtr++;
+		    }*/
+		    catch (SNPNoBL6Exception e) {
+			 rsWithNoBL6Ctr++;
+		    }
+		    catch (SNPMultiBL6ChrException e) {
+		     rsMultiBL6ChrCtr++;
+		    }
+		    catch (SNPMultiBL6ChrCoordException e) {
+			rsMultiBL6ChrCoordCtr++;
+		    }
+		    // if the RS is represented in the genotype file
+		    // but the processor determines they aren't good genotypes
+		    catch (SNPNoConsensusAlleleSummaryException e) {
+			// means no strain resolved or all alleles are 'N' or ' '
+			rsWithNoAlleleSummaryCtr++;
+			try {
+			snpsNotLoadedWriter.write(nseRSId + TAB + handle + TAB +
+		  	    SNP_NOTLOADED_NO_STRAINALLELE + " (MGI)" + NL);
+			} catch (IOException e2) {
+			    throw new MGIException(e.getMessage());
+			}	
+		    }
+		    catch (SNPVocabResolverException e) {
+			rsWithVocabResolverExceptionCtr++;
+		    }
+		    catch (SNPRepeatException e) {
+			rsRepeatExceptionCtr++;
+		    }
+		}
+		// this RS not represented in the genotype file
+		else {
+		    // don't go to the next genotype record
+		    goToNextGenotype = false;
+
+		    rsWithNoAllelesCtr++;
+		    logger.logcInfo("RS NO STRAIN/ALLELES for RS" + 
+			nseRSId, false);
+		    try {
+			snpsNotLoadedWriter.write(nseRSId + TAB + handle + TAB +
+		  	    SNP_NOTLOADED_NO_STRAINALLELE + " (dbSNP)" + NL);
+		    } catch (IOException e) {
+			throw new MGIException(e.getMessage());
+		    }
+		}
                 rsCtr++;
                 ssCtr += nseInput.getSubSNPs().size();
             }
@@ -426,8 +489,10 @@ public class DBSNPLoader extends DLALoader {
         logger.logdInfo("Total RefSnp records repeated in the input " +
             "(can be multiple per RefSnp): " +
                         rsRepeatExceptionCtr, false);
-        logger.logdInfo("Total RefSnps with no defined strain/alleles for any assay of the SNP: " +
-                        (rsWithNoAllelesCtr + rsWithNoAlleleSummaryCtr), false);
+        logger.logdInfo("Total RefSnps with no dbSNP defined strain/alleles for any assay of the SNP: " +
+                        (rsWithNoAllelesCtr), false);
+	logger.logdInfo("Total RefSnps with no MGI defined strain/alleles for any assay of the SNP: " +
+                        (rsWithNoAlleleSummaryCtr), false);
         logger.logdInfo("Total RefSnps mapped to more than 1 chromosome in the C57BL/6J genome: " +
                         rsMultiBL6ChrCtr, false);
         logger.logdInfo("Total RefSnps mapped to > " + loadCfg.getMaxChrCoordCt()
