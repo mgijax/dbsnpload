@@ -1086,12 +1086,7 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
         }
         // if not found, it may be a jax registry id
         if (strainKey == null) {
-            try {
-                strainKey = jaxRegistryLookup.lookup(strain);
-            }
-            catch (KeyNotFoundException e) {
-                strainKey = null;
-            }
+            strainKey = jaxRegistryLookup.lookup(strain);
         }
         // if still not found may be an integer strain id. Create strain name
         // as follows handle_population_strain and lookup again

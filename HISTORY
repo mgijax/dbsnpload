@@ -1,3 +1,13 @@
+TAG: dbsnpload-4-3-0-1
+DATE: 07-14-2009
+STAFF: sc
+CHANGES: Merge tr7493 branch to trunk
+
+TAG: dbsnpload-tr7493-1
+DATE: 04-27-2009
+STAFF: sc
+CHANGES: AccessionLookup - see tag below
+
 TAG: dbsnpload-tr7493-BP
 DATE: 04-27-2009
 STAFF: sc
