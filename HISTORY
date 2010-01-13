@@ -1,3 +1,4 @@
+TAG: dbsnpload-4-3-2-3
 TAG: dbsnpload-4-3-2-2
 TAG: dbsnpload-4-3-2-1
 DATE: 01-05-2010
@@ -5,6 +6,7 @@ STAFF: sc
 CHANGES: TR9576 Add MT
 1) dbsnpload.config.default - added MT chromosome
 2) data/mgiSnpStrainOrder.txt - added SAMP1, SAMP8, SAMR1 for MT
+3) snpPopulation.sh - rm log only if it exists
 
 TAG: dbsnpload-4-3-0-1
 DATE: 07-14-2009

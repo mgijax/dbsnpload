@@ -18,7 +18,10 @@
 cd `dirname $0`/..
 
 LOG=`pwd`/snpPopulation.log
-rm -f ${LOG}
+if [ -f ${LOG} ]
+then
+    rm -f ${LOG}
+fi
 
 date | tee -a ${LOG}
 
@@ -51,7 +54,10 @@ fi
 
 # snpPopulation log
 POP_LOG=${LOGDIR}/snpPopulation.log
-rm ${POP_LOG}
+if [ -f ${LOG} ]
+then
+    rm -f ${POP_LOG}
+fi
 touch ${POP_LOG}
 
 checkstatus ()
@@ -75,7 +81,7 @@ echo "creating population input file in ${POP_FILE}" | tee -a ${POP_LOG}
 /usr/bin/cat ${POP_FILE}.all.sort | uniq > ${POP_FILE}
 
 echo "creating population bcp file"
-${INSTALLDIR}/bin/snpPopulation.py tee -a ${POP_LOG}
+${INSTALLDIR}/bin/snpPopulation.py | tee -a ${POP_LOG}
 STAT=$?
 msg="snpPopulation.py "
 checkstatus ${STAT} "${msg}"
