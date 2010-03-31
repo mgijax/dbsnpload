@@ -1713,7 +1713,7 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
                     mState.setRefseqProtein(fSet.getProteinId());
                     mState.setContigAllele(fSet.getContigAllele());
                     mState.setResidue(fSet.getAAResidue());
-                    mState.setAaPosition(fSet.getAAPostition());
+                    mState.setAaPosition(fSet.getAAPosition());
                     mState.setReadingFrame(fSet.getReadingFrame());
                     snpSnp.addMarker(mState);
                 }

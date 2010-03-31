@@ -1,3 +1,9 @@
+TAG: dbsnpload-4-3-3-1
+DATE: 03-31-2010
+STAFF: sc
+CHANGES: TR9539 -- aaPosition off by one
+1) DBSNPNseFxnSet.java - increment aaPosition by one
+
 TAG: dbsnpload-4-3-2-3
 TAG: dbsnpload-4-3-2-2
 TAG: dbsnpload-4-3-2-1

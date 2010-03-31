@@ -55,7 +55,10 @@ public class DBSNPNseFxnSet {
         aaResidue = r;
     }
     public void setAAPosition(String p) {
-        aaPosition = new Integer(p);
+	int pos = Integer.parseInt(p);
+	 pos ++;
+        // dbSNP is 0-based as of build 125
+        aaPosition = new Integer(pos);
     }
     public void setReadingFrame(String f) {
         readingFrame = new Integer(f);
@@ -81,7 +84,7 @@ public class DBSNPNseFxnSet {
     public String getAAResidue() {
         return aaResidue;
     }
-    public Integer getAAPostition() {
+    public Integer getAAPosition() {
         return aaPosition;
     }
     public Integer getReadingFrame () {
