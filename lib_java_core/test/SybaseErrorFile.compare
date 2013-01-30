@@ -1,0 +1,18 @@
+The following error occurred 2 out of 7 entries
+Msg 208, Level 16, State 1:
+Server 'PROD_MGI', Line 1:
+SEQ_Sequence not found. Specify owner.objectname or use sp_help to check whether
+the object exists (sp_help may produce lots of output).
+
+The following error occurred 1 out of 7 entries
+Msg 999, Level 16, State 1:
+Server 'PROD_MGI', Line 1:
+SEQ_Sequence not found. Specify owner.objectname or use sp_help to check whether
+the object exists (sp_help may produce lots of output).
+
+The following error occurred 4 out of 7 entries
+Msg 555, Level 16, State 1:
+Server 'PROD_MGI', Line 1:
+SEQ_Sequence not found. Specify owner.objectname or use sp_help to check whether
+the object exists (sp_help may produce lots of output).
+

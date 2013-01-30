@@ -1,0 +1,28 @@
+package id1y9ydw6fk3dmdw6gaxg4;
+
+/**
+@version 2.0
+@physicalPackage
+@__modelType diagram 
+*/
+class diagram {
+/**
+@__ref <oiref:design#Class#id3uocxdw6fk3dmdw6gaxjg.diagram:oiref><oihard>
+@__modelType reference
+@__fqn <oiref:#Package#org.jax.mgi.dbs.mgd.schema:oiref> 
+*/
+class reference {
+}}/**
+@__tags
+@shapeType ClassDiagram 
+*/
+class __tags {
+}/**
+@__options 
+*/
+class __options {
+}/**
+@__positions 
+*/
+class __positions {
+}

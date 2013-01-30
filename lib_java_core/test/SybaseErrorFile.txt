@@ -1,0 +1,35 @@
+1> update SEQ_Sequence set _SequenceType_key = 316347, _SequenceQuality_key = 316339, _SequenceStatus_key = 316342, _SequenceProvider_key = 316377, length = 183051, description = 'Mus musculus chromosome 18 clone RP23-71E16 map 18, *** SEQUENCING IN PROGRESS ***, 2 ordered pieces.', version = '12', division = 'HTG', virtual = 0, rawType = 'DNA', rawLibrary = 'RPCI-23 Female Mouse BAC', rawOrganism = 'Mus musculus', rawStrain = null, rawTissue = null, rawAge = null, rawSex = null, rawCellLine = null, numberOfOrganisms = 0, seqrecord_date = '2004-08-19 00:00:00.0', sequence_date = '2004-08-19 00:00:00.0', _CreatedBy_key = 1308, _ModifiedBy_key = 1308, creation_date = '2004-05-21 15:02:00.416', modification_date = '2004-09-12 15:29:53.327' where _Sequence_key = 304329
+Msg 208, Level 16, State 1:
+Server 'PROD_MGI', Line 1:
+SEQ_Sequence not found. Specify owner.objectname or use sp_help to check whether
+the object exists (sp_help may produce lots of output).
+1> update SEQ_Sequence set _SequenceType_key = 316347, _SequenceQuality_key = 316339, _SequenceStatus_key = 316342, _SequenceProvider_key = 316377, length = 146204, description = 'Mus musculus chromosome 1 clone RP24-146C18 map 1, *** SEQUENCING IN PROGRESS ***, 2 ordered pieces.', version = '11', division = 'HTG', virtual = 0, rawType = 'DNA', rawLibrary = 'RPCI-24 Male Mouse BAC', rawOrganism = 'Mus musculus', rawStrain = null, rawTissue = null, rawAge = null, rawSex = null, rawCellLine = null, numberOfOrganisms = 0, seqrecord_date = '2004-08-19 00:00:00.0', sequence_date = '2004-08-18 00:00:00.0', _CreatedBy_key = 1308, _ModifiedBy_key = 1308, creation_date = '2004-05-21 14:52:53.873', modification_date = '2004-09-12 15:29:53.499' where _Sequence_key = 296432
+Msg 208, Level 16, State 1:
+Server 'PROD_MGI', Line 1:
+SEQ_Sequence not found. Specify owner.objectname or use sp_help to check whether
+the object exists (sp_help may produce lots of output).
+1> update SEQ_Sequence set _SequenceType_key = 316347, _SequenceQuality_key = 316339, _SequenceStatus_key = 316342, _SequenceProvider_key = 316377, length = 146204, description = 'Mus musculus chromosome 1 clone RP24-146C18 map 1, *** SEQUENCING IN PROGRESS ***, 2 ordered pieces.', version = '11', division = 'HTG', virtual = 0, rawType = 'DNA', rawLibrary = 'RPCI-24 Male Mouse BAC', rawOrganism = 'Mus musculus', rawStrain = null, rawTissue = null, rawAge = null, rawSex = null, rawCellLine = null, numberOfOrganisms = 0, seqrecord_date = '2004-08-19 00:00:00.0', sequence_date = '2004-08-18 00:00:00.0', _CreatedBy_key = 1308, _ModifiedBy_key = 1308, creation_date = '2004-05-21 14:52:53.873', modification_date = '2004-09-12 15:29:53.499' where _Sequence_key = 296432
+Msg 999, Level 16, State 1:
+Server 'PROD_MGI', Line 1:
+SEQ_Sequence not found. Specify owner.objectname or use sp_help to check whether
+the object exists (sp_help may produce lots of output).
+1> update SEQ_Sequence set _SequenceType_key = 316347, _SequenceQuality_key = 316339, _SequenceStatus_key = 316342, _SequenceProvider_key = 316377, length = 146204, description = 'Mus musculus chromosome 1 clone RP24-146C18 map 1, *** SEQUENCING IN PROGRESS ***, 2 ordered pieces.', version = '11', division = 'HTG', virtual = 0, rawType = 'DNA', rawLibrary = 'RPCI-24 Male Mouse BAC', rawOrganism = 'Mus musculus', rawStrain = null, rawTissue = null, rawAge = null, rawSex = null, rawCellLine = null, numberOfOrganisms = 0, seqrecord_date = '2004-08-19 00:00:00.0', sequence_date = '2004-08-18 00:00:00.0', _CreatedBy_key = 1308, _ModifiedBy_key = 1308, creation_date = '2004-05-21 14:52:53.873', modification_date = '2004-09-12 15:29:53.499' where _Sequence_key = 296432
+Msg 555, Level 16, State 1:
+Server 'PROD_MGI', Line 1:
+SEQ_Sequence not found. Specify owner.objectname or use sp_help to check whether
+the object exists (sp_help may produce lots of output).
+1> update SEQ_Sequence set _SequenceType_key = 316347, _SequenceQuality_key = 316339, _SequenceStatus_key = 316342, _SequenceProvider_key = 316377, length = 146204, description = 'Mus musculus chromosome 1 clone RP24-146C18 map 1, *** SEQUENCING IN PROGRESS ***, 2 ordered pieces.', version = '11', division = 'HTG', virtual = 0, rawType = 'DNA', rawLibrary = 'RPCI-24 Male Mouse BAC', rawOrganism = 'Mus musculus', rawStrain = null, rawTissue = null, rawAge = null, rawSex = null, rawCellLine = null, numberOfOrganisms = 0, seqrecord_date = '2004-08-19 00:00:00.0', sequence_date = '2004-08-18 00:00:00.0', _CreatedBy_key = 1308, _ModifiedBy_key = 1308, creation_date = '2004-05-21 14:52:53.873', modification_date = '2004-09-12 15:29:53.499' where _Sequence_key = 296432
+Msg 555, Level 16, State 1:
+Server 'PROD_MGI', Line 1:
+SEQ_Sequence not found. Specify owner.objectname or use sp_help to check whether
+the object exists (sp_help may produce lots of output).
+1> update SEQ_Sequence set _SequenceType_key = 316347, _SequenceQuality_key = 316339, _SequenceStatus_key = 316342, _SequenceProvider_key = 316377, length = 146204, description = 'Mus musculus chromosome 1 clone RP24-146C18 map 1, *** SEQUENCING IN PROGRESS ***, 2 ordered pieces.', version = '11', division = 'HTG', virtual = 0, rawType = 'DNA', rawLibrary = 'RPCI-24 Male Mouse BAC', rawOrganism = 'Mus musculus', rawStrain = null, rawTissue = null, rawAge = null, rawSex = null, rawCellLine = null, numberOfOrganisms = 0, seqrecord_date = '2004-08-19 00:00:00.0', sequence_date = '2004-08-18 00:00:00.0', _CreatedBy_key = 1308, _ModifiedBy_key = 1308, creation_date = '2004-05-21 14:52:53.873', modification_date = '2004-09-12 15:29:53.499' where _Sequence_key = 296432
+Msg 555, Level 16, State 1:
+Server 'PROD_MGI', Line 1:
+SEQ_Sequence not found. Specify owner.objectname or use sp_help to check whether
+the object exists (sp_help may produce lots of output).
+1> update SEQ_Sequence set _SequenceType_key = 316347, _SequenceQuality_key = 316339, _SequenceStatus_key = 316342, _SequenceProvider_key = 316377, length = 146204, description = 'Mus musculus chromosome 1 clone RP24-146C18 map 1, *** SEQUENCING IN PROGRESS ***, 2 ordered pieces.', version = '11', division = 'HTG', virtual = 0, rawType = 'DNA', rawLibrary = 'RPCI-24 Male Mouse BAC', rawOrganism = 'Mus musculus', rawStrain = null, rawTissue = null, rawAge = null, rawSex = null, rawCellLine = null, numberOfOrganisms = 0, seqrecord_date = '2004-08-19 00:00:00.0', sequence_date = '2004-08-18 00:00:00.0', _CreatedBy_key = 1308, _ModifiedBy_key = 1308, creation_date = '2004-05-21 14:52:53.873', modification_date = '2004-09-12 15:29:53.499' where _Sequence_key = 296432
+Msg 555, Level 16, State 1:
+Server 'PROD_MGI', Line 1:
+SEQ_Sequence not found. Specify owner.objectname or use sp_help to check whether
+the object exists (sp_help may produce lots of output).

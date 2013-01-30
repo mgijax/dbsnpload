@@ -1,0 +1,29 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Revision History lib_java_core</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+</head>
+
+<body>
+<A NAME="r32"><!-- --></A>
+<table cellpadding="10">
+<th>Summary of lib_java_core additions in release 3.2</th>
+<tr><td>The <A href="/usrlocalmgi/live/lib/java/lib_java_core/javadocs/org/jax/mgi/shr/graphs/package-summary.html">graphs</A> package is a new package for handling graphs.</td></tr>
+<tr><td>The <A href="/usrlocalmgi/live/lib/java/lib_java_core/javadocs/org/jax/mgi/shr/bucketizer/package-summary.html">bucketizer</A> package is a new package for "bucketizing" data sets, that is clustering equivalent members between two data sets and grouping and processing them based on the member counts within the cluster (1:1, 1:0, 0:1, 1:N, N:1, N:N).</td></tr>
+<tr><td>The <A href="/usrlocalmgi/live/lib/java/lib_java_core/javadocs/org/jax/mgi/shr/sva/package-summary.html">sva</A> package is a new package which introduces a data structure called sva (set valued attribute). A set of svas is represented by the <A href="/usrlocalmgi/live/lib/java/lib_java_core/javadocs/org/jax/mgi/shr/sva/SVASet.html">SVASet</A> class. This class is similar to the <A href="/usrlocalmgi/live/lib/java/lib_java_core/javadocs/org/jax/mgi/shr/dto/DTO.html">DTO</A> class in that it has named attributes. It differs by having values as sets of Objects instead of single Objects. This package is used by the <A href="/usrlocalmgi/live/lib/java/lib_java_core/javadocs/org/jax/mgi/shr/bucketizer/package-summary.html">bucketizer</A> package above for defining attributes on which to bucketize your data.</td></tr>
+<tr><td><A href="/usrlocalmgi/live/lib/java/lib_java_core/javadocs/org/jax/mgi/shr/ioutils/OutputDataFile.html">OutputDataFile</A> and <A href="/usrlocalmgi/live/lib/java/lib_java_core/javadocs/org/jax/mgi/shr/ioutils/OutputFormatter.html">OutputFormatter</A> classes are new classes for writing, sorting and formatting raw output on the file system.</td>
+</tr>
+<tr>
+  <td><A href="/usrlocalmgi/live/lib/java/lib_java_core/javadocs/org/jax/mgi/shr/ioutils/OutputManager.html">OutputManager</A> class is a new class for managing a collection of output files based on your configuration settings. That is, each output file you need can be configured using configuration parameters (OUTFILE_NAME, OUTFILE_SORT_DEF, OUTFILE_FORMATTERS, etc). To distinguish which settings are for which file, the configuration parameters are prefixed by a tag name. For example REPORT1_OUTFILE_NAME, REPORT2_OUTFILE_NAME. In this example, the <A href="/usrlocalmgi/live/lib/java/lib_java_core/javadocs/org/jax/mgi/shr/ioutils/OutputManager.html">OutputManager</A> class reads the configuration and creates files for 'REPORT1' and 'REPORT2'. And you write to one by using <A href="http://shire.informatics.jax.org/usrlocalmgi/live/lib/java/lib_java_core/javadocs/org/jax/mgi/shr/ioutils/OutputDataFile.html#writeln(java.lang.String)">OutputManager.writeln("REPORT1", "some text")</A>. On close all files are sorted and formatted.</td>
+</tr>
+<tr><td>The <A href="/usrlocalmgi/live/lib/java/lib_java_core/javadocs/org/jax/mgi/shr/dbutils/BatchProcessor.html#addScriptBatch(java.lang.String)">addScriptBatch(String filename)</A> method is a new method in the <A href="/usrlocalmgi/live/lib/java/lib_java_core/javadocs/org/jax/mgi/shr/dbutils/BatchProcessor.html"> BatchProcessor </A>for adding an external file of sql as a series of JDBC batch commands.</td></tr>
+<tr>
+  <td>The <A href="/usrlocalmgi/live/lib/java/lib_java_core/javadocs/org/jax/mgi/shr/cache/RowDataCacheHandler.html#setInClause(java.lang.String, java.util.ArrayList)">setInClause(String columnName, ArrayList columnValues)</A> method is a new method for restricting memory caches in a dynamic way at runtime to contain only those records which have the named column value matching one of the values from the given arraylist. 
+  This feature is part of the <A href="/usrlocalmgi/live/lib/java/lib_java_core/javadocs/org/jax/mgi/shr/cache/RowDataCacheHandler.html">RowDataCacheHandler</A>, a low level base class extended by <A href="/usrlocalmgi/live/lib/java/lib_java_core/javadocs/org/jax/mgi/shr/cache/FullCachedLookup.html">FullCachedLookup</A>, 
+  <A href="/usrlocalmgi/live/lib/java/lib_java_core/javadocs/org/jax/mgi/shr/cache/LazyCachedLookup.html">LazyCachedLookup</A>, and <A href="/usrlocalmgi/live/lib/java/lib_java_core/javadocs/org/jax/mgi/shr/cache/CachedLookup.html">CachedLookup</A>.</td>
+</tr>
+</table>
+</body>
+</html>

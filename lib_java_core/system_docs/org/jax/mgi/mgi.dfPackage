@@ -1,0 +1,46 @@
+package id1svuqdue2cmokduedmosq;
+
+/**
+@version 2.0
+@physicalPackage
+@__modelType diagram 
+*/
+class diagram {
+/**
+@__ref <oiref:design#Class#id4vgamdr5brvq9dr5bwp5a.diagram:oiref><oihard>
+@__modelType reference
+@__fqn <oiref:#Package#org.jax.mgi.shr:oiref> 
+*/
+class reference {
+}/**
+@__ref <oiref:design#Class#id42v4sdue2cmokduedmozy.diagram:oiref><oihard>
+@__modelType reference
+@__fqn <oiref:#Package#org.jax.mgi.dbs:oiref> 
+*/
+class reference4 {
+}/**
+@__ref <oiref:design#Class#id3bxfldue2cmokduedmot0.diagram:oiref><oihard>
+@__modelType reference
+@__fqn <oiref:#Package#org.jax.mgi.shr:oiref> 
+*/
+class reference5 {
+}/**
+@__ref <oiref:design#Class#id4fgxydr5brvq9dr5bwp4g.diagram:oiref><oihard>
+@__modelType reference
+@__fqn <oiref:#Package#org.jax.mgi.dbs:oiref> 
+*/
+class reference6 {
+}}/**
+@__tags
+@shapeType ClassDiagram 
+*/
+class __tags {
+}/**
+@__options 
+*/
+class __options {
+}/**
+@__positions 
+*/
+class __positions {
+}
