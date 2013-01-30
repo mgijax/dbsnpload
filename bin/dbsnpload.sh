@@ -61,6 +61,7 @@
 #
 ###########################################################################
 
+source ${MGICONFIG}/master.config.sh
 #
 #  Set up a log file for the shell script in case there is an error
 #  during configuration and initialization.
@@ -72,13 +73,13 @@ rm -f ${LOG}
 #
 #  Verify the argument(s) to the shell script.
 #
-doSgl=yes
-doFxn=yes
-doVar=yes
-doHandle=yes
-doPop=yes
-doCache=yes
-doPost=yes
+doSgl=no
+doFxn=no
+doVar=no
+doHandle=no
+doPop=no
+doCache=no
+doPost=no
 
 set -- `getopt sfvhpcr $*`
 if [ $? != 0 ]
@@ -185,6 +186,10 @@ runsnpload ()
     #
     # run dbsnpload
     #
+	CONFIG_MASTER=${MGICONFIG}/master.config
+	export CONFIG_MASTER
+	echo "running load with ${CONFIG_MASTER} and ${CONFIG_LOAD}"
+	echo "DATALOADSOUTPUT = ${DATALOADSOUTPUT}"
     ${JAVA} ${JAVARUNTIMEOPTS} -classpath ${CLASSPATH} \
 	-DCONFIG=${CONFIG_MASTER},${CONFIG_LOAD} \
 	-DJOBKEY=${JOBKEY} ${DLA_START}
@@ -206,12 +211,14 @@ checkstatus ()
 ##################################################################
 # main
 ##################################################################
+echo "main"
 
 #
 # createArchive, startLog, getConfigEnv, get job key
 #
 preload 
 
+echo "preload"
 #
 # put production snp database in single user mode prior to loading snps
 #
@@ -280,6 +287,7 @@ then
     checkstatus ${STAT} "${msg}"
 fi
 
+echo "run pop load"
 # 
 # run population load
 #
@@ -326,7 +334,7 @@ fi
 #
 if [ ${doPost} = "yes" ]
 then
-    echo "running post-processing"
+    echo "running post-processingggg"
     ${SNP_POST_PROCESS}
     STAT=$?
     msg="post-processing "
