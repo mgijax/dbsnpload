@@ -56,6 +56,7 @@ public class MGI_TablesLookup {
             while(nav.next()) {
                 org.jax.mgi.dbs.snp.dao.MGI_TablesDAO snpDao =
                     (org.jax.mgi.dbs.snp.dao.MGI_TablesDAO ) nav.getCurrent();
+		System.out.println("dao name ="+snpDao.getState().getTableName());
                 daos.put(snpDao.getState().getTableName(), snpDao);
             }
         }

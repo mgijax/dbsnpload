@@ -1585,7 +1585,7 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
             if (! buildNum.equals(currGenomeBuildNum)) {
                 // flag it and continue
                 oldBuild = true;
-                //System.out.println("reject build");
+                System.out.println("reject build");
                 continue;
             }
             // if we've gotten this far we know this is a BL6 hit on

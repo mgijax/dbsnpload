@@ -261,6 +261,7 @@ public class DBSNPLoader extends DLALoader {
             XMLDataIterator indivIterator =
                 new DBSNPGenotypeIndividualInputFile(
 				genotypeFilename).getIterator();
+		System.out.println("filename="+genotypeFilename);
             while(indivIterator.hasNext() ) {
                 dbsnpProcessor.processGenoIndivInput(
 				(DBSNPGenotypeIndividualInput)indivIterator.
@@ -410,6 +411,7 @@ public class DBSNPLoader extends DLALoader {
      */
     protected void postprocess() throws MGIException
     {
+	/*
         // do updates on MGI_dbinfo table in the 'snp' database
         updateMGIdbinfo();
 
@@ -419,8 +421,9 @@ public class DBSNPLoader extends DLALoader {
             logger.logdInfo("Re-opening mgd resource in order to update MGI_dbinfo " +
                             "and MGI_Tables", true);
             SQLDataManagerFactory.getShared(SchemaConstants.MGD).reconnect();
-            updateMGITables();
+            //updateMGITables();
         }
+	*/
 
         // close snp and mgd streams
         logger.logdInfo("Closing snp stream", false);

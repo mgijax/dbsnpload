@@ -120,7 +120,17 @@ public class DBSNPLoaderCfg extends Configurator {
       * @return list of table name for which to update SNP..MGI_Tables
       */
      public String[] getUpdateMGITables() {
-         return getConfigStringArrayNull("SNP_UPDATE_MGITABLES");
+	String[] tableNames = getConfigStringArrayNull("SNP_UPDATE_MGITABLES");
+	/*
+    	 String[] tableNamesLower = new String[tableNames.length];
+    	 // fix casing for postgres
+    	 for(int i=0;i<tableNames.length;i++)
+    	 {
+    		 tableNamesLower[i] = tableNames[i].toLowerCase();
+		System.out.println("tablename = "+tableNames[i].toLowerCase());
+    	 }
+	*/
+         return tableNames;
 
      }
      /**
