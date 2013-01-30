@@ -898,7 +898,8 @@ public class SQLDataManager {
     DatabaseMetaData meta = this.getMetaData();
     ResultSet rs = null;
     try {
-      rs = meta.getTables(null, null, "%", null);
+	String[] tableTypes = {"TABLE"};
+      rs = meta.getTables(null, null, "%", tableTypes);
     }
     catch (SQLException e) {
       String msg = "get table metadata from database " + database +
@@ -908,13 +909,17 @@ public class SQLDataManager {
     ResultsNavigator nav = this.getResultsNavigator(rs);
     class Interpreter
         implements RowDataInterpreter {
+	private ArrayList<String> uniqueTables = new ArrayList<String>();
       private SQLDataManager sqlMgr = null;
       public Interpreter(SQLDataManager pSqlMgr) {
         sqlMgr = pSqlMgr;
       }
 
       public Object interpret(RowReference row) throws DBException {
-        return Table.getInstance(row.getString("TABLE_NAME"), sqlMgr);
+	String tableName = row.getString("TABLE_NAME");
+	if(uniqueTables.contains(tableName)) return null;
+	uniqueTables.add(tableName);
+        return Table.getInstance(tableName, sqlMgr);
       }
     }
 
@@ -997,17 +1002,15 @@ public class SQLDataManager {
    */
   public boolean isSybase()
   {
-	return false;
-	/*
       if (getConnectionManagerClass().equals(SYBASE_CM))
       {
-          return true;
+	String connectionType = ((MGIDriverManager) connectionManager).getConnectionType();	
+          return connectionType.equals("sybase");
       }
       else
       {
           return false;
       }
-	*/
   }
 
   /**
@@ -1481,6 +1484,9 @@ public class SQLDataManager {
 }
 
 // $Log$
+// Revision 1.1  2013/01/30 18:03:26  mgiadmin
+// postgres convert
+//
 // Revision 1.17  2013/01/30 16:31:28  mgiadmin
 //
 // convert to postgres
