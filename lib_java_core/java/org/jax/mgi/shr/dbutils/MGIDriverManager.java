@@ -27,6 +27,7 @@ import javax.naming.*;
 */
 public class MGIDriverManager implements ConnectionManager
 {
+	private static String CONNECTION_TYPE ="sybase";
 	private static String CURRENT_DRIVER="sybase";
    /**
     * Returns a database connection to the server/database implied by
@@ -101,6 +102,7 @@ public class MGIDriverManager implements ConnectionManager
               driver = "com.sybase.jdbc3.jdbc.SybDriver";
 	  if(postgres>0)
 	  {
+		CONNECTION_TYPE="postgres";
 	    driver = "org.postgresql.Driver";
 	    CURRENT_DRIVER="postgres";
 	  }
@@ -140,7 +142,14 @@ public class MGIDriverManager implements ConnectionManager
         return getConnection(null, database, user,
                              password, directDatabaseURL);
       }
-
+	
+	/**
+	* @return sybase or postgres
+	**/
+	public String getConnectionType()
+	{
+		return CONNECTION_TYPE;
+	}
 
       /**
        *  Identifies if "url" is an ldapURL or a direct database url.
