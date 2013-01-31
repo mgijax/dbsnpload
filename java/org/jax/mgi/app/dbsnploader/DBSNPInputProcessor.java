@@ -1700,7 +1700,7 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
                         newFxnClass.put(fxnClass, count);
 
                         logger.logcInfo("UNRESOLVED FXNCLASS " + fxnClass +
-                                        "for  RS" + rsId, false);
+                                        " for  RS" + rsId, false);
                         continue;
                     }
                     //System.out.println("fxnClass " + fxnClass);
