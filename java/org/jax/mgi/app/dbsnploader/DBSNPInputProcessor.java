@@ -1685,8 +1685,11 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
                         continue;
                     }
                     fxnSetSet.add(join);
-                    Integer fxnKey = fxnClassKeyLookup.lookup(fxnClass);
-                    if (fxnKey == null) {
+			Integer fxnKey;
+			try{
+			    fxnKey = fxnClassKeyLookup.lookup(fxnClass);
+			}
+                    catch (KeyNotFoundException e) {
                         /**
                          * track number of each new varClass
                          */
