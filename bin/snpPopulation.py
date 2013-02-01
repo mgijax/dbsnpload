@@ -138,6 +138,7 @@ def createBCP():
 	while line:
 	    # remove <>
 	    line = line[1:-1]
+	    line = line.replace('Acadl SNP variants', 'Acadl_SNP_variants')
 	    tokens = string.split(line)
 	    popName = ''
 	    handle = ''
@@ -145,10 +146,11 @@ def createBCP():
 	    handleKey = ''
 	    for token in tokens:
 		if string.find(token, '=') != -1:
-			attrs= string.split(token, '=')
+			attrs = string.split(token, '=')
 			key = string.strip(attrs[0])
 			# remove quotes around value
 			value = string.strip(attrs[1][1:-1])
+	                value = value.replace('Acadl_SNP_variants', 'Acadl SNP variants')
 			if key == 'popId':
 			    popId = value
 			elif key == 'handle':

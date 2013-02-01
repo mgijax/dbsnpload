@@ -76,9 +76,9 @@ checkstatus ()
 date | tee -a ${LOG} ${POP_LOG}
 
 echo "creating population input file in ${POP_FILE}" | tee -a ${POP_LOG}
-/usr/bin/cat ${GENO_SNP_INFILEDIR}/*.xml | grep "<Population" | cut -f2-4 > ${POP_FILE}.all
-/usr/bin/cat ${POP_FILE}.all | sort > ${POP_FILE}.all.sort
-/usr/bin/cat ${POP_FILE}.all.sort | uniq > ${POP_FILE}
+#/usr/bin/cat ${GENO_SNP_INFILEDIR}/*.xml | grep "<Population" | cut -f2-4 > ${POP_FILE}.all
+#/usr/bin/cat ${POP_FILE}.all | sort > ${POP_FILE}.all.sort
+#/usr/bin/cat ${POP_FILE}.all.sort | uniq > ${POP_FILE}
 
 echo "creating population bcp file"
 ${INSTALLDIR}/bin/snpPopulation.py | tee -a ${POP_LOG}
@@ -104,8 +104,8 @@ cat ${MGD_DBPASSWORDFILE} | bcp ${SNPBE_DBNAME}..${POP_TABLE} in ${OUTPUTDIR}/${
 echo "creating indexes on ${POP_TABLE}"
 ${SNPBE_DBSCHEMADIR}/index/${POP_TABLE}_create.object | tee -a ${POP_LOG}
 
-echo "updating statistics on ${POP_TABLE}"
-${MGI_DBUTILS}/bin/updateStatistics.csh ${SNPBE_DBSERVER} ${SNPBE_DBNAME} ${POP_TABLE} | tee -a ${POP_LOG}
+#echo "updating statistics on ${POP_TABLE}"
+#${MGI_DBUTILS}/bin/updateStatistics.csh ${SNPBE_DBSERVER} ${SNPBE_DBNAME} ${POP_TABLE} | tee -a ${POP_LOG}
 
 # Note we don't drop indexes on ACC_TABLE as there aren't many records
 echo "bcp'ing data into ${ACC_TABLE}"
