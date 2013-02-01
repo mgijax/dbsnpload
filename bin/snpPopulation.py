@@ -22,10 +22,11 @@
 
 import sys
 import os
-import db
-import mgi_utils
 import string
+import mgi_utils
 import accessionlib
+import pg_db
+db = pg_db
 
 NL = '\n'
 DL = '|'
@@ -35,12 +36,12 @@ popTable = os.environ['POP_TABLE']
 accTable = os.environ['ACC_TABLE']
 
 # to create SNP_Accession ofor popIds
-snpPopLdbKey = 0
-snpPopmgiTypeKey = 0
+snpPopLdbKey = 76
+snpPopmgiTypeKey = 33
 
 # to create SNP_Population and SNP_Accession
 # record for submitter Handle
-handleVocabKey = 0
+handleVocabKey = 51
 
 # resolves a handle to its key
 handleKeyLookup = {}
@@ -53,78 +54,38 @@ popBCP = open('%s/%s.bcp' % (outputdir, popTable), 'w')
 accBCP = open('%s/%s.pop.bcp' % (outputdir, accTable), 'w')
 
 def setup():
-	# ACC_Accession._logicalDB_key for Population id
-	global snpPopLdbKey
-
-	# ACC_Accession._MGIType_key for SNP_Population
-	global snpPopmgiTypeKey
-
-	# VOC_Vocab._Vocab_key for submitterHandle vocabulary
-	global handleVocabKey
-
-        # set up connection to the mgd database
-        server = os.environ['MGD_DBSERVER']
-        mgdDB = os.environ['MGD_DBNAME']
-        user = os.environ['MGD_DBUSER']
-        password = string.strip(open(os.environ['MGD_DBPASSWORDFILE'], 'r').readline())
-        db.set_sqlLogin(user, password, server, mgdDB)
-
-	cmds = []
-	cmds.append('select _LogicalDB_key ' + \
-		'from ACC_LogicalDB ' + \
-		'where name = "%s" ' % os.environ['POP_LOGICALDB_NAME'])
-	cmds.append('select _MGIType_key ' + \
-                'from ACC_MGIType ' + \
-                'where name = "%s" ' % os.environ['POP_MGITYPE_NAME'])
-	cmds.append('select _Vocab_key ' + \
-		'from VOC_Vocab ' + \
-		'where name = "%s" ' % os.environ['HANDLE_VOCAB_NAME'])
-	results = db.sql(cmds, 'auto')
-
-        snpPopLdbKey = results[0][0]['_LogicalDB_key']
-	snpPopmgiTypeKey = results[1][0]['_MGIType_key']
-	handleVocabKey = results[2][0]['_Vocab_key']
-	
-	# create a submitter handle key lookup
-	createHandleLookup()
-
-	# get accKey
-	getSnpAccessionKey()
-
-
-def createHandleLookup():
-    # dictionary mapping subHandle terms to _Term_keys 
-    global handleKeyLookup
-
-    print 'Creating Handle Lookup'
-    cmds = []
-    cmds.append('select _Term_key, term ' + \
-	'from VOC_Term ' + \
-	'where _Vocab_key = %s' % handleVocabKey)
-    results = db.sql(cmds, 'auto')
-    for r in results[0]:
-	handleKeyLookup[r['term']] = r['_Term_key']
-
-def getSnpAccessionKey():
-
+    	# dictionary mapping subHandle terms to _Term_keys 
+    	global handleKeyLookup
 	# current SNP_Accession max(_Accession_key)
 	global accKey
 
-        print 'Getting max SNP_Accession key'
-	# set up connection to the snp database
-        server = os.environ['SNPBE_DBSERVER']
-        snpDB = os.environ['SNPBE_DBNAME']
-        user = os.environ['SNPBE_DBUSER']
-        password = string.strip(open(os.environ['SNPBE_DBPASSWORDFILE'], 'r').readline())
-        db.set_sqlLogin(user, password, server, snpDB)
+    	# turn of tracing statements
+    	db.setTrace(True)
 
-        cmd = 'select max(_Accession_key) as accMax ' + \
-                'from SNP_Accession'
-	results = db.sql(cmd, 'auto')
-	accKey = results[0]['accMax']
-	# if the table is empty, set accMax to 0
-	if accKey == None:
-	    accKey = 0
+    	password = db.get_sqlPassword()
+
+    	print 'connecting to database...%s' % NL
+    	sys.stdout.flush()
+
+    	# set up connection to the mgd database
+    	db.useOneConnection(1)
+
+    	# Get postgres output, don't translate to old db.py output
+    	db.setReturnAsSybase(False)
+
+    	print 'Creating Handle Lookup'
+	sys.stdout.flush()
+    	results = db.sql('''
+    		SELECT _Term_key, term FROM mgd.VOC_Term where _Vocab_key = %s
+		''' % (handleVocabKey), 'auto')
+    	for r in results[1]:
+		handleKeyLookup[r[1]] = r[0]
+	print handleKeyLookup
+
+    	#print 'Creating SNP_Accession max key'
+	#sys.stdout.flush()
+	#results = db.sql('''SELECT max(_Accession_key) as maxKey FROM SNP_Accession''', 'auto')
+	#accKey = results[1][0][0]
 
 def createBCP():
 	print 'Creating %s/%s.bcp' % (outputdir, popTable)
@@ -191,7 +152,6 @@ def createAccession(accid, objectKey, ldbKey, mgiTypeKey):
 
 print '%s' % mgi_utils.date()
 setup()
-print 'deleting population accessions'
-createBCP()
+#createBCP()
 print '%s' % mgi_utils.date()
 

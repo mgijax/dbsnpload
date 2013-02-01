@@ -75,7 +75,7 @@ checkstatus ()
 
 date | tee -a ${LOG} ${POP_LOG}
 
-echo "creating population input file in ${POP_FILE}" | tee -a ${POP_LOG}
+#echo "creating population input file in ${POP_FILE}" | tee -a ${POP_LOG}
 #/usr/bin/cat ${GENO_SNP_INFILEDIR}/*.xml | grep "<Population" | cut -f2-4 > ${POP_FILE}.all
 #/usr/bin/cat ${POP_FILE}.all | sort > ${POP_FILE}.all.sort
 #/usr/bin/cat ${POP_FILE}.all.sort | uniq > ${POP_FILE}
@@ -85,30 +85,30 @@ ${INSTALLDIR}/bin/snpPopulation.py | tee -a ${POP_LOG}
 STAT=$?
 msg="snpPopulation.py "
 checkstatus ${STAT} "${msg}"
-
-# Allow bcp into database
-${MGI_DBUTILS}/bin/turnonbulkcopy.csh ${SNPBE_DBSERVER} ${SNPBE_DBNAME} | tee -a ${POP_LOG}
-
-echo "truncating ${POP_TABLE}"
-${SNPBE_DBSCHEMADIR}/table/${POP_TABLE}_truncate.object | tee -a ${POP_LOG}
-
-echo "truncating ${ACC_TABLE}"
-${SNPBE_DBSCHEMADIR}/table/${ACC_TABLE}_truncate.object | tee -a ${POP_LOG}
+exit 0
 
 echo "dropping indexes on ${POP_TABLE}" 
-${SNPBE_DBSCHEMADIR}/index/${POP_TABLE}_drop.object | tee -a ${POP_LOG}
+${PG_SNP_DBSCHEMADIR}/index/${POP_TABLE}_drop.object | tee -a ${POP_LOG}
+
+echo "dropping indexes on ${ACC_TABLE}" 
+${PG_SNP_DBSCHEMADIR}/index/${ACC_TABLE}_drop.object | tee -a ${POP_LOG}
+
+echo "truncating ${POP_TABLE}"
+${PG_SNP_DBSCHEMADIR}/table/${POP_TABLE}_truncate.object | tee -a ${POP_LOG}
+
+echo "truncating ${ACC_TABLE}"
+${PG_SNP_DBSCHEMADIR}/table/${ACC_TABLE}_truncate.object | tee -a ${POP_LOG}
 
 echo "bcp'ing data into ${POP_TABLE}"
-cat ${MGD_DBPASSWORDFILE} | bcp ${SNPBE_DBNAME}..${POP_TABLE} in ${OUTPUTDIR}/${POP_TABLE}.bcp -c -t\| -S${SNPBE_DBSERVER} -U${SNPBE_DBUSER} | tee -a  ${POP_LOG}
+psql -h ${PG_DBSERVER} -d ${PG_DBNAME} -U ${PG_DBUSER} --command "\copy snp.${POP_TABLE} from '${OUTPUTDIR}/${POP_TABLE}.bcp' with null as ''"
+
+echo "bcp'ing data into ${ACC_TABLE}"
+psql -h ${PG_DBSERVER} -d ${PG_DBNAME} -U ${PG_DBUSER} --command "\copy snp.${ACC_TABLE} from '${OUTPUTDIR}/${ACC_TABLE}.pop.bcp' with null as ''"
 
 echo "creating indexes on ${POP_TABLE}"
-${SNPBE_DBSCHEMADIR}/index/${POP_TABLE}_create.object | tee -a ${POP_LOG}
+${PG_SNP_DBSCHEMADIR}/index/${POP_TABLE}_create.object | tee -a ${POP_LOG}
 
-#echo "updating statistics on ${POP_TABLE}"
-#${MGI_DBUTILS}/bin/updateStatistics.csh ${SNPBE_DBSERVER} ${SNPBE_DBNAME} ${POP_TABLE} | tee -a ${POP_LOG}
-
-# Note we don't drop indexes on ACC_TABLE as there aren't many records
-echo "bcp'ing data into ${ACC_TABLE}"
-cat ${MGD_DBPASSWORDFILE} | bcp ${SNPBE_DBNAME}..${ACC_TABLE} in ${OUTPUTDIR}/${ACC_TABLE}.pop.bcp -c -t \| -S${SNPBE_DBSERVER} -U${SNPBE_DBUSER} | tee -a ${POP_LOG}
+echo "creating indexes on ${ACC_TABLE}"
+${PG_SNP_DBSCHEMADIR}/index/${ACC_TABLE}_create.object | tee -a ${POP_LOG}
 
 date | tee -a ${LOG}  ${POP_LOG}
