@@ -137,17 +137,17 @@ def createBCP():
 
 	    if popName == '' or handle == '' or popId == '' or handleKey == '':
 		problemHandles = '%s%s%s' % (problemHandles, NL, line)
+            else:
+	        primaryKey = primaryKey + 1
 
-	    primaryKey = primaryKey + 1
+	        bcpLine = str(primaryKey) + TAB + \
+		    str(handle) + TAB + \
+		    str(handleKey) + TAB + \
+                    str(popName) + NL
 
-	    bcpLine = str(primaryKey) + TAB + \
-		str(handle) + TAB + \
-		str(handleKey) + TAB + \
-                str(popName) + NL
+	        popBCP.write(bcpLine)
 
-	    popBCP.write(bcpLine)
-
-	    createAccession(popId, primaryKey, snpPopLdbKey, snpPopmgiTypeKey) 
+	        createAccession(popId, primaryKey, snpPopLdbKey, snpPopmgiTypeKey) 
 
 	    line = string.strip(inFile.readline())
 
