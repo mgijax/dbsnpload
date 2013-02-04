@@ -46,10 +46,11 @@
 '''
  
 import sys 
-import db
-import reportlib
 import os
 import string
+import reportlib
+import pg_db
+db = pg_db
 
 CRT = reportlib.CRT
 SPACE = reportlib.SPACE
@@ -65,29 +66,33 @@ snpStrainDict = {}
 # strains from the strain order input file {strain:sequenceNum}
 snpStrainOrderDict = {}
 
-# set up connection to the snp database
-server = os.environ['SNPBE_DBSERVER']
-snpDB = os.environ['SNPBE_DBNAME']
-user = os.environ['SNPBE_DBUSER']
-password = string.strip(open(os.environ['SNPBE_DBPASSWORDFILE'], 'r').readline())
-db.set_sqlLogin(user, password, server, snpDB)
+# turn of tracing statements
+db.setTrace(True)
+password = db.get_sqlPassword()
 
-print 'querying for snp strains in mgi...%s' % CRT
-cmds = []
+print 'connecting to database...\n'
+sys.stdout.flush()
 
+# set up connection to the mgd database
+db.useOneConnection(1)
+
+# Get postgres output, don't translate to old db.py output
+db.setReturnAsSybase(False)
+
+print 'querying for snp strains in mgi...\n'
 # query for the SNP strains
-cmds.append('select strain, _mgdStrain_key ' + \
-    'from SNP_Strain ' + \
-    'order by strain')
-
-results = db.sql(cmds, 'auto')
+results = db.sql('''
+	select strain, _mgdStrain_key
+    	from SNP_Strain
+    	order by strain
+	''', 'auto')
 
 print 'reporting strains in MGI to %s%s' % (os.environ['SNP_STRAIN_FILE'], CRT)
-for r in results[0]:
-    snpStrainDict[ r['strain'] ] = r['_mgdStrain_key']
-    outFile.write("%s%s%s%s" % (r['strain'],  TAB, r['_mgdStrain_key'], CRT) )
+for r in results[1]:
+    snpStrainDict[ r[0] ] = r[1]
+    outFile.write("%s%s%s%s" % (r[0], TAB, r[1], CRT))
 
-print 'reading the strain order input file ...%s' % CRT 
+print 'reading the strain order input file ...\n'
 sequenceNum = 0
 line = string.strip(inFile.readline())
 while line:
@@ -98,7 +103,7 @@ outFile.close()
 inFile.close()
 
 # QC what is in the database against the input file
-print 'qc of snp strains in MGI against the strain order file ... %s' % CRT
+print 'qc of snp strains in MGI against the strain order file ... \n'
 snpStrainsList = snpStrainDict.keys()
 snpStrainNotInOrderList = []
 snpStrainOrderList = snpStrainOrderDict.keys()
@@ -114,7 +119,7 @@ for strain in snpStrainOrderList:
 
 if len(snpStrainNotInOrderList) > 0 or len(orderStrainNotInSnpList) > 0:
     discrepFile = os.environ['LOG_DISCREP']
-    print "Writing discrepancies to %s%s" % (discrepFile, CRT)
+    print "Writing discrepancies to %s\n" % (discrepFile)
     logDiscrep = open(discrepFile, 'w')
     logDiscrep.write("Snp Strains in MGI not in Order File: %s" % CRT)
     print "Snp Strains in MGI not in Order File:" 
@@ -130,13 +135,17 @@ if len(snpStrainNotInOrderList) > 0 or len(orderStrainNotInSnpList) > 0:
     print ""
     logDiscrep.close()
     sys.exit(1)
+
 print "updating SNP strain order"
 for strain in snpStrainOrderDict.keys():
     sequenceNum = snpStrainOrderDict[strain]
     strainKey = snpStrainDict[strain]
-    cmds = []
-    cmds.append('update SNP_Strain ' + \
-	'set sequenceNum = %s ' % sequenceNum + \
-	'where _mgdStrain_key = %s ' % strainKey)
-    results = db.sql(cmds, 'auto')
-    print cmds
+    sql = '''
+	update SNP_Strain
+	set sequenceNum = %s
+	where _mgdStrain_key = %s 
+ 	''' % (sequenceNum, strainKey)
+    print sql
+    db.sql(sql, None)
+    db.commit()
+
