@@ -132,7 +132,7 @@ fi
 if [ ${doFxn} = "yes" ]
 then
     echo "Running function class translationload " | tee -a $LOADTRANSLOG
-    ${TRANSLATIONLOAD}/translationload.csh  ${CONFIG_FXNCLASS}
+    ${TRANSLATIONLOAD}/translationload.csh ${CONFIG_FXNCLASS}
     STAT=$?
     msg="fxnClass translation load "
     checkstatus  ${STAT} "${msg}"
