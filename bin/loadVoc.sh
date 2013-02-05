@@ -43,7 +43,7 @@ date | tee -a ${LOG}
 #
 #  Verify the argument(s) to the shell script.
 #
-doFxn=no
+doFxn=yes
 doVar=no
 doHandle=no
 
