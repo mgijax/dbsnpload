@@ -141,6 +141,20 @@ then
     STAT=$?
     msg="fxnClass vocab load"
     checkstatus  ${STAT} "${msg}"
+
+echo "This count should equal the database count below..."
+wc -l ${DATALOADSOUTPUT}/dbsnp/dbsnpload/output/vocload/fxnClass/SNP_FXN_Termfile
+
+cat - <<EOSQL | doisql.csh $MGD_DBSERVER $MGD_DBNAME $0 | tee -a $LOG
+use $MGD_DBNAME
+go
+checkpoint
+go
+select _Term_key, term from VOC_Term where _Vocab_key = 49
+go
+end
+EOSQL
+
 fi
 
 if [ ${doVar} = "yes" ]
