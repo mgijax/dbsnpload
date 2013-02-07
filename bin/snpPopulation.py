@@ -80,7 +80,7 @@ def setup():
 		''' % (handleVocabKey), 'auto')
     	for r in results[1]:
 		handleKeyLookup[r[1]] = r[0]
-	print handleKeyLookup
+	#print handleKeyLookup
 
 	print 'Delete from SNP_Accession...'
 	sys.stdout.flush()

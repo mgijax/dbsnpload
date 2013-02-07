@@ -224,7 +224,6 @@ POPULATION_LOAD=${DBSNPLOAD}/bin/snpPopulation.sh
 
 # the set of uniq population  lines grepped from the genotype files
 # looks like <Population popId="735" handle="WI" locPopId="MOUSE">
-#POP_FILE=${OUTPUTDIR}/populations.txt
 POP_FILE=${DBSNPLOAD}/data/populations.txt
 
 
