@@ -89,8 +89,9 @@ def setup():
 
     	print 'Creating SNP_Accession max key'
 	sys.stdout.flush()
-	results = db.sql('''SELECT max(_Accession_key) as maxKey FROM SNP_Accession''', 'auto')
-	accKey = results[1][0][0]
+	accKey = 1
+	#results = db.sql('''SELECT max(_Accession_key) as maxKey FROM SNP_Accession''', 'auto')
+	#accKey = results[1][0][0]
 
 def createBCP():
 

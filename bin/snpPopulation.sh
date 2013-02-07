@@ -98,9 +98,8 @@ ${PG_SNP_DBSCHEMADIR}/index/${POP_TABLE}_drop.object | tee -a ${POP_LOG}
 echo "truncating ${POP_TABLE}"
 ${PG_SNP_DBSCHEMADIR}/table/${POP_TABLE}_truncate.object | tee -a ${POP_LOG}
 
-#do not truncate ACC_TABLE
-#echo "truncating ${ACC_TABLE}"
-#${PG_SNP_DBSCHEMADIR}/table/${ACC_TABLE}_truncate.object | tee -a ${POP_LOG}
+echo "truncating ${ACC_TABLE}"
+${PG_SNP_DBSCHEMADIR}/table/${ACC_TABLE}_truncate.object | tee -a ${POP_LOG}
 
 echo "bcp'ing data into ${POP_TABLE}"
 psql -h ${PG_DBSERVER} -d ${PG_DBNAME} -U ${PG_DBUSER} --command "\copy snp.${POP_TABLE} from '${OUTPUTDIR}/${POP_TABLE}.bcp' with null as ''"
@@ -108,10 +107,10 @@ psql -h ${PG_DBSERVER} -d ${PG_DBNAME} -U ${PG_DBUSER} --command "\copy snp.${PO
 echo "bcp'ing data into ${ACC_TABLE}"
 psql -h ${PG_DBSERVER} -d ${PG_DBNAME} -U ${PG_DBUSER} --command "\copy snp.${ACC_TABLE} from '${OUTPUTDIR}/${ACC_TABLE}.pop.bcp' with null as ''"
 
-#echo "creating indexes on ${POP_TABLE}"
-#${PG_SNP_DBSCHEMADIR}/index/${POP_TABLE}_create.object | tee -a ${POP_LOG}
+echo "creating indexes on ${POP_TABLE}"
+${PG_SNP_DBSCHEMADIR}/index/${POP_TABLE}_create.object | tee -a ${POP_LOG}
 
-#echo "creating indexes on ${ACC_TABLE}"
-#${PG_SNP_DBSCHEMADIR}/index/${ACC_TABLE}_create.object | tee -a ${POP_LOG}
+echo "creating indexes on ${ACC_TABLE}"
+${PG_SNP_DBSCHEMADIR}/index/${ACC_TABLE}_create.object | tee -a ${POP_LOG}
 
 date | tee -a ${LOG}  ${POP_LOG}
