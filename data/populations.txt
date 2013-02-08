@@ -13,7 +13,7 @@
     <Population popId="1394" handle="KOKORO_BIOLOGY_GROUP" locPopId="KOKORO_MOUSE">
     <Population popId="14322" handle="CHEVERUD" locPopId="SCREENING_POP">
     <Population popId="1445" handle="PERLEGEN" locPopId="MM_PANEL2">
-    <Population popId="15137" handle="PAWSNP" locPopId="Acadl SNP variants">
+    <Population popId="15137" handle="PAWSNP" locPopId="Acadl_SNP_variants">
     <Population popId="15159" handle="PI_DPPM_INT" locPopId="INT_PANEL2">
     <Population popId="1637" handle="ABI" locPopId="CRAMUS_MOUSE">
     <Population popId="1780" handle="TIZUMI" locPopId="TB001">
