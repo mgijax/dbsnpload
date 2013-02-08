@@ -132,6 +132,8 @@ def createBCP():
                             handle = value
 			elif key == 'locPopId':
 			    popName = value
+			if value == 'Acadl_SNP_variants':
+			    print value, key, popName, handle, popId, handleKey
 
 	    if handleKeyLookup.has_key(handle):
     	        handleKey = handleKeyLookup[handle]
@@ -139,6 +141,9 @@ def createBCP():
 	    if popName == '' or handle == '' or popId == '' or handleKey == '':
 		problemHandles = '%s%s%s' % (problemHandles, NL, line)
             else:
+		if value == 'Acadl_SNP_variants':
+		    print value, key, popName
+
 	        primaryKey = primaryKey + 1
 
 	        bcpLine = str(primaryKey) + TAB + \
