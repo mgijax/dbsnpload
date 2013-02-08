@@ -111,7 +111,6 @@ def createBCP():
 
 	    # remove <>
 	    line = line[1:-1]
-	    line = line.replace('Acadl SNP variants', 'Acadl_SNP_variants')
 	    tokens = string.split(line)
 
 	    popName = ''
@@ -125,15 +124,12 @@ def createBCP():
 			key = string.strip(attrs[0])
 			# remove quotes around value
 			value = string.strip(attrs[1][1:-1])
-	                value = value.replace('Acadl_SNP_variants', 'Acadl SNP variants')
 			if key == 'popId':
 			    popId = value
 			elif key == 'handle':
                             handle = value
 			elif key == 'locPopId':
 			    popName = value
-			if value == 'Acadl_SNP_variants':
-			    print value, key, popName, handle, popId, handleKey
 
 	    if handleKeyLookup.has_key(handle):
     	        handleKey = handleKeyLookup[handle]
@@ -141,9 +137,6 @@ def createBCP():
 	    if popName == '' or handle == '' or popId == '' or handleKey == '':
 		problemHandles = '%s%s%s' % (problemHandles, NL, line)
             else:
-		if value == 'Acadl_SNP_variants':
-		    print value, key, popName
-
 	        primaryKey = primaryKey + 1
 
 	        bcpLine = str(primaryKey) + TAB + \
