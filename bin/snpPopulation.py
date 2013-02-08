@@ -133,9 +133,11 @@ def createBCP():
 
 	    if handleKeyLookup.has_key(handle):
     	        handleKey = handleKeyLookup[handle]
-
+            else:
+                print handle
 	    if popName == '' or handle == '' or popId == '' or handleKey == '':
 		problemHandles = '%s%s%s' % (problemHandles, NL, line)
+		print popName, handle, popId, handleKey
             else:
 	        primaryKey = primaryKey + 1
 
