@@ -142,36 +142,36 @@ echo echo "snp database:${SNPBE_DBNAME}"
 #
 #  Source the DLA library functions.
 #
-if [ "${DLAJOBSTREAMFUNC}" != "" ]
-then
-    if [ -r ${DLAJOBSTREAMFUNC} ]
-    then
-        . ${DLAJOBSTREAMFUNC}
-    else
-        echo "Cannot source DLA functions script: ${DLAJOBSTREAMFUNC}"
-        exit 1
-    fi
-else
-    echo "Environment variable DLAJOBSTREAMFUNC has not been defined."
-fi
+#if [ "${DLAJOBSTREAMFUNC}" != "" ]
+#then
+#    if [ -r ${DLAJOBSTREAMFUNC} ]
+#    then
+#        . ${DLAJOBSTREAMFUNC}
+#    else
+#        echo "Cannot source DLA functions script: ${DLAJOBSTREAMFUNC}"
+#        exit 1
+#    fi
+#else
+#    echo "Environment variable DLAJOBSTREAMFUNC has not been defined."
+#fi
 
 #
 #  Function that performs cleanup tasks for the job stream prior to
 #  termination.
 #
-shutDown ()
-{
-    #
-    # report location of logs
-    #
-    echo "\nSee logs at ${LOGDIR}\n" >> ${LOG_PROC}
-
-    #
-    # call DLA library function
-    #
-    postload
-
-}
+#shutDown ()
+#{
+#    #
+#    # report location of logs
+#    #
+#    echo "\nSee logs at ${LOGDIR}\n" >> ${LOG_PROC}
+#
+#    #
+#    # call DLA library function
+#    #
+#    postload
+#
+#}
 
 #
 # Function that runs the java dbsnp load
@@ -195,18 +195,18 @@ runsnpload ()
 	-DJOBKEY=${JOBKEY} ${DLA_START}
 }
 
-checkstatus ()
-{
-
-    if [ $1 -ne 0 ]
-    then
-        echo "$2 Failed. Return status: $1" | tee -a ${LOG_PROC} ${LOG_DIAG}
-        shutDown
-        exit 1
-    fi
-    echo "$2 completed successfully" | tee -a ${LOG_PROC} ${LOG_DIAG}
-
-}
+#checkstatus ()
+#{
+#
+#    if [ $1 -ne 0 ]
+#    then
+#        echo "$2 Failed. Return status: $1" | tee -a ${LOG_PROC} ${LOG_DIAG}
+#        shutDown
+#        exit 1
+#    fi
+#    echo "$2 completed successfully" | tee -a ${LOG_PROC} ${LOG_DIAG}
+#
+#}
 
 ##################################################################
 # main
@@ -216,21 +216,21 @@ echo "main"
 #
 # createArchive, startLog, getConfigEnv, get job key
 #
-preload 
+#preload 
 
-echo "preload"
+#echo "preload"
 #
 # put production snp database in single user mode prior to loading snps
 #
-if [ ${doSgl} = "yes" ]
-then
-    echo "calling  ${SNP_SGL_USER} ${SNP_DBSERVER} ${SNP_DBNAME} true ${SNP_SGL_USER_FILE} ${SNP_SLEEP_INTERVAL}"
-
-    ${SNP_SGL_USER} ${SNP_DBSERVER} ${SNP_DBNAME} true ${SNP_SGL_USER_FILE} ${SNP_SLEEP_INTERVAL}
-    STAT=$?
-    msg="${SNP_SGL_USER} "
-    checkstatus ${STAT} "${msg}"
-fi
+#if [ ${doSgl} = "yes" ]
+#then
+#    echo "calling  ${SNP_SGL_USER} ${SNP_DBSERVER} ${SNP_DBNAME} true ${SNP_SGL_USER_FILE} ${SNP_SLEEP_INTERVAL}"
+#
+#    ${SNP_SGL_USER} ${SNP_DBSERVER} ${SNP_DBNAME} true ${SNP_SGL_USER_FILE} ${SNP_SLEEP_INTERVAL}
+#    STAT=$?
+#    msg="${SNP_SGL_USER} "
+#    checkstatus ${STAT} "${msg}"
+#fi
 
 #
 # run fxn class vocload?
@@ -305,18 +305,18 @@ fi
 #
 echo "running dbsnp load"
 runsnpload
-STAT=$?
-msg="dbsnp load "
-checkstatus ${STAT} "${msg}"
+#STAT=$?
+#msg="dbsnp load "
+#checkstatus ${STAT} "${msg}"
 
 #
 # order snp strains
 #
-echo "running snp strain order update"
-${STRAIN_ORDER_LOAD}
-STAT=$?
-msg="snp strain order update "
-checkstatus  ${STAT} "${msg}"
+#echo "running snp strain order update"
+#${STRAIN_ORDER_LOAD}
+#STAT=$?
+#msg="snp strain order update "
+#checkstatus  ${STAT} "${msg}"
 
 #
 # run snp marker cache load
@@ -342,7 +342,7 @@ then
 fi
 # run postload cleanup and email logs
 #
-shutDown
+#shutDown
 
 exit 0
 
