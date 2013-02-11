@@ -1,5 +1,11 @@
+#!/usr/bin/python
 #
 #	parses information abou entrez gene ids out of the xml data files
+#
+#	Author: kstone (2013,Feb 11)
+
+#	This script is not intended to be robust.
+#	It was created to gather rough statistics from dbsnp XML files
 #
 
 import xml.etree.cElementTree as et
@@ -53,12 +59,13 @@ def main(chr):
 	print "\t".join(['Entrez Gene ID','RS Id Count','First %s Rs Ids'%MAX_RSIDS_TO_PRINT,'\n'])
 	for geneId in geneIds:
 		rsIds = entrezGeneMap[geneId]
-		rsIdCount = "%s"%len(rsIds)
+		rsIdCount = len(rsIds)
 		if rsIdCount > MAX_RSIDS_TO_PRINT:
 			rsIdsString = ",".join(list(rsIds)[0:MAX_RSIDS_TO_PRINT])
+			rsIdsString ="%s,..."%rsIdsString
 		else:
 			rsIdsString = ",".join(rsIds)
-		print "\t".join([geneId,rsIdCount,rsIdsString,'\n'])	
+		print "\t".join([geneId,"%s"%rsIdCount,rsIdsString,'\n'])	
 
 if __name__ == "__main__":
 	parser = OptionParser(usage="usage: %prog chromosome")
