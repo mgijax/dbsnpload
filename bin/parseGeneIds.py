@@ -48,7 +48,9 @@ def main(chr):
 				geneId = elem.get('geneId')
 				#print "geneID = %s"%geneId
 				entrezGeneMap.setdefault(geneId,set()).add(currentRsId)
-				
+		elif event =='end':
+			elem.clear()
+			root.clear()
 			#if count>=10000:
 			#	break
 
