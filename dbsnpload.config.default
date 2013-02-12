@@ -87,7 +87,7 @@ export GENO_SNP_INFILESUFFIX NSE_SNP_INFILESUFFIX
 
 # list of chromosomes to load, comma delimited
 #SNP_CHROMOSOMES_TOLOAD="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,X,Y,MT"
-SNP_CHROMOSOMES_TOLOAD="1"
+SNP_CHROMOSOMES_TOLOAD="1,2"
 
 # full path to 'SNPs not loaded' report
 SNP_NOTLOADED=${RPTDIR}/RefSnpsNotLoaded.txt
@@ -331,7 +331,7 @@ export MGD_BCP_OK_TO_OVERWRITE
 
 #  Settings used to create a BCP manager for the SNP database
 SNPBE_BCP_PATH=${OUTPUTDIR}
-SNPBE_BCP_PREVENT_EXECUTE=false
+SNPBE_BCP_PREVENT_EXECUTE=true
 SNPBE_BCP_TRUNCATE_LOG=true
 SNPBE_BCP_DROP_INDEXES=true
 SNPBE_BCP_RECORD_STAMPING=false

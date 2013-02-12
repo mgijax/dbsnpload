@@ -423,8 +423,8 @@ public class DBSNPInputProcessor {
             // Added 11/1 build 125 genotype file does not list ss
             // w/o strain/alleles
             if (popsForSSArray == null) {
-                logger.logcInfo("SS NO STRAIN/ALLELES for RS" + rsId + " SS" +
-                                ss.getSSId(), false);
+                //logger.logcInfo("SS NO STRAIN/ALLELES for RS" + rsId + " SS" +
+                 //             ss.getSSId(), false);
                 ssNoStAllele++;
                 continue;
             }
