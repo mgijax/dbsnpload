@@ -38,12 +38,14 @@ def main(chr):
 			if elem.tag == '%s%s'%(TAG_PREFIX,'Rs'):
 				# set to next rsId
 				currentRsId = elem.get('rsId')
-				uniqueRsIds.add(currentRsId)
 				#print "Rs ID = %s"%currentRsId
 			#print elem.tag
 			if elem.tag == '%s%s'%(TAG_PREFIX,'Assembly'):
 				# set to next Assembly build
 				currentAssembly = elem.get('groupLabel')	
+	
+			if currentAssembly == 'GRCm38':
+				uniqueRsIds.add(currentRsId)
 
 			if currentAssembly == 'GRCm38' and \
 				elem.tag == '%s%s'%(TAG_PREFIX,'FxnSet'):
