@@ -24,6 +24,7 @@ def main(chr):
 
 	count = 0
 	entrezGeneMap = {}
+	uniqueRsIds = set()
 	# I have no idea why this shows up in the tag name, but it does
 	TAG_PREFIX='{http://www.ncbi.nlm.nih.gov/SNP/docsum}'
 	currentRsId = None
@@ -37,6 +38,7 @@ def main(chr):
 			if elem.tag == '%s%s'%(TAG_PREFIX,'Rs'):
 				# set to next rsId
 				currentRsId = elem.get('rsId')
+				uniqueRsIds.add(currentRsId)
 				#print "Rs ID = %s"%currentRsId
 			#print elem.tag
 			if elem.tag == '%s%s'%(TAG_PREFIX,'Assembly'):
@@ -58,8 +60,11 @@ def main(chr):
 	# sort by entrez gene ID
 	geneIds = entrezGeneMap.keys()
 	geneIds.sort()
+	geneIdCount = len(geneIds)
+	rsIdCount = len(uniqueRsIds)
 	MAX_RSIDS_TO_PRINT = 5
-	print "\t".join(['Entrez Gene ID','RS Id Count','First %s Rs Ids'%MAX_RSIDS_TO_PRINT,'\n'])
+	print "Unique Gene Ids = %s, Unique Rs Ids = %s"%(geneIdCount,rsIdCount)
+	print "\t".join(['Entrez Gene ID','RS Id Count','First %s Rs Ids'%MAX_RSIDS_TO_PRINT])
 	for geneId in geneIds:
 		rsIds = entrezGeneMap[geneId]
 		rsIdCount = len(rsIds)
@@ -68,7 +73,7 @@ def main(chr):
 			rsIdsString ="%s,..."%rsIdsString
 		else:
 			rsIdsString = ",".join(rsIds)
-		print "\t".join([geneId,"%s"%rsIdCount,rsIdsString,'\n'])	
+		print "\t".join([geneId,"%s"%rsIdCount,rsIdsString])	
 
 if __name__ == "__main__":
 	parser = OptionParser(usage="usage: %prog chromosome")
