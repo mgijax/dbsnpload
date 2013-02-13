@@ -51,9 +51,15 @@ public class FileImporterSybase
         String user = sqlMgr.getUser();
         String pwFile = sqlMgr.getPasswordFile();
         DBSchema dbSchema = new DBSchema(sqlMgr);
-        String cmd = "cat " + pwFile + " | bcp " + db + ".." + tablename +
-            " in " + filename + " -c -S " + server + " -U " + user +
-            " -t " + delimiter;
+
+        //String cmd = "cat " + pwFile + " | bcp " + db + ".." + tablename +
+         //   " in " + filename + " -c -S " + server + " -U " + user +
+          //  " -t " + delimiter;
+
+        String cmd = "psql -h " + server + " -d " + db + " -U " + user +
+                " --command \"\copy snp." + tablename +
+                " from '" + filename + "' with null as ''\""
+
         int exitCode = 0;
         RunCommand runner = new RunCommand();
         try

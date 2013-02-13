@@ -38,7 +38,7 @@ BALB/cBy
 BALB/cUcsd 
 BFM/2Ms
 BLG2/Ms
-BTBR T<+> tf/J
+BTBR T<+> Itpr3<tf>/J
 BUB
 BUB/BnJ
 C3H/He

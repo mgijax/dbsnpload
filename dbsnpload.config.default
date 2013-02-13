@@ -87,7 +87,7 @@ export GENO_SNP_INFILESUFFIX NSE_SNP_INFILESUFFIX
 
 # list of chromosomes to load, comma delimited
 #SNP_CHROMOSOMES_TOLOAD="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,X,Y,MT"
-SNP_CHROMOSOMES_TOLOAD="1,2"
+SNP_CHROMOSOMES_TOLOAD="1,2,19,Y"
 
 # full path to 'SNPs not loaded' report
 SNP_NOTLOADED=${RPTDIR}/RefSnpsNotLoaded.txt

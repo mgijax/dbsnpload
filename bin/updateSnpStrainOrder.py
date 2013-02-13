@@ -101,6 +101,7 @@ while line:
     line = string.strip(inFile.readline())
 outFile.close()
 inFile.close()
+#print snpStrainOrderDict
 
 # QC what is in the database against the input file
 print 'qc of snp strains in MGI against the strain order file ... \n'
@@ -134,18 +135,22 @@ if len(snpStrainNotInOrderList) > 0 or len(orderStrainNotInSnpList) > 0:
 	print strain
     print ""
     logDiscrep.close()
-    sys.exit(1)
+    #sys.exit(1)
 
 print "updating SNP strain order"
+print snpStrainOrderDict
 for strain in snpStrainOrderDict.keys():
-    sequenceNum = snpStrainOrderDict[strain]
-    strainKey = snpStrainDict[strain]
-    sql = '''
-	update SNP_Strain
-	set sequenceNum = %s
-	where _mgdStrain_key = %s 
- 	''' % (sequenceNum, strainKey)
-    print sql
-    db.sql(sql, None)
-    db.commit()
+    try:
+        sequenceNum = snpStrainOrderDict[strain]
+        strainKey = snpStrainDict[strain]
+        sql = '''
+	    update SNP_Strain
+	    set sequenceNum = %s
+	    where _mgdStrain_key = %s 
+ 	    ''' % (sequenceNum, strainKey)
+        print sql
+        db.sql(sql, None)
+        db.commit()
+    except:
+        pass
 
