@@ -165,7 +165,7 @@ public class DBSNPNseInputFile extends InputXMLDataFile
                              if (atts[i] != null && atts[i].equals("ssId" )) {
                                  String ssId = it.getAttributeValue(i);
                                  if (ssId.equals(currentExemplar)) {
-                                     currentSS.setIsExemplar(Boolean.TRUE);
+                                     currentSS.setIsExemplar(1);
                                  }
                                  currentSS.setSSId(ssId);
                              }

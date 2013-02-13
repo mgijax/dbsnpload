@@ -435,10 +435,10 @@ public class DBSNPInputProcessor {
         }
 
         // create flank DAOs for the 5' flanking sequence
-        processFlank(consensusKey, flank5Prime, Boolean.TRUE);
+        processFlank(consensusKey, flank5Prime, 1);
 
         // create flank DAOs for the 3' flanking sequence
-        processFlank(consensusKey, flank3Prime, Boolean.FALSE);
+        processFlank(consensusKey, flank3Prime, 0);
         // create the consensus allele DAOs for this RS
         // send rsId just for debug
         
@@ -952,7 +952,7 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
             String currentConsensusAllele = "";
 
             // true if there is a conflict determining the consensus allele
-            Boolean isConflict = null;
+            int isConflict = 0;
 
             // get the next strain for which to determine consensus allele
             Integer strainKey = (Integer) i.next();
@@ -967,7 +967,7 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
              */
             if (alleles.size() == 1) {
                 currentConsensusAllele = (String)alleles.keySet().iterator().next();
-                isConflict = Boolean.FALSE;
+                isConflict = 0;
                 // Strike this for Build 126
                 // String allele = = (String)alleles.keySet().iterator().next();
                 //if(allele.equals("N")) {
@@ -977,7 +977,7 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
                 //    currentConsensusAllele = allele;
                 //}
                 // consensus allele determined without using a majority
-                //isConflict = Boolean.FALSE;
+                //isConflict = 0;
             }
             else {
                 // strike this for BUILD 126
@@ -993,7 +993,7 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
                 //    String allele = (String) alleles.keySet().iterator().next();
                 //    currentConsensusAllele = allele;
                 //    // consensus allele determined without using a majority
-                //    isConflict = Boolean.FALSE;
+                //    isConflict = 0;
                 //}
                 /**
                  * we have > 1 allele which means we have a conflict
@@ -1002,13 +1002,13 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
                  */
 
                 // consensus allele deterimined by majority rule has a conflict
-                isConflict = Boolean.TRUE;
+                isConflict = 1;
 
                 // the count of instances of the current allele
                 int currentCt = 0;
 
                 // true  if current comparison of allele counts are not equal
-                Boolean isMajority = null;
+                int isMajority = 0;
 
                 // iterate thru the alleles of this strain
                 for (Iterator j = alleles.keySet().iterator(); j.hasNext(); ) {
@@ -1027,28 +1027,29 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
                     if (currentCt < count) {
                         currentCt = count;
                         currentConsensusAllele = allele;
-                        isMajority = Boolean.TRUE;
+                        isMajority = 1;
                     }
                     else if (currentCt == count) {
-                        isMajority = Boolean.FALSE;
+                        isMajority = 0;
                     }
                 }
 
-                if (isMajority == null) {
+                //if (isMajority == null) {
 
-                    throw new MGIException(
-                        "ERROR determining consensus allele for " +
-                        "rs" + rsId + " isMajority == null");
-                }
+                 //   throw new MGIException(
+                  //      "ERROR determining consensus allele for " +
+                   //     "rs" + rsId + " isMajority == null");
+                //}
                 // if there is no majority we assign a "?" to the consensus allele
-                if (isMajority.equals(Boolean.FALSE)) {
+                //if (isMajority.equals(0)) {
+                if (isMajority == 0) {
                     currentConsensusAllele = "?";
                 }
             }
-            if (isConflict == null) {
-                    throw new MGIException("ERROR determining consensus allele for " +
-                                     "rs" + rsId + " isConflict == null");
-            }
+            //if (isConflict == null) {
+                    //throw new MGIException("ERROR determining consensus allele for " +
+                                     //"rs" + rsId + " isConflict == null");
+            //}
             // now create the consensus allele
             SNP_ConsensusSnp_StrainAlleleState state = new SNP_ConsensusSnp_StrainAlleleState();
             state.setConsensusSnpKey(csKey);
@@ -1473,7 +1474,7 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
      */
 
     private void processFlank(Integer consensusKey, Vector flank,
-        Boolean is5Prime) throws DBException, ConfigException {
+        int is5Prime) throws DBException, ConfigException {
         // need to get 255 char chunks of sequence in the flank; the input is
         // chunked, but in variable length chunks :-(
 
@@ -1514,7 +1515,7 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
      * @throws ConfigException - if error accessing configuration
      */
     private void processFlankState(String flankChunk, Integer sequenceNum,
-                                   Integer consensusKey, Boolean is5Prime)
+                                   Integer consensusKey, int is5Prime)
 	    throws DBException, ConfigException {
 
         // create and MGI_FlankState for this chunk
@@ -1752,9 +1753,9 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
             logger.logcInfo("OLD BUILD COORDINATE ONLY for RS" + rsId, false);
         }
         // log that there is a BL6 MapLoc w/o a coordinate value
-        if(bl6NoCoordFlag == true) {
-            logger.logcInfo("MISSING BL6 STARTCOORD for RS" + rsId , false);
-        }
+        //if(bl6NoCoordFlag == true) {
+         //   logger.logcInfo("MISSING BL6 STARTCOORD for RS" + rsId , false);
+        //}
 
     }
     private Integer incrementInteger(Integer i) {

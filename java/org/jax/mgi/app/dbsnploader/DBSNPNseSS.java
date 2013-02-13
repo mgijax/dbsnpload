@@ -25,7 +25,7 @@ class DBSNPNseSS {
     // SS orientation to RS
     private String ssOrientToRS;
     // true if exemplar ss
-    private Boolean isExemplar = Boolean.FALSE;
+    private int isExemplar = 0;
     // dbsnp ss observed alleles; a summary of the ss alleles
     private String observedAlleles;
 
@@ -60,7 +60,7 @@ class DBSNPNseSS {
         ssOrientToRS = o;
     }
 
-    public void setIsExemplar(Boolean i) {
+    public void setIsExemplar(int i) {
        isExemplar = i;
     }
     public void setObservedAlleles(String s) {
@@ -84,7 +84,7 @@ class DBSNPNseSS {
     public String getSSOrientToRS() {
         return ssOrientToRS;
      }
-     public Boolean getIsExemplar() {
+     public int getIsExemplar() {
           return isExemplar;
      }
      public String getObservedAlleles() {

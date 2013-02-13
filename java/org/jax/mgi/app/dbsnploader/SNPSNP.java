@@ -268,9 +268,9 @@ public class SNPSNP {
                 stream.insert((SNP_SubSnp_StrainAlleleDAO)i.next());
             }
             // First determine the isMultiCoord for the SNP_Coord_CacheDAO(s)
-            Boolean isMultiCoord = Boolean.FALSE;
+            int isMultiCoord = 0;
             if (coordCache.size() > 1) {
-                isMultiCoord = Boolean.TRUE;
+                isMultiCoord = 1;
             }
             // insert snp coordinates setting isMultiCoord value
             for( i = coordCache.iterator(); i.hasNext(); ) {
