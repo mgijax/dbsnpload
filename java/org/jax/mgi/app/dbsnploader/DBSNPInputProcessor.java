@@ -375,6 +375,7 @@ public class DBSNPInputProcessor {
         // don't load duplicate RefSNPs; build 125 multichr RefSnps are located
         // in each chromosome file on which they have a coordinate
         if (rsIdSet.contains(rsId)) {
+	    logger.logcInfo("DUPLICATE MULTI-CHROMOSOME REFSNP for RS" + rsId , false);
             SNPRepeatException e = new SNPRepeatException();
             e.bind(rsId);
             throw e;
