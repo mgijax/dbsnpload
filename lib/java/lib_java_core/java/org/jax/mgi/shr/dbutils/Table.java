@@ -388,8 +388,11 @@ throws DBException, ConfigException
 	  /*
 	   * These column translations are basically superceding the above translations in specific cases.
 	   * The above translations occur on every table. Here we can specify a table and schema to perform this translation on only
+	   *
+	   * A simpler way to understand this is this: These tables have unconventional column name casing, and therefore need special handling
            */
-	specialColumnTranslations.add(Arrays.asList("snp","snp_accession","accid"));
+	specialColumnTranslations.add(Arrays.asList("radar","qc_ms_nameconflict","accid"));
+	specialColumnTranslations.add(Arrays.asList("radar","qc_ms_unresolvedorganism","accid"));
 
   }
 
@@ -705,6 +708,9 @@ throws DBException, ConfigException
 }
 
 // $Log$
+// Revision 1.3  2013/02/18 20:10:58  mgiadmin
+// TR11248
+//
 // Revision 1.2  2013/02/18 20:01:24  mgiadmin
 // TR11248
 //
