@@ -15,6 +15,3 @@ then
 fi
 
 . ${MGICONFIG}/master.config.sh
-
-MGI_JAVALIB=${DBSNPLOAD}/lib/java
-export MGI_JAVALIB
