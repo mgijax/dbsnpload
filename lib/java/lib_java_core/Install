@@ -15,6 +15,5 @@ cd `dirname $0`
 . ./Configuration
 
 $ANT buildall
-unlink ../core.jar
-unlink ${MGI_JAVALIB}/core.jar
-ln -s ${DBSNPLOAD}/lib_java_core/core.jar ${MGI_JAVALIB}/core.jar
+unlink ${DBSNPLOAD}/lib/java/core.jar
+ln -s ${DBSNPLOAD}/lib/java/lib_java_core/core.jar ${DBSNPLOAD}/lib/java/core.jar
