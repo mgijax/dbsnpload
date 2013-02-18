@@ -12,7 +12,9 @@ import java.util.HashMap;
 import java.util.Vector;
 import java.util.Iterator;
 import java.util.StringTokenizer;
+import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.jax.mgi.shr.dbutils.bcp.RecordStampFactory;
 import org.jax.mgi.shr.dbutils.types.TypeValidator;
@@ -379,6 +381,18 @@ throws DBException, ConfigException
 	  columnTranslations.add("refseqNucleotide");
 	  columnTranslations.add("refseqProtein");
   }
+
+  private static ArrayList<List<String>> specialColumnTranslations = new ArrayList<List<String>>();
+  static
+  {
+	  /*
+	   * These column translations are basically superceding the above translations in specific cases.
+	   * The above translations occur on every table. Here we can specify a table and schema to perform this translation on only
+           */
+	specialColumnTranslations.add(Arrays.asList("rdr","acc_accession","accid"));
+
+  }
+
   /**
    * get the ColumnDef objects for this table
    * @assumes nothing
@@ -394,16 +408,39 @@ throws DBException, ConfigException
     for (int i = 0; i < columnDefinitions.size(); i++) {
 	String colName = (String) ((ColumnDef) columnDefinitions.get(i)).getName();
 	// perform any case-specific column name transformations for postgres
-    	Iterator<String> iter = columnTranslations.iterator();
-    	while(iter.hasNext())
-    	{
-    		String trans = iter.next();
-    		if(colName.contains(trans.toLowerCase()))
-    		{
-    			colName = colName.replace(trans.toLowerCase(), trans);
-			((ColumnDef) columnDefinitions.get(i)).setName(colName);
-    		}
-    	}
+	Iterator<List<String>> sIter = specialColumnTranslations.iterator();
+	boolean hasSpecialTranslation=false;
+	// perform the schema + table column specific translations first
+	while(sIter.hasNext())
+	{
+		List<String> specialTranslation = sIter.next();
+		ColumnDef cd =(ColumnDef) columnDefinitions.get(i);
+		String cdSchema = cd.getSchema();
+		String cdTable = cd.getTable();
+		String transColumn = specialTranslation.get(2);
+		if(specialTranslation.get(0).equals(cdSchema)
+			&& specialTranslation.get(1).equals(cdTable)
+			&& colName.contains(transColumn.toLowerCase()))
+		{
+    			colName = colName.replace(transColumn.toLowerCase(), transColumn);
+			cd.setName(colName);
+			hasSpecialTranslation=true;
+		}
+	}
+	if(!hasSpecialTranslation)
+	{
+		// if no "special" (i.e. schema+table specific) translations, do generic ones
+		Iterator<String> iter = columnTranslations.iterator();
+		while(iter.hasNext())
+		{
+			String trans = iter.next();
+			if(colName.contains(trans.toLowerCase()))
+			{
+				colName = colName.replace(trans.toLowerCase(), trans);
+				((ColumnDef) columnDefinitions.get(i)).setName(colName);
+			}
+		}
+	}
 	// protect uniqueness of columns for postgres
 	if(uniqueColumns.contains(colName)) continue;
 	uniqueColumns.add(colName);
@@ -668,6 +705,9 @@ throws DBException, ConfigException
 }
 
 // $Log$
+// Revision 1.1  2013/02/18 13:27:53  mgiadmin
+// TR11248
+//
 // Revision 1.1  2013/01/30 18:03:26  mgiadmin
 // postgres convert
 //
