@@ -953,7 +953,7 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
             String currentConsensusAllele = "";
 
             // true if there is a conflict determining the consensus allele
-            int isConflict = 0;
+            Integer isConflict = new Integer(0);
 
             // get the next strain for which to determine consensus allele
             Integer strainKey = (Integer) i.next();
@@ -1047,10 +1047,10 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
                     currentConsensusAllele = "?";
                 }
             }
-            //if (isConflict == null) {
-                    //throw new MGIException("ERROR determining consensus allele for " +
-                                     //"rs" + rsId + " isConflict == null");
-            //}
+            if (isConflict == null) {
+                    throw new MGIException("ERROR determining consensus allele for " +
+                                     "rs" + rsId + " isConflict == null");
+            }
             // now create the consensus allele
             SNP_ConsensusSnp_StrainAlleleState state = new SNP_ConsensusSnp_StrainAlleleState();
             state.setConsensusSnpKey(csKey);
@@ -1475,7 +1475,7 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
      */
 
     private void processFlank(Integer consensusKey, Vector flank,
-        int is5Prime) throws DBException, ConfigException {
+        Integer is5Prime) throws DBException, ConfigException {
         // need to get 255 char chunks of sequence in the flank; the input is
         // chunked, but in variable length chunks :-(
 
@@ -1516,7 +1516,7 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
      * @throws ConfigException - if error accessing configuration
      */
     private void processFlankState(String flankChunk, Integer sequenceNum,
-                                   Integer consensusKey, int is5Prime)
+                                   Integer consensusKey, Integer is5Prime)
 	    throws DBException, ConfigException {
 
         // create and MGI_FlankState for this chunk
