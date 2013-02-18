@@ -389,7 +389,7 @@ throws DBException, ConfigException
 	   * These column translations are basically superceding the above translations in specific cases.
 	   * The above translations occur on every table. Here we can specify a table and schema to perform this translation on only
            */
-	specialColumnTranslations.add(Arrays.asList("rdr","acc_accession","accid"));
+	specialColumnTranslations.add(Arrays.asList("snp","snp_accession","accid"));
 
   }
 
@@ -705,6 +705,9 @@ throws DBException, ConfigException
 }
 
 // $Log$
+// Revision 1.2  2013/02/18 20:01:24  mgiadmin
+// TR11248
+//
 // Revision 1.1  2013/02/18 13:27:53  mgiadmin
 // TR11248
 //
