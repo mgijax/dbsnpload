@@ -2,12 +2,16 @@ TAG: dbsnpload-5-1-4-?
 DATE: 
 STAFF: kstone, lec
 CHANGES: TR11248
-1) added "lib/java" directory
-2) re-configured lib_java_core for postgres
-3) manually installed the lib_java_dbs* and lib_java_dla jar files 
-   that were configured to talk to dbsnpload/lib/java/lib_java_core.
-4) copied the d*jar files into lib/java
-5) installed dbsnpload using the new jar files
+1) new: "lib/java" directory
+2) new: re-configured lib/java/lib_java_core for postgres
+3) manually configured/installed the lib_java_dbs* and lib_java_dla jar files 
+   in "live"/lib/java to talk to dbsnpload/lib/java/lib_java_core.
+4) copied the d*jar files from "live"/lib/java to dbsnpload/lib/java
+5) installed dbsnpload using the new jar files in dbsnpload/lib/java
+
+the purpose here is to encapsulate all of the postgres jar files 
+into the dbsnpload product.  the jar files need to install dbsnpload
+reside in dbsnpload/lib/java.
 
 TAG: dbsnpload-4-3-3-1
 DATE: 03-31-2010
