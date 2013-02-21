@@ -182,14 +182,19 @@ runsnpload ()
     #
     # log time 
     #
+
     echo "\n`date`" >> ${LOG_PROC}
+
     #
     # run dbsnpload
     #
-	CONFIG_MASTER=${MGICONFIG}/master.config
-	export CONFIG_MASTER
-	echo "running load with ${CONFIG_MASTER} and ${CONFIG_LOAD}"
-	echo "DATALOADSOUTPUT = ${DATALOADSOUTPUT}"
+
+    CONFIG_MASTER=${MGICONFIG}/master.config
+    export CONFIG_MASTER
+
+    echo "running load with ${CONFIG_MASTER} and ${CONFIG_LOAD}"
+    echo "DATALOADSOUTPUT = ${DATALOADSOUTPUT}"
+
     ${JAVA} ${JAVARUNTIMEOPTS} -classpath ${CLASSPATH} \
 	-DCONFIG=${CONFIG_MASTER},${CONFIG_LOAD} \
 	-DJOBKEY=${JOBKEY} ${DLA_START}
