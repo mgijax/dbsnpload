@@ -28,10 +28,11 @@ CONFIG_MASTER=${MGICONFIG}/master.config.sh
 #
 ###########################################################################
 
-# allow 1.5 initial and max heap memory - note this is the max for which
+# allow 6g initial and max heap memory - note this is the max for which
 # the loader will run since child processes (e.g. isql exec of sql files)
 # need memory from the parent process (2G max given to a process by the op sys)
-JAVARUNTIMEOPTS="-Xms1500m -Xmx1500m"
+#JAVARUNTIMEOPTS="-Xms1500m -Xmx1500m"
+JAVARUNTIMEOPTS="-Xms6g -Xmx6g"
 
 JAVA_LIB=${DBSNPLOAD}/lib/java/lib_java_core/core.jar:${DBSNPLOAD}/lib/java/dbsmgd.jar:${DBSNPLOAD}/lib/java/dbsrdr.jar:${DBSNPLOAD}/lib/java/dbssnp.jar:${DBSNPLOAD}/lib/java/dla.jar:${STAXAPI}:${STAXRI}
 
@@ -84,9 +85,7 @@ export GENO_SNP_INFILEPREFIX NSE_SNP_INFILEPREFIX
 export GENO_SNP_INFILESUFFIX NSE_SNP_INFILESUFFIX
 
 # list of chromosomes to load, comma delimited
-#SNP_CHROMOSOMES_TOLOAD="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,X,Y,MT"
-#SNP_CHROMOSOMES_TOLOAD="1,2,19,Y"
-SNP_CHROMOSOMES_TOLOAD="11"
+SNP_CHROMOSOMES_TOLOAD="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,X,Y,MT"
 
 # full path to 'SNPs not loaded' report
 SNP_NOTLOADED=${RPTDIR}/RefSnpsNotLoaded.txt
