@@ -1,3 +1,4 @@
+TAG: dbsnpload-5-1-4-?
 TAG: dbsnpload-5-1-4-1
 DATE: 03/06/2013
 STAFF: kstone, lec
@@ -8,6 +9,7 @@ CHANGES: TR11248
    in "live"/lib/java to talk to dbsnpload/lib/java/lib_java_core.
 4) copied the d*jar files from "live"/lib/java to dbsnpload/lib/java
 5) installed dbsnpload using the new jar files in dbsnpload/lib/java
+6) dbsnpload.config: override mgiconfig/database defaults for postgres
 
 the purpose here is to encapsulate all of the postgres jar files 
 into the dbsnpload product.  the jar files need to install dbsnpload
