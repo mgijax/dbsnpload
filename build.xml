@@ -8,7 +8,7 @@
    -->
    <property environment="env"/>
    <property name="jar.name" value="dbsnpload"/>
-   <property name="classpath" value="${env.CLASSPATH}:${env.${DBSNPLOAD/lib/java/lib_java_core/core.jar:${env.DBSNPLOAD}/lib/java/dbsmgd.jar:${env.DBSNPLOAD}/lib/java/dbsrdr.jar:${env.DBSNPLOAD}/lib/java/dbssnp.jar:${env.DBSNPLOAD}/lib/java/dla.jar:${env.STAXAPI}:${env.STAXRI}:${env.JCONNECT}"/>
+   <property name="classpath" value="${env.CLASSPATH}:${env.DBSNPLOAD}/lib/java/core.jar:${env.DBSNPLOAD}/lib/java/dbsmgd.jar:${env.DBSNPLOAD}/lib/java/dbsrdr.jar:${env.DBSNPLOAD}/lib/java/dbssnp.jar:${env.DBSNPLOAD}/lib/java/dla.jar:${env.STAXAPI}:${env.STAXRI}:${env.JCONNECT}"/>
 
    <!-- Import the universal targets.
    -->
