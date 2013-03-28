@@ -97,15 +97,16 @@ public class MGIDriverManager implements ConnectionManager
           int jconn3 = classpath.indexOf("jconn3");
           int jconn2 = classpath.indexOf("jconn2");
 	  int postgres = classpath.indexOf("postgresql");
+
+          /*
           String driver = "com.sybase.jdbc2.jdbc.SybDriver";
           if ((jconn3 > 0 && (jconn2 < 0 || jconn3 < jconn2)))
               driver = "com.sybase.jdbc3.jdbc.SybDriver";
-	  if(postgres>0)
-	  {
-		CONNECTION_TYPE="postgres";
-	    driver = "org.postgresql.Driver";
-	    CURRENT_DRIVER="postgres";
-	  }
+	  */
+
+	  String driver = "org.postgresql.Driver";
+	  CONNECTION_TYPE="postgres";
+	  CURRENT_DRIVER="postgres";
 	 
 	System.out.println("db driver: "+driver);
 
