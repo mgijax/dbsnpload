@@ -48,14 +48,8 @@
 import sys 
 import os
 import string
-import reportlib
 import pg_db
 db = pg_db
-
-CRT = reportlib.CRT
-SPACE = reportlib.SPACE
-TAB = reportlib.TAB
-PAGE = reportlib.PAGE
 
 outFile = open(os.environ['SNP_STRAIN_FILE'], 'w')
 inFile = open(os.environ['MGI_STRAINORDER_FILE'], 'r')
@@ -69,6 +63,9 @@ snpStrainOrderDict = {}
 # turn of tracing statements
 db.setTrace(True)
 password = db.get_sqlPassword()
+print db.get_sqlUser()
+print db.get_sqlServer()
+print db.get_sqlDatabase()
 
 print 'connecting to database...\n'
 sys.stdout.flush()
@@ -87,10 +84,10 @@ results = db.sql('''
     	order by strain
 	''', 'auto')
 
-print 'reporting strains in MGI to %s%s' % (os.environ['SNP_STRAIN_FILE'], CRT)
+print 'reporting strains in MGI to %s%s' % (os.environ['SNP_STRAIN_FILE'], "\n")
 for r in results[1]:
     snpStrainDict[ r[0] ] = r[1]
-    outFile.write("%s%s%s%s" % (r[0], TAB, r[1], CRT))
+    outFile.write("%s%s%s%s" % (r[0], "\t", r[1], "\n"))
 
 print 'reading the strain order input file ...\n'
 sequenceNum = 0
@@ -122,16 +119,16 @@ if len(snpStrainNotInOrderList) > 0 or len(orderStrainNotInSnpList) > 0:
     discrepFile = os.environ['LOG_DISCREP']
     print "Writing discrepancies to %s\n" % (discrepFile)
     logDiscrep = open(discrepFile, 'w')
-    logDiscrep.write("Snp Strains in MGI not in Order File: %s" % CRT)
+    logDiscrep.write("Snp Strains in MGI not in Order File: %s" % "\n")
     print "Snp Strains in MGI not in Order File:" 
     for strain in snpStrainNotInOrderList:
-	logDiscrep.write("%s%s" % (strain, CRT) )
+	logDiscrep.write("%s%s" % (strain, "\n") )
 	print strain
     print "" 
-    logDiscrep.write("Order File Strain not in Snp Strains in MGI: %s" % CRT)
+    logDiscrep.write("Order File Strain not in Snp Strains in MGI: %s" % "\n")
     print "Order File Strain not in Snp Strains in MGI:"
     for strain in orderStrainNotInSnpList:
-        logDiscrep.write("%s%s" % (strain, CRT) )
+        logDiscrep.write("%s%s" % (strain, "\n") )
 	print strain
     print ""
     logDiscrep.close()
