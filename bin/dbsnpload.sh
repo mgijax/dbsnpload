@@ -164,7 +164,9 @@ echo echo "snp database:${SNPBE_DBNAME}"
 #    #
 #    # report location of logs
 #    #
-#    echo "\nSee logs at ${LOGDIR}\n" >> ${LOG_PROC}
+#    echo "" >> ${LOG_PROC}
+#    echo "See logs at ${LOGDIR}" >> ${LOG_PROC}
+#    echo "" >> ${LOG_PROC}
 #
 #    #
 #    # call DLA library function
@@ -183,7 +185,8 @@ runsnpload ()
     # log time 
     #
 
-    echo "\n`date`" >> ${LOG_PROC}
+    echo "" >> ${LOG_PROC}
+    echo "`date`" >> ${LOG_PROC}
 
     #
     # run dbsnpload
