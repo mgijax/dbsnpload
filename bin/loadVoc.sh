@@ -43,9 +43,9 @@ date | tee -a ${LOG}
 #
 #  Verify the argument(s) to the shell script.
 #
-doFxn=yes
+doFxn=no
 doVar=no
-doHandle=yes
+doHandle=no
 
 set -- `getopt fvh $*`
 if [ $? != 0 ]

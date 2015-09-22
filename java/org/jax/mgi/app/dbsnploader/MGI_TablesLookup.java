@@ -50,7 +50,7 @@ public class MGI_TablesLookup {
                 daos.put(mgdDao.getState().getTableName(), mgdDao);
             }
         }
-        else if (database.equals(SchemaConstants.SNPBE)) {
+        else if (database.equals(SchemaConstants.SNP)) {
             nav = new org.jax.mgi.dbs.snp.dao.MGI_TablesLookup(
                 sqlMgr).findAll();
             while(nav.next()) {

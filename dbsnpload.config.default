@@ -160,7 +160,7 @@ DLA_TRUNCATE_SNP_TABLES=DP_SNP_Marker,SNP_ConsensusSnp,SNP_ConsensusSnp_StrainAl
 # Ok to delete dbsnpload Accessions
 # The population load truncates SNP_Accession
 # set to true during development if you don't run population load first
-SNP_OK_TO_DELETE_ACCESSIONS=false
+SNP_OK_TO_DELETE_ACCESSIONS=true
 
 # update MGI_Tables records for this set of tables
 SNP_UPDATE_MGITABLES=${DLA_TRUNCATE_SNP_TABLES},SNP_Population,SNP_Accession
@@ -339,7 +339,7 @@ export DBDEBUG CACHE_DEBUG LOG_FACTORY
 # Settings used to create a BCP manager for the MGD database
 # Note snpload uses only for creating lookups, no execution needed
 MGD_BCP_PATH=${OUTPUTDIR}
-MGD_BCP_PREVENT_EXECUTE=true
+MGD_BCP_PREVENT_EXECUTE=false
 MGD_BCP_TRUNCATE_LOG=true
 MGD_BCP_DROP_INDEXES=true
 MGD_BCP_RECORD_STAMPING=false

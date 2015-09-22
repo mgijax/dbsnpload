@@ -69,7 +69,7 @@ public class MGI_dbinfoUpdater {
                   state.setSnpDataVersion(snpDataVersion);
                   state.setModificationDate(modDate);
                }
-               else if (database.equals(SchemaConstants.SNPBE)) {
+               else if (database.equals(SchemaConstants.SNP)) {
                    org.jax.mgi.dbs.snp.dao.MGI_dbinfoState state =
                        (( org.jax.mgi.dbs.snp.dao.MGI_dbinfoDAO)dao).getState();
                    state.setSnpDataVersion(snpDataVersion);

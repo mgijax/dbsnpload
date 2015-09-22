@@ -371,7 +371,7 @@ public class DBSNPInputProcessor {
         // get the rs object and its rsId from 'input'
         DBSNPNseRS rs = ( (DBSNPNseInput) nInput).getRS();
         rsId = rs.getRsId();
-
+        //System.out.println(rsId);
         // don't load duplicate RefSNPs; build 125 multichr RefSnps are located
         // in each chromosome file on which they have a coordinate
         if (rsIdSet.contains(rsId)) {
@@ -1577,7 +1577,6 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
             //System.out.println("Assembly: " + assembly);
             // skip it if not BL6
             if (!assembly.equals(SNPLoaderConstants.DBSNP_BL6)) {
-                //System.out.println("reject assembly");
                 continue;
             }
 
@@ -1587,7 +1586,7 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
             if (! buildNum.equals(currGenomeBuildNum)) {
                 // flag it and continue
                 oldBuild = true;
-                System.out.println("reject build");
+                //System.out.println("reject build");
                 continue;
             }
             // if we've gotten this far we know this is a BL6 hit on
@@ -1602,7 +1601,6 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
 
             // get the Map locations of this Contig Hit
             Vector mapLoc = cHit.getMapLocations();
-
             // iterate over the Map Locations creatng SNP_Coord_Cache objects
             for (Iterator j = mapLoc.iterator(); j.hasNext(); ) {
                 // get the map location object
@@ -1610,10 +1608,10 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
 
                 // get the start coordinate
                 Double startCoord = mloc.getStartCoord();
-
                 // when we get here we know we are looking at BL6
                 // and have at least one coordinate
                 if (startCoord != null) {
+		
                     bl6CoordCtr++;                }
 
                 // flag that there is at least one BL6 MapLoc where coordinate
@@ -1755,7 +1753,7 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
         }
         // log that there is a BL6 MapLoc w/o a coordinate value
         //if(bl6NoCoordFlag == true) {
-         //   logger.logcInfo("MISSING BL6 STARTCOORD for RS" + rsId , false);
+        //  logger.logcInfo("MISSING BL6 STARTCOORD for RS" + rsId , false);
         //}
 
     }

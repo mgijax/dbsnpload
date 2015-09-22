@@ -46,7 +46,7 @@ public class MGI_dbinfoLookup
                    dao = (org.jax.mgi.dbs.mgd.dao.MGI_dbinfoDAO) nav.getCurrent();
                }
         }
-        else if (database.equals(SchemaConstants.SNPBE)) {
+        else if (database.equals(SchemaConstants.SNP)) {
             org.jax.mgi.dbs.snp.dao.MGI_dbinfoLookup lookup = new org.jax.mgi.
                 dbs.snp.dao.MGI_dbinfoLookup(sqlMgr);
             ResultsNavigator nav = lookup.findAll();

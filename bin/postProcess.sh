@@ -58,8 +58,8 @@ date | tee -a ${PP_LOG}
 #
 # dump
 #
-echo "dumping ${SNPBE_DBSERVER} ${SNPBE_DBNAME} to ${SNP_BACKUP_LOCALPATH}" | tee -a ${PP_LOG}
-${MGI_DBUTILS}/bin/dump_db.csh ${SNPBE_DBSERVER} ${SNPBE_DBNAME} ${SNP_BACKUP_LOCALPATH}
+echo "dumping ${SNP_DBSERVER} ${SNP_DBNAME} to ${SNP_BACKUP_LOCALPATH}" | tee -a ${PP_LOG}
+${MGI_DBUTILS}/bin/dump_db.csh ${SNP_DBSERVER} ${SNP_DBNAME} ${SNP_BACKUP_LOCALPATH}
 
 #
 # load
