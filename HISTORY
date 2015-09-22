@@ -1,3 +1,8 @@
+TAG: dbsnpload-6-0-1-1
+DATE: 09/22/2015
+STAFF: sc
+CHANGES: scrapping tr11726 due to cvs issues
+
 TAG: dbsnpload-tr11726-BP
 DATE: 09/22/2015
 STAFF: sc

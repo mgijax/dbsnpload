@@ -20,26 +20,34 @@ CONFIG_MASTER=${MGICONFIG}/master.config.sh
 #
 # override the mgiconfig settings for this hack
 #
-MGD_DBSERVER=notused
+MGD_DBSERVER=${PG_DBSERVER}
+#MGD_DBSERVER=notused
 MGD_DBNAME=${PG_DBNAME}
 MGD_DBUSER=${PG_DBUSER}
+#MGD_DBPASSWORDFILE=${DBSNPLOAD}/.pg_dbo_dev_password
 MGD_DBPASSWORDFILE=${DBSNPLOAD}/.pg_dbo_prod_password
 MGD_DBURL=${PG_DBSERVER}
 export MGD_DBSERVER MGD_DBNAME MGD_DBUSER MGD_DBPASSWORDFILE MGD_DBURL
 
-RADAR_DBSERVER=notused
+RADAR_DBSERVER=${PG_DBSERVER}
+#RADAR_DBSERVER=notused
 RADAR_DBNAME=${PG_DBNAME}
 RADAR_DBUSE=${PG_DBUSER}
+#RADAR_DBPASSWORDFILE=${DBSNPLOAD}/.pg_dbo_dev_password
 RADAR_DBPASSWORDFILE=${DBSNPLOAD}/.pg_dbo_prod_password
 RADAR_DBURL=${PG_DBSERVER}
+
 export RADAR_DBSERVER RADAR_DBNAME RADAR_DBUSER RADAR_DBPASSWORDFILE RADAR_DBURL
 
-SNPBE_DBSERVER=notused
-SNPBE_DBNAME=${PG_DBNAME}
-SNPBE_DBUSER=${PG_DBUSER}
-SNPBE_DBPASSWORDFILE=${DBSNPLOAD}/.pg_dbo_prod_password
-SNPBE_DBURL=${PG_DBSERVER}
-export SNPBE_DBSERVER SNPBE_DBNAME SNPBE_DBUSER SNPBE_DBPASSWORDFILE SNPBE_DBURL
+SNP_DBSERVER=${PG_DBSERVER}
+#SNP_DBSERVER=notused
+SNP_DBNAME=${PG_DBNAME}
+SNP_DBUSER=${PG_DBUSER}
+#SNP_DBPASSWORDFILE=${DBSNPLOAD}/.pg_dbo_dev_password
+SNP_DBPASSWORDFILE=${DBSNPLOAD}/.pg_dbo_prod_password
+SNP_DBPASSWORDFILE=${PG_1LINE_PASSFILE}
+SNP_DBURL=${PG_DBSERVER}
+export SNP_DBSERVER SNP_DBNAME SNP_DBUSER SNP_DBPASSWORDFILE SNP_DBURL
 
 ###########################################################################
 # settings that change between loads:
@@ -57,9 +65,9 @@ export SNPBE_DBSERVER SNPBE_DBNAME SNPBE_DBUSER SNPBE_DBPASSWORDFILE SNPBE_DBURL
 # need memory from the parent process (2G max given to a process by the op sys)
 JAVARUNTIMEOPTS="-Xms6g -Xmx6g"
 
-JAVA_LIB=${DBSNPLOAD}/lib/java/lib_java_core/core.jar:${DBSNPLOAD}/lib/java/dbsmgd.jar:${DBSNPLOAD}/lib/java/dbsrdr.jar:${DBSNPLOAD}/lib/java/dbssnp.jar:${DBSNPLOAD}/lib/java/dla.jar:${STAXAPI}:${STAXRI}
-
-CLASSPATH=.:${DBSNPLOAD}/dbsnpload.jar:${JAVA_LIB}:${CLASSPATH}
+#JAVA_LIB=${DBSNPLOAD}/lib/java/core.jar:${DBSNPLOAD}/lib/java/dbsmgd.jar:${DBSNPLOAD}/lib/java/dbsrdr.jar:${DBSNPLOAD}/lib/java/dbssnp.jar:${DBSNPLOAD}/lib/java/dla.jar:${STAXAPI}:${STAXRI}
+JAVA_LIB=${MGI_JAVALIB}/core.jar:${MGI_JAVALIB}/dbsmgd.jar:${MGI_JAVALIB}/dbsrdr.jar:${MGI_JAVALIB}/dla.jar:${STAXAPI}:${STAXRI}
+CLASSPATH=.:${DBSNPLOAD}/dbsnpload.jar:${DBSNPLOAD}/lib/java/lib_java_dbssnp/dbssnp.jar:${JAVA_LIB}:${CLASSPATH}
 
 export JAVARUNTIMEOPTS JAVA_LIB CLASSPATH
 
@@ -109,6 +117,7 @@ export GENO_SNP_INFILESUFFIX NSE_SNP_INFILESUFFIX
 
 # list of chromosomes to load, comma delimited
 SNP_CHROMOSOMES_TOLOAD="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,X,Y,MT"
+#SNP_CHROMOSOMES_TOLOAD="18"
 
 # full path to 'SNPs not loaded' report
 SNP_NOTLOADED=${RPTDIR}/RefSnpsNotLoaded.txt
@@ -131,13 +140,13 @@ export SNP_NOTLOADED_NO_BL6 SNP_NOTLOADED_NO_STRAINALLELE
 #
 
 # dbSNP build number
-SNP_DATAVERSION="dbSNP Build 128"
+SNP_DATAVERSION="dbSNP Build 142"
 
 # current mouse genome build as specified in "<Assembly" tag "genomeBuild" 
 # attribute in NSE input file. As of Build 126 there are coordinates for 
 # Build 35 and Build 36.
 
-GENOME_BUILD=38.1
+GENOME_BUILD=38.3
 
 export SNP_DATAVERSION GENOME_BUILD
 
@@ -160,7 +169,7 @@ DLA_TRUNCATE_SNP_TABLES=DP_SNP_Marker,SNP_ConsensusSnp,SNP_ConsensusSnp_StrainAl
 # Ok to delete dbsnpload Accessions
 # The population load truncates SNP_Accession
 # set to true during development if you don't run population load first
-SNP_OK_TO_DELETE_ACCESSIONS=false
+SNP_OK_TO_DELETE_ACCESSIONS=true
 
 # update MGI_Tables records for this set of tables
 SNP_UPDATE_MGITABLES=${DLA_TRUNCATE_SNP_TABLES},SNP_Population,SNP_Accession
@@ -339,7 +348,7 @@ export DBDEBUG CACHE_DEBUG LOG_FACTORY
 # Settings used to create a BCP manager for the MGD database
 # Note snpload uses only for creating lookups, no execution needed
 MGD_BCP_PATH=${OUTPUTDIR}
-MGD_BCP_PREVENT_EXECUTE=true
+MGD_BCP_PREVENT_EXECUTE=false
 MGD_BCP_TRUNCATE_LOG=true
 MGD_BCP_DROP_INDEXES=true
 MGD_BCP_RECORD_STAMPING=false
@@ -351,17 +360,17 @@ export MGD_BCP_DROP_INDEXES MGD_BCP_RECORD_STAMPING MGD_BCP_AUTO_FLUSH
 export MGD_BCP_OK_TO_OVERWRITE
 
 #  Settings used to create a BCP manager for the SNP database
-SNPBE_BCP_PATH=${OUTPUTDIR}
-SNPBE_BCP_PREVENT_EXECUTE=true
-SNPBE_BCP_TRUNCATE_LOG=true
-SNPBE_BCP_DROP_INDEXES=true
-SNPBE_BCP_RECORD_STAMPING=false
-SNPBE_BCP_AUTO_FLUSH=true
-SNPBE_BCP_OK_TO_OVERWRITE=true
+SNP_BCP_PATH=${OUTPUTDIR}
+SNP_BCP_PREVENT_EXECUTE=false
+SNP_BCP_TRUNCATE_LOG=true
+SNP_BCP_DROP_INDEXES=true
+SNP_BCP_RECORD_STAMPING=false
+SNP_BCP_AUTO_FLUSH=true
+SNP_BCP_OK_TO_OVERWRITE=true
 
-export SNPBE_BCP_PATH SNPBE_BCP_PREVENT_EXECUTE SNPBE_BCP_TRUNCATE_LOG
-export SNPBE_BCP_DROP_INDEXES SNPBE_BCP_RECORD_STAMPING SNPBE_BCP_AUTO_FLUSH
-export SNPBE_BCP_OK_TO_OVERWRITE
+export SNP_BCP_PATH SNP_BCP_PREVENT_EXECUTE SNP_BCP_TRUNCATE_LOG
+export SNP_BCP_DROP_INDEXES SNP_BCP_RECORD_STAMPING SNP_BCP_AUTO_FLUSH
+export SNP_BCP_OK_TO_OVERWRITE
 
 ###########################################################################
 #
@@ -369,7 +378,7 @@ export SNPBE_BCP_OK_TO_OVERWRITE
 #
 ###########################################################################
 
-SCP_PATH=${SNPBE_BCP_PATH}
+SCP_PATH=${SNP_BCP_PATH}
 SCP_PREVENT_EXECUTE=false
 SCP_OK_TO_OVERWRITE=true
 
