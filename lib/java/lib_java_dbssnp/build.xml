@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!-- This XML script is used to build the lib_java_dbssnp product.
+-->
+<project name="lib_java_dbssnp" default="compile" basedir=".">
+
+   <!-- Get the system environment variables and define any other system
+        properties needed by the build.
+   -->
+   <property environment="env"/>
+   <property name="jar.name" value="dbssnp"/>
+   <property name="classpath" value="${env.CLASSPATH}:${env.MGI_JAVALIB}/core.jar:${env.DBSGEN}/classes:${env.VELOCITY}:${env.JUNIT}:${env.JCONNECT}"/>
+
+   <!-- Import the universal targets.
+   -->
+   <import file="${env.MGICONFIG}/etc/build.lib.targets.xml"/>
+
+   <!-- Define product specific targets.
+   -->
+   <target name="gen.code" description="Generates schema specific source code">
+      <java classname="org.jax.mgi.shr.dbutils.cg.SNPGen"
+            classpath="${classpath}"
+            fork="true" failonerror="true" dir="${src.dir}">
+         <jvmarg value="-DDBSERVER=${env.SNP_DBSERVER}"/>
+         <jvmarg value="-DDBNAME=${env.SNP_DBNAME}"/>
+         <jvmarg value="-DDBUSER=${env.SNP_DBUSER}"/>
+         <jvmarg value="-DDBPASSWORDFILE=${env.SNP_DBPASSWORDFILE}"/>
+         <jvmarg value="-DDBURL=${env.SNP_DBURL}"/>
+      </java>
+   </target>
+
+   <target name="clean.code" description="Removes code generated source files">
+      <delete>
+         <fileset dir="${src.dir}/org/jax/mgi/dbs/snp/dao" includes="*.java"/>
+      </delete>
+   </target>
+
+   <target name="buildall" description="Performs main build tasks"
+           depends="clean.code, gen.code, all, link">
+   </target>
+</project>

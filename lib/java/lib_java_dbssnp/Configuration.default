@@ -1,0 +1,25 @@
+#!/bin/sh
+
+#
+#  Configuration.default
+#
+
+#
+#  If the MGICONFIG environment variable does not have a local override,
+#  use the default "live" settings.
+#
+if [ "${MGICONFIG}" = "" ]
+then
+    MGICONFIG=/usr/local/mgi/live/mgiconfig
+    export MGICONFIG
+fi
+
+. ${MGICONFIG}/master.config.sh
+
+SNP_DBSERVER=${PG_DBSERVER}
+SNP_DBNAME=${PG_DBNAME}
+SNP_DBUSER=${PG_DBUSER}
+SNP_DBPASSWORDFILE=${PG_1LINE_PASSFILE}
+SNP_DBURL=${PG_DBSERVER}
+export SNP_DBSERVER SNP_DBNAME SNP_DBUSER SNP_DBPASSWORDFILE SNP_DBURL
+

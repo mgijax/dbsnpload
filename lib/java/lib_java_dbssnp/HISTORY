@@ -1,0 +1,48 @@
+TAG: lib_java_dbssnp-3-5-1-1
+DATE: 09/06/2006
+STAFF: sc
+CHANGES: merge build36 branch to trunk
+
+TAG: lib_java_dbssnp-build36-1
+DATE: 8/16/2006
+STAFF: sc
+CHANGES: SNPAccessionLookup - update to create SQLDataManagerFactory for 
+         SNPBE ( from SNP )
+
+TAG: lib_java_dbssnp-build36-BP
+DATE: 8/3/2006
+STAFF: sc
+CHANGES: MGI3.5.1 (build36) branch point
+
+TAG: lib_java_dbssnp-3-5-0-2
+DATE: 5/5/2006
+STAFF: dbm
+CHANGES:
+1) Added clean.code to buildall task
+
+TAG: lib_java_dbssnp-3-5-0-1
+DATE: 5/2/2006
+STAFF: dbm
+CHANGES:
+1) Configuration changes for tr6549
+
+TAG: lib_java_dbssnp-3-4-4-3
+DATE: 04/06/2006
+STAFF: sc
+RELEASE: MGI3.44
+CHANGES:build.properties.default - updated for lindon
+
+
+TAG: lib_java_dbssnp-3-4-4-2
+DATE: 03/28/2006
+STAFF: sc
+RELEASE: MGI3.44
+CHANGES:
+1) build.properties.default - updated dbname to 'snp'
+2) SNPAccessionLookup - committed - oops
+
+TAG: lib_java_dbssnp-3-4-4-1
+DATE: 03/27/2006
+STAFF: sc
+RELEASE: MGI3.44
+CHANGES: initial
