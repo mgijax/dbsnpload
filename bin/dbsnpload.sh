@@ -62,6 +62,7 @@
 ###########################################################################
 
 source ${MGICONFIG}/master.config.sh
+echo "PGPASSFILE: $PGPASSFILE"
 #
 #  Set up a log file for the shell script in case there is an error
 #  during configuration and initialization.
@@ -136,8 +137,8 @@ echo "javaruntime:${JAVARUNTIMEOPTS}"
 echo "classpath:${CLASSPATH}"
 echo "mgd dbserver:${MGD_DBSERVER}"
 echo "mgd database:${MGD_DBNAME}"
-echo "snp dbserver:${SNPBE_DBSERVER}"
-echo echo "snp database:${SNPBE_DBNAME}"
+echo "snp dbserver:${SNP_DBSERVER}"
+echo echo "snp database:${SNP_DBNAME}"
 
 #
 #  Source the DLA library functions.
