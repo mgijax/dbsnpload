@@ -1,0 +1,12 @@
+DP_SNP_Marker
+SNP_Accession
+SNP_ConsensusSnp
+SNP_ConsensusSnp_StrainAllele
+SNP_Coord_Cache
+SNP_Flank
+SNP_Population
+SNP_Strain
+SNP_SubSnp
+SNP_SubSnp_StrainAllele
+MGI_dbinfo
+MGI_Tables
