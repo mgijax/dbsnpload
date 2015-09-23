@@ -18,6 +18,7 @@ import org.jax.mgi.shr.dbutils.DBException;
 import org.jax.mgi.shr.config.ConfigException;
 import org.jax.mgi.shr.cache.KeyNotFoundException;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
 import java.io.BufferedWriter;
@@ -126,7 +127,7 @@ public class DBSNPLoader extends DLALoader {
         // the set of snp tables to truncate
         String[] snpTables = loadCfg.getTruncateSnpTables();
 
-        // configurators for each input file
+        // conf
         genoConfig = new DBSNPLoaderCfg("GENO");
         nseConfig = new DBSNPLoaderCfg("NSE");
 
@@ -134,16 +135,12 @@ public class DBSNPLoader extends DLALoader {
         chromosomes = loadCfg.getChromosomesToLoad();
 
         // create SQLStream for snp database
-        snpDBMgr = SQLDataManagerFactory.getShared(SchemaConstants.SNPBE);
+        snpDBMgr = SQLDataManagerFactory.getShared(SchemaConstants.SNP);
         snpDBMgr.setLogger(logger);
-        logger.logdDebug("DBSNPLoader snpDBMgr.server " + snpDBMgr.getServer());
-        logger.logdDebug("DBSNPLoader snpDBMgr.database " + snpDBMgr.getDatabase());
-
-        snpBCPMgr = new BCPManager(new BCPManagerCfg("SNPBE"));
+        snpBCPMgr = new BCPManager(new BCPManagerCfg("SNP"));
         snpBCPMgr.setLogger(logger);
         snpStream = createSQLStream(loadCfg.getSnpStreamName(),
                                    snpDBMgr, snpBCPMgr);
-
         // create writer for rs ids not loaded
         try {
            snpsNotLoadedWriter = new BufferedWriter(
@@ -170,6 +167,7 @@ public class DBSNPLoader extends DLALoader {
         snpEFactory = new SNPLoaderExceptionFactory();
         try {
             logger.logdInfo("Truncating SNP tables", true);
+		
             if (snpTables != null) {
                 DLALoaderHelper.truncateTables(snpTables,
                                                snpDBMgr.getDBSchema(), logger);
@@ -271,11 +269,13 @@ public class DBSNPLoader extends DLALoader {
             /**
              * create iterator over genotype file 
              */
-	    XMLDataIterator genoSNPIterator =
+	    /*XMLDataIterator genoSNPIterator =
 		    new DBSNPGenotypeRefSNPInputFile(
                  genotypeFilename, dbsnpProcessor.getIndividualMap()).
 		    getIterator();
-
+	    */
+	    HashMap genoSNPMap = new DBSNPGenotypeRefSNPInputFile(
+                 genotypeFilename, dbsnpProcessor.getIndividualMap()).getInputMap();
             /**
              * create iterator over NSE file
              */
@@ -308,7 +308,7 @@ public class DBSNPLoader extends DLALoader {
 
 	    // true, if geno rsId and nse rsId match for this iteration
             // we prime it with true
-            boolean goToNextGenotype = true;
+            //boolean goToNextGenotype = true;
            
             // Create the two input objects
 	    DBSNPGenotypeRefSNPInput genoInput = null;
@@ -318,17 +318,62 @@ public class DBSNPLoader extends DLALoader {
                 totalRsOnChr++;
                 nseInput = (DBSNPNseInput)it.next();
 		String nseRSId = nseInput.getRS().getRsId();
+		logger.logdInfo(nseRSId, false);
+		boolean longAllele = false;
+		//### BEGIN DEBUG for > 51 bp contig allele
+		/*
+		Vector contigHits = nseInput.getContigHits();
+		for (Iterator l = contigHits.iterator(); l.hasNext();) {
+		    if ( longAllele == true ) {
+			break;
+		    }
+		    //logger.logdInfo("Getting contig hits", false);
+		    DBSNPNseContigHit contigHit = (DBSNPNseContigHit)l.next();  
+		    Vector mapLocs =  contigHit.getMapLocations();
+
+		    for (Iterator j = mapLocs.iterator(); j.hasNext();) {
+			if ( longAllele == true ) {
+                            break;
+                        }
+			 //logger.logdInfo("Getting map locations", false);
+			DBSNPNseMapLoc mapLoc = (DBSNPNseMapLoc)j.next();
+			Vector fxnSets =  mapLoc.getFxnSets(); 
+			for (Iterator k = fxnSets.iterator(); k.hasNext();) {
+			     //logger.logdInfo("Getting Fxn Sets", false);
+			    DBSNPNseFxnSet fxnSet = (DBSNPNseFxnSet)k.next();
+			    String cl = fxnSet.getContigAllele(); 
+			    //logger.logdInfo("nseRSId " + nseRSId + TAB + "contig_allele" + cl + NL, false);
+			    if( cl != null && cl.length() > 51) {
+				try {
+				    snpsNotLoadedWriter.write(nseRSId + TAB + cl  + TAB +
+					"ContigAllele > 51 bp" + NL);
+				    longAllele = true;
+				    break;
+				} catch (IOException e) {
+				    throw new MGIException(e.getMessage());
+                    		}
+
+			    } 
+			}
+			
+		    }
+		}*/
+
+		if ( longAllele == true ) {
+			//logger.logdInfo("continueing", false);
+			continue;
+		}
+
 		// get first submitter handle for later reporting
 		String handle = ((DBSNPNseSS)nseInput.getSubSNPs().firstElement()).getSubmitterHandle();
-		if (genoSNPIterator.hasNext() && goToNextGenotype == true) {
+		if (genoSNPMap.containsKey(nseRSId)) {
 		    genoInput = 
-			(DBSNPGenotypeRefSNPInput)genoSNPIterator.next();
+			(DBSNPGenotypeRefSNPInput)genoSNPMap.get(nseRSId);
 		    genoRSId = genoInput.getRsId();
 		}
-	        //logger.logdDebug("nseRS:" + nseRSId + " genoRS:" + genoRSId + "goToNext: " + goToNextGenotype);
 		if (genoRSId != null && nseRSId.equals(genoRSId)) {
 		    // we have a genotype for this RS 
-		    goToNextGenotype = true;
+		    //goToNextGenotype = true;
 		    
 		    try {
 			dbsnpProcessor.processInput(nseInput, genoInput);
@@ -371,7 +416,7 @@ public class DBSNPLoader extends DLALoader {
 		// this RS not represented in the genotype file
 		else {
 		    // don't go to the next genotype record
-		    goToNextGenotype = false;
+		    //goToNextGenotype = false;
 
 		    rsWithNoAllelesCtr++;
 		    logger.logcInfo("RS NO STRAIN/ALLELES for RS" + 
@@ -452,7 +497,7 @@ public class DBSNPLoader extends DLALoader {
         try {
             snpDBMgr.executeUpdate(
                     "select a._Accession_key " +
-                    "into #todelete " +
+                    "into temporary table todelete " +
                     "from SNP_Accession a " +
                     "where a._MGIType_key =  " + MGITypeConstants.CONSENSUSSNP +
                     " and a._LogicalDB_key = " + LogicalDBConstants.REFSNP +
@@ -469,10 +514,10 @@ public class DBSNPLoader extends DLALoader {
             LogicalDBConstants.SUBMITTERSNP);
 
             snpDBMgr.executeUpdate(
-                "create index idx1 on #todelete(_Accession_key)");
+                "create index idx1 on todelete(_Accession_key)");
 
-            snpDBMgr.executeUpdate("delete SNP_Accession " +
-                           "from #todelete d, SNP_Accession a " +
+            snpDBMgr.executeUpdate("delete from SNP_Accession a " +
+                           "using todelete d " +
                            "where d._Accession_key = a._Accession_key");
        }
        catch (MGIException e) {
@@ -534,7 +579,7 @@ public class DBSNPLoader extends DLALoader {
          String dataVersion = loadCfg.getSnpDataVersion();
 
          // create updater for the snp database
-         MGI_dbinfoUpdater snpUpdater = new MGI_dbinfoUpdater(SchemaConstants.SNPBE);
+         MGI_dbinfoUpdater snpUpdater = new MGI_dbinfoUpdater(SchemaConstants.SNP);
 
          // writes update out to script file
          snpStream.update((org.jax.mgi.dbs.snp.dao.MGI_dbinfoDAO)snpUpdater.
@@ -553,7 +598,7 @@ public class DBSNPLoader extends DLALoader {
 
         // get an updater for the 'snp' database
         MGI_TablesUpdater snpUpdater =
-            new MGI_TablesUpdater(SchemaConstants.SNPBE, loadCfg.getJobstreamName());
+            new MGI_TablesUpdater(SchemaConstants.SNP, loadCfg.getJobstreamName());
 
         // get the set of SNP database tables to update
         String[] tables = loadCfg.getUpdateMGITables();

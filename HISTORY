@@ -1,7 +1,52 @@
 TAG: dbsnpload-6-0-1-1
 DATE: 09/22/2015
 STAFF: sc
-CHANGES: scrapping tr11726 due to cvs issues
+CHANGES: tr11726 - changes for build 142
+1) ./bin/dbsnpload.sh - update SNPBE_DB* ghto SNP_DB*
+2) ./bin/loadVoc.sh - defaults for doFxn, doHandle to 'no'
+3) ./bin/postProcess.sh - update SNPBE_DB* ghto SNP_DB*
+4) ./bin/snpPopulation.sh - MGD_DB* -> PG_DB*, PG_SNP_DBSCHEMADIR ->
+    SNP_DBSCHEMADIR
+5) dbsnpload.config.default -  set SNP_OK_TO_DELETE_ACCESSIONS=true
+    and MGD_BCP_PREVENT_EXECUTE=false
+    MGD_DBSERVER=notused -> MGD_DBSERVER=${PG_DBSERVER}
+    RADAR_DBSERVER=notused -> RADAR_DBSERVER=${PG_DBSERVER}
+    SNPBE_DB* -> SNP_DB*
+
+    Change the following to use the core MGI libraris from:
+    JAVA_LIB=${DBSNPLOAD}/lib/java/lib_java_core/core.jar:${DBSNPLOAD}/lib/java/dbsmgd.jar:${DBSNPLOAD}/lib/java/dbsrdr.jar:${DBSNPLOAD}/lib/java/dbssnp.jar:${DBSNPLOAD}/lib/java/dla.jar:${STAXAPI}:${STAXRI}
+    CLASSPATH=.:${DBSNPLOAD}/dbsnpload.jar:${JAVA_LIB}:${CLASSPATH}
+    To:
+    JAVA_LIB=${MGI_JAVALIB}/core.jar:${MGI_JAVALIB}/dbsmgd.jar:${MGI_JAVALIB}/dbsrdr.jar:${MGI_JAVALIB}/dla.jar:${STAXAPI}:${STAXRI}
+    CLASSPATH=.:${DBSNPLOAD}/dbsnpload.jar:${DBSNPLOAD}/lib/java/lib_java_dbssnp/dbssnp.jar:${JAVA_LIB}:${CLASSPATH}
+    SNP_DATAVERSION="dbSNP Build 128" ->  SNP_DATAVERSION="dbSNP Build 142"
+    GENOME_BUILD=38.1 -> GENOME_BUILD=38.3
+    SNPBE_BCP* -> SNP_BCP*
+    SCP_PATH=${SNPBE_BCP_PATH} -> SCP_PATH=${SNP_BCP_PATH}
+
+6) lib_java_dbssnp - added to this product
+a) SNPAccessionLookup.java - super(SQLDataManagerFactory.getShared(SchemaConstants.SNPBE)); -> chemaConstants.SNP
+b) SQLDataManager sqlDM = SQLDataManagerFactory.getShared(SchemaConstants.SNPBE); -> SchemaConstants.SNP
+c) Configuration.default - added SNP_DB* settings for dao code generation
+
+7) removed core.jar, dbsmgd.jar, dbsrdr.jar, dla.jar, dbssnp.jar from product
+
+8) removed lib_java_core from the product
+
+9) java/
+a) DBSNPGenotypeRefSNPInputFile - added getInputMap method to create inputMap
+b) DBSNPLoader - changed #temp tables, changed to call getInputMap, SNPBE -> SNP
+    commented out debug for  > 51 bp contig allele, use inputMap for gentype
+    information,
+c) DBSNPInputProcessor.java - commented out some debug
+d) HandleNameByPopIdLookup/MGI_dbinfoLookup/MGI_dbinfoUpdater - SNPBE -> SNP
+e) MGI_TablesLookup/MGI_TablesUpdater/PopNameByPopIdLookup - SNPBE -> SNP
+f) SNPLoaderConstants - DBSNP_BL6 = "GRCm38" -> DBSNP_BL6 = "GRCm38.p2"
+
+TAG: dbsnpload-tr11726-1
+DATE: 09/22/2015
+STAFF: sc
+CHANGES: tr11726 - changes for build 142
 
 TAG: dbsnpload-tr11726-BP
 DATE: 09/22/2015

@@ -87,7 +87,7 @@ public class MGI_TablesUpdater {
             state.setModificationDate(currentDate);
             state.setLoadedDate(currentDate);
         }
-        else if (database.equals(SchemaConstants.SNPBE)) {
+        else if (database.equals(SchemaConstants.SNP)) {
             org.jax.mgi.dbs.snp.dao.MGI_TablesState state =
                 (( org.jax.mgi.dbs.snp.dao.MGI_TablesDAO)dao).getState();
             state.setLoadedByKey(loadedByKey);

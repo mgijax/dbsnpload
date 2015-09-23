@@ -1,5 +1,7 @@
 package org.jax.mgi.app.dbsnploader;
 
+import org.jax.mgi.shr.exception.MGIException;
+
 import java.util.HashMap;
 import java.util.ArrayList;
 
@@ -41,6 +43,22 @@ public class DBSNPGenotypeRefSNPInputFile extends InputXMLDataFile {
         this.filename = filename;
         this.strainMap = map;
     }
+
+    public HashMap getInputMap () throws MGIException
+    {
+	XMLDataIterator it = this.getIterator();
+	DBSNPGenotypeRefSNPInput genoInput = null;
+	HashMap inputMap = new HashMap();
+	String genoRSId = null;
+	
+	while (it.hasNext()) {
+	    genoInput = (DBSNPGenotypeRefSNPInput)it.next();
+            genoRSId = genoInput.getRsId();
+ 	    inputMap.put(genoRSId, genoInput);
+	}
+	return inputMap;
+    }
+
 
     /**
      * get the iterator for this file

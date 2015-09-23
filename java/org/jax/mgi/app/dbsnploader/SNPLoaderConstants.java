@@ -23,7 +23,7 @@ public class SNPLoaderConstants {
 
         // Assemblies as found in dbSNP
         public static final String MGI_MOUSE = "mouse, laboratory";
-        public static final String DBSNP_BL6 = "GRCm38";
+        public static final String DBSNP_BL6 = "GRCm38.p2";
 
         // orientation values from genotype file
         public static final String GENO_FORWARD_ORIENT = "fwd";
