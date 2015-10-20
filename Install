@@ -57,7 +57,13 @@ DEV=""
 if [ "${INSTALL_TYPE}" = "dev" ]
 then
     DEV="-d"
+    export DEV
 fi
+
+#
+# compile dbssnp library
+#
+${DBSNPLOAD}/lib/java/lib_java_dbssnp/Install
 
 #
 # run DLAInstall

@@ -60,16 +60,28 @@
 #  Notes:  None
 #
 ###########################################################################
-
-source ${MGICONFIG}/master.config.sh
-echo "PGPASSFILE: $PGPASSFILE"
-#
-#  Set up a log file for the shell script in case there is an error
-#  during configuration and initialization.
-#
 cd `dirname $0`/..
+CONFIG_LOAD=`pwd`/dbsnpload.config
+echo ${CONFIG_LOAD}
+
+cd `dirname $0`
 LOG=`pwd`/dbsnpload.log
-rm -f ${LOG}
+rm -rf ${LOG}
+
+echo ${CONFIG_LOAD}
+
+#
+# verify & source the configuration file
+#
+
+echo "Verifying ${CONFIG_LOAD}"
+if [ ! -r ${CONFIG_LOAD} ]
+then
+    echo "Cannot read configuration file: ${CONFIG_LOAD}"
+    exit 1
+fi
+
+. ${CONFIG_LOAD}
 
 #
 #  Verify the argument(s) to the shell script.
@@ -101,27 +113,6 @@ do
         --) shift; break;;
     esac
 done
-
-#
-#  Establish load configuration file name.
-#
-
-CONFIG_LOAD=`pwd`/dbsnpload.config
-
-#
-# Make sure load configuration file is readable
-#
-
-if [ ! -r ${CONFIG_LOAD} ]
-then
-    echo "Cannot read configuration file: ${CONFIG_LOAD}" | tee -a ${LOG}
-    exit 1
-fi
-
-#
-# Source the load configuration file
-#
-. ${CONFIG_LOAD}
 
 #
 #  Make sure the master configuration file is readable

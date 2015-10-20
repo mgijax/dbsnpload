@@ -318,7 +318,7 @@ public class DBSNPLoader extends DLALoader {
                 totalRsOnChr++;
                 nseInput = (DBSNPNseInput)it.next();
 		String nseRSId = nseInput.getRS().getRsId();
-		logger.logdInfo(nseRSId, false);
+		//logger.logdInfo(nseRSId, false);
 		boolean longAllele = false;
 		//### BEGIN DEBUG for > 51 bp contig allele
 		/*

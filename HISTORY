@@ -1,3 +1,15 @@
+TAG: dbsnpload-6-0-1-2
+DATE: 10/20/2015
+STAFF: sc
+CHANGES: Project Florida US16 TR 
+1) lib/java/lib_java_dbssnp/Install - Add cp Configuration.default Configuration
+2) Install - compile above
+3) dbsnpload.config.defaulat - MGD_DBPASSWORDFILE and SNP_DBPASSWORDFILE - 
+    use PG_1LINE_PASSFILE, was using pw file in the dbsnpload product
+4) rm .pg_dbo_dev_password and .pg_dbo_prod_password
+5) dbsnpload.sh - source dbsnpload.config NOT mgiconfig/master.config.sh
+6) pulling in of lib_java_dbssnp tested
+
 TAG: dbsnpload-6-0-1-1
 DATE: 09/22/2015
 STAFF: sc
