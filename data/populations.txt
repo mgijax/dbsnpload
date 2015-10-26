@@ -25,4 +25,6 @@
     <Population popId="786" handle="WIMOUSESNPS" locPopId="MITROCHE_POP">
     <Population popId="836" handle="CRAMUS" locPopId="CRAMUS_MOUSE">
     <Population popId="837" handle="TWGNF" locPopId="TWGNF-Mouse">
+    <Population popId="13381" handle="GHPS" locPopId="Mouse-Hybrid-B">
+    <Population popId="13382" handle="GHPS" locPopId="Mouse-B6">
 
