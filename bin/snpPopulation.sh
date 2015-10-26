@@ -105,7 +105,7 @@ echo "bcp'ing data into ${POP_TABLE}"
 psql -h ${MGD_DBSERVER} -d ${MGD_DBNAME} -U ${MGD_DBUSER} --command "\copy snp.${POP_TABLE} from '${OUTPUTDIR}/${POP_TABLE}.bcp' with null as ''"
 
 echo "bcp'ing data into ${ACC_TABLE}"
-psql -h ${MGD_DBSERVER} -d ${MGD_DBNAME} -U ${MGD__DBUSER} --command "\copy snp.${ACC_TABLE} from '${OUTPUTDIR}/${ACC_TABLE}.pop.bcp' with null as ''"
+psql -h ${MGD_DBSERVER} -d ${MGD_DBNAME} -U ${MGD_DBUSER} --command "\copy snp.${ACC_TABLE} from '${OUTPUTDIR}/${ACC_TABLE}.pop.bcp' with null as ''"
 
 echo "creating indexes on ${POP_TABLE}"
 ${SNP_DBSCHEMADIR}/index/${POP_TABLE}_create.object | tee -a ${POP_LOG}
