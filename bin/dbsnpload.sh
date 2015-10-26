@@ -104,12 +104,12 @@ for i in $*
 do
     case $i in
 	-s) doSgl=no; shift;;
-        -f) doFxn=no; shift;;
-        -v) doVar=no; shift;;
-	-h) doHandle=no; shift;;
-	-p) doPop=no; shift;;
-	-c) doCache=no; shift;;
-	-r) doPost=no; shift;;
+        -f) doFxn=yes; shift;;
+        -v) doVar=yes; shift;;
+	-h) doHandle=yes; shift;;
+	-p) doPop=yes; shift;;
+	-c) doCache=es; shift;;
+	-r) doPost=yes; shift;;
         --) shift; break;;
     esac
 done

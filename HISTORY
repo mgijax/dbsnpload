@@ -1,3 +1,13 @@
+TAG: dbsnpload-6-0-1-?
+DATE: ??/??/????
+STAFF: sc
+CHANGES: Project Florida US16 TR
+1) snpPopulation.sh - extra underscore in MGD__DBUSER
+2) data/populations.txt and subHandle.vocab.in added GHPS
+3) subHandleVocab.config - updated MAINTAINER
+4) dbsnpload.sh - updated parameter flag switch - so vocabs etc will run if flag
+	on command line 
+
 TAG: dbsnpload-6-0-1-2
 DATE: 10/20/2015
 STAFF: sc
