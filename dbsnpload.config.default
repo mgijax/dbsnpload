@@ -198,9 +198,9 @@ export SNP_SINGLE_USER SNP_SLEEP_INTERVAL
 POP_TABLE=SNP_Population
 ACC_TABLE=SNP_Accession
 STRAIN_TABLE=SNP_Strain
-MRKLOC_CACHETABLE=MRK_Location_Cache
+REFSEQ_TABLE=SNP_Transcript_Protein
 
-export POP_TABLE ACC_TABLE STRAIN_TABLE MRKLOC_CACHETABLE
+export POP_TABLE ACC_TABLE STRAIN_TABLE REFSEQ_TABLE
 
 #
 # vocabulary and translation load settings
@@ -293,6 +293,13 @@ LOG_DISCREP=${LOGDIR}/snpStrainOrderDiscrepancy.log
 
 export STRAIN_ORDER_LOAD SNP_STRAIN_FILE MGI_STRAINORDER_FILE LOG_STRAIN
 export LOG_DISCREP
+
+# refseq migration settings
+REFSEQ_BCP_FILE=SNP_Transcript_Protein.bcp
+REFSEQ_BCP=${OUTPUTDIR}/${REFSEQ_BCP_FILE}
+REFSEQ_LOG=${LOGDIR}/migrateRefSeqs.log
+
+export REFSEQ_BCP_FILE REFSEQ_BCP REFSEQ_LOG
 
 #
 # post-processing settings

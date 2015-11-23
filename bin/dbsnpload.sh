@@ -305,6 +305,14 @@ fi
 #
 echo "running dbsnp load"
 runsnpload
+
+#
+# load SNP_Transcript_Marker
+#
+echo "running migrateRefSeqs.sh"
+
+${DBSNPLOAD}/bin/migrateRefSeqs.sh
+
 #STAT=$?
 #msg="dbsnp load "
 #checkstatus ${STAT} "${msg}"

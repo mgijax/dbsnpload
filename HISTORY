@@ -1,12 +1,15 @@
-TAG: dbsnpload-6-0-1-?
-DATE: ??/??/????
+TAG: dbsnpload-6-0-1-3
+DATE: 11/23/2015
 STAFF: sc
-CHANGES: Project Florida US16 TR
+CHANGES: Project Florida 
 1) snpPopulation.sh - extra underscore in MGD__DBUSER
 2) data/populations.txt and subHandle.vocab.in added GHPS
 3) subHandleVocab.config - updated MAINTAINER
 4) dbsnpload.sh - updated parameter flag switch - so vocabs etc will run if flag
 	on command line 
+5) load new SNP_Transcript_Protein table - added
+ * migrateRefSeqs.sh and migrateRefSeqs.py
+ * added config to dbsnpload.config.default
 
 TAG: dbsnpload-6-0-1-2
 DATE: 10/20/2015
