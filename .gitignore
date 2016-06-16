@@ -1,1 +1,4 @@
 dbsnpload.config
+lib/java/lib_java_dbssnp/Configuration
+lib/java/lib_java_dbssnp/java/org/jax/mgi/dbs/snp/SNPBE.java
+lib/java/lib_java_dbssnp/java/velocity.log
