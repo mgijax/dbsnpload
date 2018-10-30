@@ -9,4 +9,3 @@ SNP_Strain
 SNP_SubSnp
 SNP_SubSnp_StrainAllele
 MGI_dbinfo
-MGI_Tables

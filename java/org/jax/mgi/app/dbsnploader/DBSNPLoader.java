@@ -427,6 +427,39 @@ public class DBSNPLoader extends DLALoader {
 		    } catch (IOException e) {
 			throw new MGIException(e.getMessage());
 		    }
+/*
+		     try { // write some stats about this rs
+                        dbsnpProcessor.processInput(nseInput);
+                    }
+		    catch (SNPNoBL6Exception e) {
+                         rsWithNoBL6Ctr++;
+                    }
+                    catch (SNPMultiBL6ChrException e) {
+			rsMultiBL6ChrCtr++;
+                    }
+                    catch (SNPMultiBL6ChrCoordException e) {
+                        rsMultiBL6ChrCoordCtr++;
+                    }
+                    // if the RS is represented in the genotype file
+                    // but the processor determines they aren't good genotypes
+                    catch (SNPNoConsensusAlleleSummaryException e) {
+                        // means no strain resolved or all alleles are 'N' or ' '
+                        rsWithNoAlleleSummaryCtr++;
+                        try {
+                        snpsNotLoadedWriter.write(nseRSId + TAB + handle + TAB +
+                            SNP_NOTLOADED_NO_STRAINALLELE + " (MGI)" + NL);
+                        } catch (IOException e2) {
+                            throw new MGIException(e.getMessage());
+                        }
+                    }
+                    catch (SNPVocabResolverException e) {
+                        rsWithVocabResolverExceptionCtr++;
+                    }
+                    catch (SNPRepeatException e) {
+                        rsRepeatExceptionCtr++;
+                    }
+*/
+
 		}
                 rsCtr++;
                 ssCtr += nseInput.getSubSNPs().size();
@@ -593,6 +626,7 @@ public class DBSNPLoader extends DLALoader {
      * @throws KeyNotFoundException
      * @throws CacheException
      */
+/*
     private void updateMGITables() throws ConfigException, DBException,
         KeyNotFoundException, CacheException{
 
@@ -608,4 +642,5 @@ public class DBSNPLoader extends DLALoader {
             snpStream.update((org.jax.mgi.dbs.snp.dao.MGI_TablesDAO)snpUpdater.update(tables[i].trim()));
         }
     }
+*/
 }
