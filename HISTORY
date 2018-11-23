@@ -1,5 +1,5 @@
-TAG: dbsnpload-
-DATE: 10/30/2018
+TAG: dbsnpload-6-0-4-2
+DATE: 11/23/2018
 STAFF: sc
 CHANGES: TR12934 - Load MGP v5 (Sanger) SNPs into MGI
 1) removed stuff using generated table MGI_Tables - this table obsolete
