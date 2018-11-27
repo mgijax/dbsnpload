@@ -39,4 +39,8 @@ public class SNPLoaderConstants {
         public static final String VARCLASS_SNP = "snp";
         public static final String VARCLASS_MNP = "multinucleotide-polymorphism";
         public static final String VARCLASS_MIXED = "mixed";
+        
+        // parsing constants
+        public static final String TAB = "\t";
+        public static final String CRT = "\n";
     }
