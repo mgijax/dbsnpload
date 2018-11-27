@@ -14,6 +14,7 @@ import java.util.HashMap;
 class DBSNPGenotypeRefSNPInput {
 
     // mapping looks like: {ssId:Array of DBSNPGenotypePopulation objects, ...}
+	// only one population for mgp
     private HashMap ssPopulationMap;
 
     // RefSnp id
