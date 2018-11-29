@@ -261,10 +261,11 @@ def processFile():
 		noRsCt += 1
 		line = readNextLine()
 		continue
+	    rsID = rsID[2:] # strip off the 'rs' prefix
 
 	    # for debug so we can develop on one chromosome 
 	    # if desired
-	    #if chr not in inputFileDict or chr not in vcfFileDict:
+	    #if chr not in inputFileDict  r chr not in vcfFileDict:
 	    #    continue
  	    inputFileDict[chr].write('%s%s%s%s' % (chr, TAB, rsID, TAB))
 	    ref = tokens[3]

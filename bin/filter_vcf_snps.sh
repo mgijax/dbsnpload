@@ -2,7 +2,7 @@
 
 cd `dirname $0`/..
 
-CONFIG_LOAD=`pwd`/dbsnpload.config
+CONFIG_LOAD=`pwd`/mgpload.config
 echo ${CONFIG_LOAD}
 
 cd `dirname $0`
