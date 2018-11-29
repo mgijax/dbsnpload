@@ -258,15 +258,11 @@ public class MGPLoader extends DLALoader {
 			    genotypeFilename + ". Free memory: " +
 			    Runtime.getRuntime().freeMemory(), true);
 
-		    System.out.println("filename="+genotypeFilename);
+		    //System.out.println("filename="+genotypeFilename);
 
 		    HashMap genoSNPMap = new MGPGenotypeRefSNPInputFile(
                  genotypeFilename).getInputMap();
-	    // For testing the Parser/Interpreter
- 	    //for (Iterator j = genoSNPMap.keySet().iterator(); j.hasNext(); ) {
-
-	    //}
-            /**
+		    /**
              * create iterator over NSE file
              */
  
@@ -284,7 +280,7 @@ public class MGPLoader extends DLALoader {
             long afterLookupFreeMem = Runtime.getRuntime().freeMemory();
             stats.setFreeMemAfterGenoLookup(afterLookupFreeMem);
 
-            System.out.println("processing NSE file " + nseFilename);
+            //System.out.println("processing NSE file " + nseFilename);
             logger.logdInfo("processing " + nseFilename + ". Free memory: " +
 			    afterLookupFreeMem, true);
 
@@ -304,7 +300,7 @@ public class MGPLoader extends DLALoader {
                 totalRsOnChr++;
                 nseInput = (DBSNPNseInput)it.next();
                 String nseRSId = nseInput.getRS().getRsId();
-	    	System.out.println("XML rsID: " + nseRSId);
+                //System.out.println("XML rsID: " + "rs" + nseRSId);
                 //logger.logdInfo(nseRSId, false);
                 boolean longAllele = false;
 
@@ -315,12 +311,14 @@ public class MGPLoader extends DLALoader {
 
                 // get first submitter handle for later reporting
                 String handle = ((DBSNPNseSS)nseInput.getSubSNPs().firstElement()).getSubmitterHandle();
-                if (genoSNPMap.containsKey(nseRSId)) {
+                if (genoSNPMap.containsKey("rs" + nseRSId)) {
+                
                 	genoInput = 
-                			(DBSNPGenotypeRefSNPInput)genoSNPMap.get(nseRSId);
+                			(DBSNPGenotypeRefSNPInput)genoSNPMap.get("rs" + nseRSId);
                 	genoRSId = genoInput.getRsId();
+                	System.out.println("geno rsID: " + genoRSId);
                 }
-                if (genoRSId != null && nseRSId.equals(genoRSId)) {
+                if (genoRSId != null && ("rs" + nseRSId).equals(genoRSId)) {
                 	// we have a genotype for this RS 	
                 	logger.logcInfo("RS HAS Strain Alleles for RS" + genoRSId, false) ;
                 	//mgpProcessor.processInput(nseInput, genoInput);
@@ -331,9 +329,9 @@ public class MGPLoader extends DLALoader {
 		    
                 	rsWithNoAllelesCtr++;
 				    logger.logcInfo("RS NO STRAIN/ALLELES for RS" + 
-						nseRSId, false);
+						"rs" + nseRSId, false);
 				    try {
-				    	snpsNotLoadedWriter.write(nseRSId + TAB + handle + TAB +
+				    	snpsNotLoadedWriter.write("rs" + nseRSId + TAB + handle + TAB +
 							SNP_NOTLOADED_NO_STRAINALLELE + " (dbSNP)" + NL);
 				    } catch (IOException e) {
 				    	throw new MGIException(e.getMessage());
@@ -349,7 +347,7 @@ public class MGPLoader extends DLALoader {
 
             long endTime = System.currentTimeMillis();
             float elapsedTime = (endTime - startTime)/60000;
-            System.out.println("Elapsed Time in minutes: " + elapsedTime);
+            //System.out.println("Elapsed Time in minutes: " + elapsedTime);
             logger.logdInfo("Elapsed Time in minutes: " + elapsedTime, false);
             stats.setTimeToProcess(elapsedTime);
             int rsLoaded = mgpProcessor.getRsLoadedOnChrCtr();
@@ -469,5 +467,4 @@ public class MGPLoader extends DLALoader {
                             tab + s.getTotalSubSnpsLoaded() + crt, false);
         }
     }
-
 }
