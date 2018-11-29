@@ -62,7 +62,7 @@ export SNP_DBSERVER SNP_DBNAME SNP_DBUSER SNP_DBPASSWORDFILE SNP_DBURL
 # allow 6g initial and max heap memory - note this is the max for which
 # the loader will run since child processes (e.g. isql exec of sql files)
 # need memory from the parent process (2G max given to a process by the op sys)
-JAVARUNTIMEOPTS="-Xms6g -Xmx6g"
+JAVARUNTIMEOPTS="-Xms15g -Xmx15g"
 
 #JAVA_LIB=${DBSNPLOAD}/lib/java/core.jar:${DBSNPLOAD}/lib/java/dbsmgd.jar:${DBSNPLOAD}/lib/java/dbsrdr.jar:${DBSNPLOAD}/lib/java/dbssnp.jar:${DBSNPLOAD}/lib/java/dla.jar:${STAXAPI}:${STAXRI}
 JAVA_LIB=${MGI_JAVALIB}/core.jar:${MGI_JAVALIB}/dbsmgd.jar:${MGI_JAVALIB}/dbsrdr.jar:${MGI_JAVALIB}/dla.jar:${STAXAPI}:${STAXRI}
@@ -90,6 +90,14 @@ OUTPUTDIR=${FILEDIR}/output
 
 export FILEDIR LOGDIR RPTDIR ARCHIVEDIR OUTPUTDIR
 
+# MGP VCF file filter settings
+MGP_VCF_INPUT_DIR=${DATADOWNLOADS}/ftp-mouse.sanger.ac.uk/current_snps/
+MGP_VCF_OUTPUT_DIR=${MGP_VCF_INPUT_DIR}
+MGP_VCF_INPUT_FILE=${MGP_VCF_INPUT_DIR}/mgp.v5.merged.snps_all.dbSNP142.vcf.gz
+MGP_VCF_LOG_FILE=${LOGDIR}/filter_vcf_snps.log
+
+export MGP_VCF_INPUT_DIR MGP_VCF_OUTPUT_DIR MGP_VCF_INPUT_FILE MGP_VCF_LOG_FILE
+
 #
 # snpload input file settings
 #
@@ -97,7 +105,7 @@ export FILEDIR LOGDIR RPTDIR ARCHIVEDIR OUTPUTDIR
 INPUTDIR=${DATADOWNLOADS}/ftp.ncbi.nih.gov/snp/mouse
 
 # genotypes input file
-GENO_SNP_INFILEDIR=${DATADOWNLOADS}/ftp-mouse.sanger.ac.uk/current_snps
+GENO_SNP_INFILEDIR=${MGP_VCF_INPUT_DIR}
 
 # main input file
 NSE_SNP_INFILEDIR=${INPUTDIR}/XML
@@ -115,8 +123,8 @@ export GENO_SNP_INFILEPREFIX NSE_SNP_INFILEPREFIX
 export GENO_SNP_INFILESUFFIX NSE_SNP_INFILESUFFIX
 
 # list of chromosomes to load, comma delimited
-#SNP_CHROMOSOMES_TOLOAD="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,X,Y,MT"
-SNP_CHROMOSOMES_TOLOAD="MT"
+SNP_CHROMOSOMES_TOLOAD="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,X,Y,MT"
+#SNP_CHROMOSOMES_TOLOAD="1,2,3"
 
 # full path to 'SNPs not loaded' report
 SNP_NOTLOADED=${RPTDIR}/RefSnpsNotLoaded.txt
@@ -333,7 +341,7 @@ export JOBSTREAM
 LOG_PROC=${LOGDIR}/mgpload.proc.log
 LOG_DIAG=${LOGDIR}/mgpload.diag.log
 LOG_CUR=${LOGDIR}/mgpload.cur.log
-LOG_VAL=${LOGDIR}/mgppload.val.log
+LOG_VAL=${LOGDIR}/mgpload.val.log
 
 # Send debug messages to the diagnostic log
 LOG_DEBUG=true
