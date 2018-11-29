@@ -2,7 +2,10 @@ package org.jax.mgi.app.dbsnploader;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Vector;
 
 import org.jax.mgi.shr.config.ConfigException;
 import org.jax.mgi.shr.exception.MGIException;
@@ -58,30 +61,48 @@ public class MGPGenotypeRefSNPInputFile  {
 	
     	while (it.hasNext()) {
 	    genoInput = (DBSNPGenotypeRefSNPInput)it.next();
-	    if (genoInput != null) {
-		System.out.println("got genoInput");
-		System.out.println(genoInput);
-		genoRSId = genoInput.getRsId().substring(2);
-		System.out.println("vcf rsID (prefix removed): " + genoRSId);
-		inputMap.put(genoRSId, genoInput);
+	    if (genoInput != null) { // null if header line was processed 
+	    	/* following for writing parser output for testing
+		    String line = genoInput.getRsId() + SNPLoaderConstants.TAB;
+			
+			HashMap popMap = (HashMap)genoInput.getSSPopulationsForRs();
+			Collection v = popMap.values();
+			
+			for (Iterator k = v.iterator(); k.hasNext(); ) {
+	            DBSNPGenotypePopulation[] popArray = (DBSNPGenotypePopulation[]) k.next();
+	            
+	            for (int l = 0; l < popArray.length; l++ ) {
+	                DBSNPGenotypePopulation pop = popArray[l];
+	                HashMap<String, Allele> strainalleles = (HashMap)pop.getStrainAlleles();
+	                
+	                for (String strainKey : strainalleles.keySet()) {
+	                	    
+	                        Allele a = strainalleles.get(strainKey);
+	                        line = line +  strainKey + ':' + a.getAllele() + SNPLoaderConstants.TAB;
+	                }
+	
+	            }
+	           
+			}
+			System.out.println(line); */
+			genoRSId = genoInput.getRsId(); //.substring(2);
+			//System.out.println("getInputMap rsID: " + genoRSId);
+			inputMap.put(genoRSId, genoInput);
 	    }
-	    else {
-		System.out.println("genoInput is null");
-	    }
-    	}
-    	return inputMap;
+	  }
+    return inputMap;
     }
 
 
     public void loadStrainMap(String header) {
     	
         String s = header.replaceFirst(SNPLoaderConstants.CRT,"");
-	System.out.println("Header: " + s);
+        //System.out.println("Header: " + s);
     	String[] fields = header.split(SNPLoaderConstants.TAB);
-        String[] strains = Arrays.copyOfRange(fields, 1, fields.length); 
+        String[] strains = Arrays.copyOfRange(fields, 2, fields.length); 
         for (int i = 0; i < strains.length; i++) {
-        	strainMap.put(i, strains[i]);
-		System.out.println("loadStrainMap: " +strains[i]);
+        	strainMap.put(i, strains[i].trim());
+		//System.out.println("loadStrainMap: " +strains[i]);
         } 
     }
     /**
@@ -100,7 +121,7 @@ public class MGPGenotypeRefSNPInputFile  {
     	private int ssCtr = 0;
     	private int isHeader = 1;
         public Object interpret(String rec) throws InterpretException {
-	    System.out.println("Interpreter rec: " + rec);
+        	//System.out.println("Interpreter rec: " + rec);
             // the current input object
             DBSNPGenotypeRefSNPInput currentInput = null;
 
@@ -132,24 +153,24 @@ public class MGPGenotypeRefSNPInputFile  {
             DBSNPGenotypePopulation currentPopulation = null;
 
             if (isHeader == 1) {
-		System.out.println("is header record");
+            	//System.out.println("is header record");
             	loadStrainMap(rec);
             	isHeader = 0;
             }
             else {
-		    System.out.println("is data record");
+            	//System.out.println("is data record");
 	            String s = rec.replaceFirst(SNPLoaderConstants.CRT,"");
 	            String[] fields = s.split(SNPLoaderConstants.TAB);
 	            currentRSId = fields[1];
-		    System.out.println("currentRSId: " + currentRSId);
-	            String[]strains = Arrays.copyOfRange(fields, 1, fields.length);
+	           // System.out.println("currentRSId: " + currentRSId);
+	            String[]strains = Arrays.copyOfRange(fields, 2, fields.length);
 	            
 	            // create the input object for the record and set rsId
 	            currentInput = new DBSNPGenotypeRefSNPInput();
 	            currentInput.setRsId(currentRSId);
 	            currentSSPopulationArray = new DBSNPGenotypePopulation[1];
 	            // all MGS snps are in fwd orientation - we won't be using this, we'll be 
-	            // using orient from XML fi le
+	            // using orient from XML file
 	            currentSSOrientToRS = "fwd";
 	                  
 	            currentPopulation = new DBSNPGenotypePopulation();
@@ -167,8 +188,8 @@ public class MGPGenotypeRefSNPInputFile  {
 	            // setting their orientation
 	            
 	            for (int i = 0; i < strains.length; i++) {
-	            	String allele = strains[i];
-	            	String strain = (String)strainMap.get(i);
+	            	String allele = strains[i].trim();
+	            	String strain = ((String)strainMap.get(i)).trim();
 	            	currentAllele = new Allele(allele,
 	                        currentSSOrientToRS);
 	            	currentPopulation.addStrainAlleles(strain, currentAllele);
