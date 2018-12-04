@@ -33,6 +33,7 @@ import os
 import string
 import time
 import db
+import re
 
 CRT = '\n' 
 TAB = '\t'
@@ -108,7 +109,7 @@ noRsCt = 0
 multiCt = 0	# compound alt allele (contains ',')
 fi0Ct = 0	# number of strain alleles with FI='0' or FI='.' genotype quality
 fi1hetCt = 0    # number of strain alleles with FI=1 and allele is heterozygous
-
+noAlleleCt = 0  # number of rs with no strain alleles, but FI=1
 inFile = sys.stdin
 logFile = os.getenv('MGP_VCF_LOG_FILE')
 
@@ -241,17 +242,17 @@ def processFile():
     # Assumes: file descriptors have been initialized
     # Effects: creates files in the file system
 
-    global totalCt, noRsCt, multiCt, fi0Ct, fi1hetCt
-
+    global totalCt, noRsCt, multiCt, fi0Ct, fi1hetCt, noAlleleCt
+    pattern = r'[^-\t]'
     line = readNextLine()
     while line:
 	line = string.strip(line)
+	newLine = ''
 	if string.find(line, '#') == 0:
 	    line = readNextLine()
 	    continue
 	else:
 	    totalCt += 1
-	    
 	    tokens = string.split(line, TAB)
 	    chr = tokens[0]
 	    pos = tokens[1]  	# vcf file only
@@ -267,7 +268,9 @@ def processFile():
 	    # if desired
 	    #if chr not in inputFileDict  r chr not in vcfFileDict:
 	    #    continue
- 	    inputFileDict[chr].write('%s%s%s%s' % (chr, TAB, rsID, TAB))
+
+ 	    #inputFileDict[chr].write('%s%s%s%s' % (chr, TAB, rsID, TAB))
+	    newLine = newLine + '%s%s%s%s' % (chr, TAB, rsID, TAB)
 	    ref = tokens[3]
 	    alt = tokens[4]
 	    qual = tokens[5]
@@ -279,6 +282,7 @@ def processFile():
 	    writeVcfFile(chr, pos, rsID, ref, alt, qual, filter, info, format, tokens)
 
 	    # parse strain columns
+	    strainPart = ''
 	    for col in [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44]:
 		s = tokens[col]
 		sTokens = string.split(s, ':')
@@ -294,14 +298,19 @@ def processFile():
 			fpLog.write('genotype quality is 1, but allele is heterzygous: %s strain column %s%s' % (rsID, col, CRT))
 		    else:
 			allele = calculateAllele(rsID, chr, col, ref, alt, gt)
-		inputFileDict[chr].write('%s%s' % (allele, TAB))
-
-	    # now add column for B6
-	    inputFileDict[chr].write('%s%s' % (ref, CRT))
-	    if chr not in rsCtByChrDict:
-		 rsCtByChrDict[chr] = 1
+		#inputFileDict[chr].write('%s%s' % (allele, TAB))
+		strainPart = strainPart + '%s%s' % (allele, TAB)
+	    if re.search(pattern, strainPart): # no alleles for any MGP strains
+		newLine = newLine + strainPart
+		# now add column for B6
+		newLine = newLine + '%s%s' % (ref, CRT)
+		inputFileDict[chr].write(newLine)
+		if chr not in rsCtByChrDict:
+		     rsCtByChrDict[chr] = 1
+		else:
+		    rsCtByChrDict[chr] += 1
 	    else:
-		rsCtByChrDict[chr] += 1
+		noAlleleCt += 1
 	line = readNextLine()
 
     return 0
@@ -312,6 +321,7 @@ def writeLog():
     fpLog.write('\nTotal: %s\n' % totalCt)
     fpLog.write('Total with no RS ID: %s\n' % noRsCt)
     fpLog.write('Total with RS ID: %s\n' % (totalCt - noRsCt))
+    fpLog.write('Total RS with no alleles for any strain %s\n' % noAlleleCt)
     fpLog.write('Total ALT multi-valued allele: %s\n' % multiCt)
     fpLog.write('Total strain alleles with genotype quality = 0: %s\n' % fi0Ct)
     fpLog.write('Total heterozygous strain alleles with genotype quality = 1: %s\n' % fi1hetCt)
