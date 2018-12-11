@@ -61,9 +61,12 @@ public class MGPLoader extends DLALoader {
     // writer to reports rsIds not loaded
     private BufferedWriter snpsNotLoadedWriter;
 
-    // current number of RefSNPs processed
-    private int rsCtr;
+    // current number of XML RefSNPs looked at
+    private int xmlRsCtr;
 
+    // the number of VCF RefSnps processed
+    private int vcfRsCtr;
+    
     // current number of SubSnps for the RefSnps processed
     private int ssCtr;
 
@@ -111,7 +114,10 @@ public class MGPLoader extends DLALoader {
     private static String SNP_NOTLOADED_NO_STRAINALLELE;
     private static final String NL = "\n";
     private static final String TAB = "\t";
-
+ 
+    // lookup of rsIDs already in the database
+    DBSNPRSLookup rsLookup;
+    
     // holds one ChromosomeStats object per chromosome
     Vector chrStats;
 
@@ -165,6 +171,7 @@ public class MGPLoader extends DLALoader {
 
         // create ExceptionFactory
         snpEFactory = new SNPLoaderExceptionFactory();
+        /*
         try {
             logger.logdInfo("Truncating SNP tables", true);
 		
@@ -175,10 +182,11 @@ public class MGPLoader extends DLALoader {
         }
         catch (Exception e) {
             throw new MGIException(e.getMessage());
-        }
+        }*/
 
         // initialize all counters
-        rsCtr = 0;
+        xmlRsCtr = 0;
+        vcfRsCtr = 0;
         ssCtr = 0;
         rsWithNoAllelesCtr = 0;
         rsWithNoBL6Ctr = 0;
@@ -188,11 +196,13 @@ public class MGPLoader extends DLALoader {
         rsWithVocabResolverExceptionCtr = 0;
         rsRepeatExceptionCtr = 0;
 
-	// initialize reasons not to load (others determined in processor)
-	SNP_NOTLOADED_NO_STRAINALLELE = loadCfg.getSnpNotLoadedNoStrainAllele();
+	    // initialize reasons not to load (others determined in processor)
+        SNP_NOTLOADED_NO_STRAINALLELE = loadCfg.getSnpNotLoadedNoStrainAllele();
 
-	// initialize the statistics container
+        // initialize the statistics container
         chrStats = new Vector();
+        // initialize the RS in db lookup
+        rsLookup = new DBSNPRSLookup();
     }
 
     /**
@@ -238,6 +248,7 @@ public class MGPLoader extends DLALoader {
 
             // get the next chromosome
             String chr = chromosomes[i].trim();
+            
             long startFreeMem = Runtime.getRuntime().freeMemory();
             stats.setChromosome(chr);
             stats.setStartFreeMem(startFreeMem);
@@ -254,7 +265,7 @@ public class MGPLoader extends DLALoader {
             		PATH_SEPARATOR +
                     genoConfig.getInfilePrefix() + chr +
                     genoConfig.getInfileSuffix();
-            logger.logdInfo("processing genotype file for Individual data " +
+            logger.logdInfo("processing VCF file for Genotype data " +
 			    genotypeFilename + ". Free memory: " +
 			    Runtime.getRuntime().freeMemory(), true);
 
@@ -262,6 +273,7 @@ public class MGPLoader extends DLALoader {
 
 		    HashMap genoSNPMap = new MGPGenotypeRefSNPInputFile(
                  genotypeFilename).getInputMap();
+		    vcfRsCtr = genoSNPMap.size();
 		    /**
              * create iterator over NSE file
              */
@@ -287,8 +299,12 @@ public class MGPLoader extends DLALoader {
             /**
              * iterate through all snps on this chromosome
              */
-            int totalRsOnChr = 0;
-
+            // total SNP in Geno File
+            int totalGenoSnpOnChr = 0;
+            // total ADD snps in geno file
+            int totalGenoAddOnChr = 0;
+            // total Update snps in geno file
+            int totalGenoUpdateOnChr = 0;
             // rsId from the genotype file
             String genoRSId = null;
 
@@ -297,62 +313,50 @@ public class MGPLoader extends DLALoader {
             DBSNPNseInput nseInput = null;
 
             while (it.hasNext()) {
-                totalRsOnChr++;
+                
                 nseInput = (DBSNPNseInput)it.next();
                 String nseRSId = nseInput.getRS().getRsId();
-                //System.out.println("XML rsID: " + "rs" + nseRSId);
-                //logger.logdInfo(nseRSId, false);
-                boolean longAllele = false;
-
-                if ( longAllele == true ) {
-                	//logger.logdInfo("continueing", false);
-                	continue;
-                }
+                //System.out.println("XML rsID: " + nseRSId);
+                //logger.logcInfo("Next RS" + nseRSId, false);
+                
 
                 // get first submitter handle for later reporting
                 String handle = ((DBSNPNseSS)nseInput.getSubSNPs().firstElement()).getSubmitterHandle();
-                if (genoSNPMap.containsKey("rs" + nseRSId)) {
-                
+                if (genoSNPMap.containsKey(nseRSId)) {
+                	totalGenoSnpOnChr++;
                 	genoInput = 
-                			(DBSNPGenotypeRefSNPInput)genoSNPMap.get("rs" + nseRSId);
+                			(DBSNPGenotypeRefSNPInput)genoSNPMap.get(nseRSId);
                 	genoRSId = genoInput.getRsId();
-                	System.out.println("geno rsID: " + genoRSId);
+                	//System.out.println("geno rsID: " + genoRSId);
+                	if (rsLookup.lookup("rs" + genoRSId) != null) {
+                    	logger.logcInfo("Geno RS is already in MGI rs" + genoRSId, false);
+                    	totalGenoUpdateOnChr++;
+                    	continue;
+                    }
+                	else {
+                		logger.logcInfo("Geno RS not in MGI rs" + genoRSId, false);
+                		mgpProcessor.processInput(nseInput, genoInput);
+                		totalGenoAddOnChr++;
+                	}
+                		
                 }
-                if (genoRSId != null && ("rs" + nseRSId).equals(genoRSId)) {
-                	// we have a genotype for this RS 	
-                	logger.logcInfo("RS HAS Strain Alleles for RS" + genoRSId, false) ;
-                	//mgpProcessor.processInput(nseInput, genoInput);
-
-                }
-                // this RS not represented in the genotype file
-                else {
-		    
-                	rsWithNoAllelesCtr++;
-				    logger.logcInfo("RS NO STRAIN/ALLELES for RS" + 
-						"rs" + nseRSId, false);
-				    try {
-				    	snpsNotLoadedWriter.write("rs" + nseRSId + TAB + handle + TAB +
-							SNP_NOTLOADED_NO_STRAINALLELE + " (dbSNP)" + NL);
-				    } catch (IOException e) {
-				    	throw new MGIException(e.getMessage());
-				    }
-
-                }
-                rsCtr++;
-                ssCtr += nseInput.getSubSNPs().size();
+              
+                xmlRsCtr++;
+                //ssCtr += nseInput.getSubSNPs().size();
             }
-            stats.setTotalSnpsOnChr(totalRsOnChr);
+            stats.setTotalSnpsOnChr(totalGenoSnpOnChr);
+            stats.setTotalGenoAddOnChr(totalGenoAddOnChr);
+            stats.setTotalGenoUpdateOnChr(totalGenoUpdateOnChr); 
             stats.setEndFreeMem(Runtime.getRuntime().freeMemory());
             // set elapsed time in minutes
-
             long endTime = System.currentTimeMillis();
             float elapsedTime = (endTime - startTime)/60000;
             //System.out.println("Elapsed Time in minutes: " + elapsedTime);
             logger.logdInfo("Elapsed Time in minutes: " + elapsedTime, false);
             stats.setTimeToProcess(elapsedTime);
             int rsLoaded = mgpProcessor.getRsLoadedOnChrCtr();
-            stats.setTotalRefSnpsLoaded(rsLoaded);
             int ssLoaded = mgpProcessor.getSsLoadedOnChrCtr();
+            stats.setTotalRefSnpsLoaded(rsLoaded);
             stats.setTotalSubSnpsLoaded(ssLoaded);
             logger.logdInfo("Total RS loaded on this chr: " + rsLoaded, false);
             logger.logdInfo("Total SS loaded on this chr: " + ssLoaded, false);
@@ -431,21 +435,22 @@ public class MGPLoader extends DLALoader {
      * Reports load statistics
      */
     private void reportLoadStatistics() throws ConfigException {
-        logger.logdInfo("Total RefSnps Looked at: " + rsCtr, false);
-        logger.logdInfo("Total SubSnps for the RefSnps Looked at: " + ssCtr, false);
+        logger.logdInfo("Total XML RefSnps Looked at: " + xmlRsCtr, false);
+        logger.logdInfo("Total VCF RefSnps Looked at: " + vcfRsCtr, false);
+        //logger.logdInfo("Total SubSnps for the RefSnps Looked at: " + ssCtr, false);
         logger.logdInfo("Total RefSnp records repeated in the input " +
             "(can be multiple per RefSnp): " +
                         rsRepeatExceptionCtr, false);
-        logger.logdInfo("Total RefSnps with no dbSNP defined strain/alleles for any assay of the SNP: " +
+        /*logger.logdInfo("Total RefSnps with no dbSNP defined strain/alleles for any assay of the SNP: " +
                         (rsWithNoAllelesCtr), false);
-	 logger.logdInfo("Total RefSnps with no MGI defined strain/alleles for any assay of the SNP: " +
+        logger.logdInfo("Total RefSnps with no MGI defined strain/alleles for any assay of the SNP: " +
                         (rsWithNoAlleleSummaryCtr), false);
         logger.logdInfo("Total RefSnps mapped to more than 1 chromosome in the C57BL/6J genome: " +
-                        rsMultiBL6ChrCtr, false);
+                        rsMultiBL6ChrCtr, false);*/
         logger.logdInfo("Total RefSnps mapped to > " + loadCfg.getMaxChrCoordCt()
                          + " coordinates on the same chromosome: " + rsMultiBL6ChrCoordCtr, false);
-        logger.logdInfo("Total RefSnps unmapped in the C57BL/6J genome: " +
-                        rsWithNoBL6Ctr, false);
+        /*logger.logdInfo("Total RefSnps unmapped in the C57BL/6J genome: " +
+                        rsWithNoBL6Ctr, false);*/
         logger.logdInfo("Total RefSnps with Vocab resolving errors: " +
                         rsWithVocabResolverExceptionCtr, false);
 

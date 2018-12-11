@@ -29,6 +29,7 @@ import org.jax.mgi.shr.ioutils.XMLDataIterator;
 
 import java.util.Vector;
 import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -95,6 +96,9 @@ public class MGPInputProcessor {
     // current number of RefSNPs processed and will be loaded
     private int rsCtr = 0;
 
+    // current number of RefSNPs processed but will not be loaded
+    private int noRsCtr = 0;
+    		
     // current number of RefSNPs processed on current chromosome and will be loaded
     private int rsLoadedOnChrCtr = 0;
     private int ssLoadedOnChrCtr = 0;
@@ -108,9 +112,7 @@ public class MGPInputProcessor {
     // current number of snp coordinates processed
     private int snpCoordCtr = 0;
 
-     // current number of ss (for BL6 RS we are loading) w/o strain alleles)
-    private int ssNoStAllele = 0;
-
+  
     /**
      * Lookups
      */
@@ -126,18 +128,6 @@ public class MGPInputProcessor {
     // uniq set of snp strain keys to create SNP_Strain
     private HashSet strainKeySet;
 
-    // lookup mgd db strain key, given a jax registry id
-    private AccessionLookup jaxRegistryLookup;
-
-    // lookup snp db handle name given a population id
-    private HandleNameByPopIdLookup handleNameLookupByPopId;
-
-    // lookup population key given population id
-    private SNPAccessionLookup populationKeyLookupByPopId;
-
-    // lookup population name given a population id
-    private PopNameByPopIdLookup popNameLookupByPopId;
-
     // lookup handle key given handle name
     private VocabKeyLookup subHandleKeyLookup;
 
@@ -152,6 +142,9 @@ public class MGPInputProcessor {
 
     // get a chromosome sequenceNum given a _Chromosome_key
     private ChrSeqNumLookup chrSeqNumLookupByKey;
+    
+    // get pop key given a pop id
+    private PopKeyByNameLookup popKeyLookupByName;
     
     // iterator over genotype file to get refsnp information
     XMLDataIterator genoSNPIterator;
@@ -242,30 +235,13 @@ public class MGPInputProcessor {
         // initialize now, so we can close the mgd connection
         strainKeyLookup = new StrainKeyLookup();
 
-	// lookup strain name by strain key
+	    // lookup strain name by strain key
         strainNameLookup = new StrainNameLookup();
         strainNameLookup.initCache();
 
         // unique set of strain keys
         strainKeySet = new HashSet();
-
-        // to lookup a strain key in mgd given a JAX registry id and
-        // initialize now, so we can close the mgd connection
-        jaxRegistryLookup = new AccessionLookup(LogicalDBConstants.JAXREGISTRY,
-                                                MGITypeConstants.STRAIN,
-                                                AccessionLib.PREFERRED);
-        jaxRegistryLookup.initCache();
-
-        // to lookup a submitter handle name in snp given a population id and
-        handleNameLookupByPopId = new HandleNameByPopIdLookup();
 	
-        // to lookup a population key in snp given a population id
-        populationKeyLookupByPopId = new SNPAccessionLookup(LogicalDBConstants.SNPPOPULATION,
-                MGITypeConstants.SNPPOPULATION);
-
-        // to lookup a population name in snp given a population id
-        popNameLookupByPopId = new PopNameByPopIdLookup();
-
         // to lookup term key in mgd given a submitter handle and
         // initialize now, so we can close the mgd connection
         subHandleKeyLookup = new VocabKeyLookup(VocabularyTypeConstants.SUBHANDLE,
@@ -292,6 +268,8 @@ public class MGPInputProcessor {
         chrSeqNumLookupByKey = new ChrSeqNumLookup();
         chrSeqNumLookupByKey.initCache();
 
+        popKeyLookupByName = new PopKeyByNameLookup();
+        popKeyLookupByName.initCache();
         // create set to avoid loading dups
         rsIdSet = new HashSet();
 
@@ -330,22 +308,81 @@ public class MGPInputProcessor {
         ssLoadedOnChrCtr = 0;
     }
 
-    /**
-     * Adds an individual mapping (strainId to strainName) to the individual map
-     * @param input - a DBSNPGenotypeIndividualInput object
-     */
-   /* public void processGenoIndivInput(DBSNPGenotypeIndividualInput input) {
-
-        individualMap.put(input.getStrainId(), input.getStrain());
-    }*/
-
-    /**
-     * get the individual map
-     * @returns - HashMap of strainId to strainName mappings
-     */
-   /* public HashMap getIndividualMap() {
-        return individualMap;
-    }/*
+    public DBSNPNseSS getMgpSS (Vector subSNPs, String rsId) {
+    	ArrayList<DBSNPNseSS> scMouseGenome = new ArrayList<DBSNPNseSS>();
+    	DBSNPNseSS ssToReturn = null;
+    	//System.out.println("getMgpSS rsId " + rsId);
+    	for (Iterator i = subSNPs.iterator(); i.hasNext(); ) {
+            DBSNPNseSS ss = (DBSNPNseSS) i.next();
+            //System.out.println("getMgpSS ssId " + ss.getSSId() + " " + ss.getSubmitterHandle());
+            if (ss.getSubmitterHandle().equals("SC_MOUSE_GENOMES")) {
+            	scMouseGenome.add(ss); //array index out of bounds
+            	//System.out.println("getMgpSS is SC_MOUSE_GENOMES ss");
+            }
+    	}
+    	// check all the scMouseGenome ss
+    	// if only one return it 
+    	if(scMouseGenome.size() == 0) {
+    		//System.out.println("getMgpSS no SC_MOUSE_GENOME SS for " + rsId);
+    		noRsCtr++;
+    	} else if(scMouseGenome.size() == 1) {
+    		//System.out.println("getMgpSS returning single SC_MOUSE_GENOME SS" + scMouseGenome.get(0).getSSId());
+    		ssToReturn = scMouseGenome.get(0);
+    	}
+    	else { // if multiple figure out which one
+    		//System.out.println("getMgpSS multiple SC_MOUSE_GENOME SS" + scMouseGenome.size());
+    		ArrayList<DBSNPNseSS> bestCurrentBuildNo = new ArrayList<DBSNPNseSS>();
+    		int bestBuildNo = 0;
+    		DBSNPNseSS next2;
+    		//Iterate thru scMouseGenome array that has >1 SS
+    		for (int j = 0; j < scMouseGenome.size(); j++) {
+    			next2 = scMouseGenome.get(j);
+    			//System.out.println("getMgpSS scMouseGenome array SS" + next2.getSSId() + " buildNo " + next2.getBuildNo());
+    			if (j == 0) {
+    				bestCurrentBuildNo.add(next2);
+    				bestBuildNo = next2.getBuildNo().intValue(); 
+    			}
+    			else {
+    				if (next2.getBuildNo().intValue() == bestBuildNo) {
+    					bestCurrentBuildNo.add(next2);
+    				}
+    				else if(next2.getBuildNo().intValue() > bestBuildNo) {
+    					bestCurrentBuildNo.clear();
+    					bestCurrentBuildNo.add(next2);
+    				}
+    			}
+    		}
+    		if (bestCurrentBuildNo.size() == 1) {
+    			ssToReturn =  bestCurrentBuildNo.get(0);
+    			//System.out.println("getMgpSS returning ss " + ssToReturn.getSSId() + " based on buildNo " + ssToReturn.getBuildNo() + " for rs" + rsId);
+    		}
+    		else {
+    			DBSNPNseSS bestCurrentSSId = null;
+    			DBSNPNseSS next3;
+    			int bestSSId = 0;
+    			for (int k = 0; k < bestCurrentBuildNo.size(); k++) {
+    				next3 = bestCurrentBuildNo.get(k);
+    				if (k == 0) {
+    					bestCurrentSSId = next3;
+    					bestSSId = new Integer(next3.getSSId()).intValue();
+    				}
+    				else {
+    					int intSSId = new Integer(next3.getSSId()).intValue();
+    					if (intSSId > bestSSId ) {
+    						bestSSId = intSSId;
+    						bestCurrentSSId = next3;
+    					}
+    				}
+    			}
+    			ssToReturn = bestCurrentSSId;
+    			//System.out.println("getMgpSS returning ss based on greatest ssID ss" + ssToReturn.getSSId() + " for rs" + rsId);
+    			
+    		}
+    		
+    	}
+    	return ssToReturn;
+    	
+    }
     
      /**
      * Resolves and/or translates raw values to MGI values and creates bcp files
@@ -371,7 +408,8 @@ public class MGPInputProcessor {
         // get the rs object and its rsId from 'input'
         DBSNPNseRS rs = ( (DBSNPNseInput) nInput).getRS();
         rsId = rs.getRsId();
-        //System.out.println(rsId);
+        
+        System.out.println("In Processor.processInput " + rsId);
         // don't load duplicate RefSNPs; build 125 multichr RefSnps are located
         // in each chromosome file on which they have a coordinate
         if (rsIdSet.contains(rsId)) {
@@ -394,7 +432,7 @@ public class MGPInputProcessor {
 	
         // create the consensus object
         Integer consensusKey = processConsensusSnp(rs);
-
+        //System.out.println("processInput consensusKey " + consensusKey);
         // process coordinates first; RS with no C57BL/6J coordinates are
         // rejected by this method
         try {
@@ -413,58 +451,54 @@ public class MGPInputProcessor {
          * 2)  accession DAOs for its ssId and submitter snp id
          * 3)  strain allele DAOs for each population's strain alleles
          */
-        for (Iterator i = subSNPs.iterator(); i.hasNext(); ) {
-            DBSNPNseSS ss = (DBSNPNseSS) i.next();
-
-            // get the set of populations
-            DBSNPGenotypePopulation[] popsForSSArray = 
-		(DBSNPGenotypePopulation[]) currentSSPopulationMap.get(
-		    new Integer(ss.getSSId()));
-
-            // Added 11/1 build 125 genotype file does not list ss
-            // w/o strain/alleles
-            if (popsForSSArray == null) {
-                //logger.logcInfo("SS NO STRAIN/ALLELES for RS" + rsId + " SS" +
-                 //             ss.getSSId(), false);
-                ssNoStAllele++;
-                continue;
-            }
-
+        DBSNPNseSS ss = getMgpSS(subSNPs, rsId); 
+        if (ss != null) {
+        	//System.out.println("currentSSPopulationMap keySet " + currentSSPopulationMap.keySet());
+           	DBSNPGenotypePopulation[] popsForSSArray = 
+            		(DBSNPGenotypePopulation[]) currentSSPopulationMap.get(
+		        new Integer(1)); // MGP genotypeInput objects don't have ssIDs, Interpreter loads the one population with a counter
+           	
             // create all DAO's for SubSnps (SNP_SubSnpDAOs, SNP_AccessionDAOs
             // SNP_SubSnp_StrainAlleleDAOs, SNP_StrainDAOs)
+        	//System.out.println("calling processSS for " + rsId);
             processSS(consensusKey, ss, popsForSSArray);
-        }
-
-        // create flank DAOs for the 5' flanking sequence
-        processFlank(consensusKey, flank5Prime, 1);
-
-        // create flank DAOs for the 3' flanking sequence
-        processFlank(consensusKey, flank3Prime, 0);
-        // create the consensus allele DAOs for this RS
-        // send rsId just for debug
         
-        String orderedAlleleSummary = processConsensusAlleles(consensusKey,
-            currentSSPopulationMap, rsId);
-
-        // resolve the remaining SNP_ConsensusSnpState attributes
-        finishConsensusSnp(orderedAlleleSummary, rs.getRsVarClass());
-
-        /**
-         * We have a completed snp, write to bcp files and get counts
-         */
-        // write to bcp files
-        snpSnp.sendToStream();
-
-        // incr ctr, we've added another snp
-        rsCtr++;
-        rsLoadedOnChrCtr++;
-        // incrmement the markers
-        mkrCtr += snpSnp.dpMarker.size();
-        // increment the subSnps
-        ssCtr += snpSnp.subSnps.size();
-        ssLoadedOnChrCtr += snpSnp.subSnps.size();
-        // increment the coordinates
-        snpCoordCtr += snpSnp.coordCache.size();
+	        
+	        // create flank DAOs for the 5' flanking sequence
+        	// comment out for testing of finding best SC_MOUSE_GENOMES SS
+            processFlank(consensusKey, flank5Prime, 1);
+	
+	        // create flank DAOs for the 3' flanking sequence
+        	// comment out for testing of finding best SC_MOUSE_GENOMES SS
+	        processFlank(consensusKey, flank3Prime, 0);
+        	
+	        // create the consensus allele DAOs for this RS
+	        // send rsId just for debug
+        	// comment out for testing of finding best SC_MOUSE_GENOMES SS
+	        String orderedAlleleSummary = processConsensusAlleles(consensusKey,
+	            currentSSPopulationMap, rsId);
+	
+	        // resolve the remaining SNP_ConsensusSnpState attributes
+	        // comment out for testing of finding best SC_MOUSE_GENOMES SS
+	        finishConsensusSnp(orderedAlleleSummary, rs.getRsVarClass());
+	
+	        /**
+	         * We have a completed snp, write to bcp files and get counts
+	         */
+	        // write to bcp files
+	        snpSnp.sendToStream();
+	
+	        // incr ctr, we've added another snp
+	        rsCtr++;
+	        rsLoadedOnChrCtr++;
+	        // incrmement the markers
+	        mkrCtr += snpSnp.dpMarker.size();
+	        // increment the subSnps
+	        ssCtr += snpSnp.subSnps.size();
+	        ssLoadedOnChrCtr += snpSnp.subSnps.size();
+	        // increment the coordinates
+	        snpCoordCtr += snpSnp.coordCache.size();
+        }
     }
 
     public int getRsLoadedOnChrCtr() {
@@ -488,12 +522,16 @@ public class MGPInputProcessor {
     public void getProcessedReport() {
         logger.logdInfo("Total RefSNPs created: " + rsCtr, false);
         logger.logcInfo("Total RefSNPs created: " + rsCtr, false);
+        
+        logger.logdInfo("Total RefSNPs not created, no SC_MOUSE_GENOMES in XML file: " + noRsCtr, false);
+        logger.logcInfo("Total RefSNPs not created, no SC_MOUSE_GENOMES in XML file: " + noRsCtr, false);
+        
         logger.logdInfo("Total SubSNPs created: " + ssCtr, false);
         logger.logcInfo("Total SubSNPs created: " + ssCtr, false);
-        logger.logdInfo("Total SS loaded with no strain alleles: " + ssNoStAllele, false);
-        logger.logcInfo("Total SS loaded with no strain alleles: " + ssNoStAllele, false);
+        
         logger.logdInfo("Total dbSNP snp/marker relationships created: " + mkrCtr, false);
         logger.logcInfo("Total dbSNP snp/marker relationships created: " + mkrCtr, false);
+        
         logger.logdInfo("Total snp coordinates created: " + snpCoordCtr, false);
         logger.logcInfo("Total snp coordinates created: " + snpCoordCtr, false);
     }
@@ -509,11 +547,7 @@ public class MGPInputProcessor {
                 String key = (String)i.next();
                 logger.logdInfo("    " + key + " " + newAlleleChar.get(key), false);
             }
-            logger.logdInfo("New submitter handles: ", false);
-            for (Iterator i = newSubHandle.keySet().iterator(); i.hasNext();) {
-                String key = (String)i.next();
-                logger.logdInfo("    " + key + " " + newSubHandle.get(key), false);
-            }
+           
             logger.logdInfo("New strains: ", false);
             for (Iterator i = newStrains.keySet().iterator(); i.hasNext();) {
                 String key = (String)i.next();
@@ -812,15 +846,14 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
          * Iterate thru each SS
          */
 	
-	// get the submitter handles to report when no allele summary
-	StringBuffer handles = new StringBuffer();
+        
         for (Iterator i = ssPopulationMap.keySet().iterator(); i.hasNext(); ) {
             // get the ssid
             Integer currentSSId = (Integer) i.next();
 
             // get the set of populations for this SS
             DBSNPGenotypePopulation[] population = 
-		(DBSNPGenotypePopulation[]) ssPopulationMap.get(currentSSId);
+            		(DBSNPGenotypePopulation[]) ssPopulationMap.get(currentSSId);
 
             /**
              * Iterate thru the populations of the current SS and create the
@@ -831,58 +864,56 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
 
             //for (Iterator j = population.iterator(); j.hasNext(); ) {
              //   DBSNPGenotypePopulation pop = (DBSNPGenotypePopulation) j.next();
-	    for (int j = 0; j < population.length; j++ ) {
-	         DBSNPGenotypePopulation pop = population[j];
-		if(pop == null) {
-		    continue;
-		}
-		// lookup the population name
-                handles.append( popNameLookupByPopId.lookup(pop.getPopId()) );
-		handles.append(" ");
-                HashMap alleleMap = pop.getStrainAlleles();
-                /**
-                 * Iterate thru strains
-                 */
-                for (Iterator k = alleleMap.keySet().iterator(); k.hasNext(); ) {
-                    String strain = ((String) k.next()).trim()  ;
-                    //System.out.println("strain: " + strain);
-                    SNP_StrainState strState = resolveStrain(strain, pop.getPopId());
-                    if (strState == null) {
-                        continue;
-                    }
-                    Integer strainKey = strState.getMgdStrainKey();
-
-                    // get the allele string from the Allele object
-                     Allele a = (Allele) alleleMap.get(strain);
-                     String allele = a.getAllele();
-                     // BUILD 125 - map " " allele to "N" for now.
-                     // BUILD 126 - don't consider
-                     if (allele.equals(" ") || allele.equals("N")) {
-                         continue;
-                     }
-                     else if (allele.equals("--")) {
-                         allele = "-";
-                     }
-                    String orient = a.getOrientation();
-                    /**
-                     * if in reverse orientation we need to complement
-                     * 'allele' before storing
-                     */
-                    if (orient.equals(
-                        SNPLoaderConstants.GENO_REVERSE_ORIENT)) {
-                        allele = complementAllele(allele, currentSSId);
-                    }
-                    /**
-                     * Add the allele to alleleSummary set (proper set,
-                     * no repeats)
-                     */
-                    alleleSummarySet.add(allele);
-                    addToConsensusAlleleMap(strainKey, allele,
-                                            consensusAlleleMap);
-                }
-                /**
-                 * done iterating thru strains
-                 */
+		    for (int j = 0; j < population.length; j++ ) {
+		         DBSNPGenotypePopulation pop = population[j];
+				if(pop == null) {
+				    continue;
+				}
+					
+	                HashMap alleleMap = pop.getStrainAlleles();
+	                /**
+	                 * Iterate thru strains
+	                 */
+	                for (Iterator k = alleleMap.keySet().iterator(); k.hasNext(); ) {
+	                    String strain = ((String) k.next()).trim()  ;
+	                    //System.out.println("strain: " + strain);
+	                    SNP_StrainState strState = resolveStrain(strain, pop.getPopId());
+	                    if (strState == null) {
+	                        continue;
+	                    }
+	                    Integer strainKey = strState.getMgdStrainKey();
+	
+	                    // get the allele string from the Allele object
+	                     Allele a = (Allele) alleleMap.get(strain);
+	                     String allele = a.getAllele();
+	                     // BUILD 125 - map " " allele to "N" for now.
+	                     // BUILD 126 - don't consider
+	                     if (allele.equals(" ") || allele.equals("N")) {
+	                         continue;
+	                     }
+	                     else if (allele.equals("--")) {
+	                         allele = "-";
+	                     }
+	                    String orient = a.getOrientation();
+	                    /**
+	                     * if in reverse orientation we need to complement
+	                     * 'allele' before storing
+	                     */
+	                    if (orient.equals(
+	                        SNPLoaderConstants.GENO_REVERSE_ORIENT)) {
+	                        allele = complementAllele(allele, currentSSId);
+	                    }
+	                    /**
+	                     * Add the allele to alleleSummary set (proper set,
+	                     * no repeats)
+	                     */
+	                    alleleSummarySet.add(allele);
+	                    addToConsensusAlleleMap(strainKey, allele,
+	                                            consensusAlleleMap);
+	                }
+	                /**
+	                 * done iterating thru strains
+	                 */
             }
             /**
              * Done iterating thru populations
@@ -1086,30 +1117,7 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
         catch (KeyNotFoundException e) {
             strainKey = null;
         }
-        // if not found, it may be a jax registry id
-        if (strainKey == null) {
-            strainKey = jaxRegistryLookup.lookup(strain);
-        }
-        // if still not found may be an integer strain id. Create strain name
-        // as follows handle_population_strain and lookup again
-        if (strainKey == null) {
-            try {
-                // lookup the handle name
-                String handleName = handleNameLookupByPopId.lookup(popId);
-
-                // lookup the population name
-                String popName = popNameLookupByPopId.lookup(popId);
-
-                // create the new strain name
-                String qualifiedStrainName = handleName + "_" + popName + "_" +
-                    strain;
-                // lookup the new strain name
-                strainKey = strainKeyLookup.lookup(qualifiedStrainName);
-            }
-            catch (KeyNotFoundException e) {
-                strainKey = null;
-            }
-        }
+       
         SNP_StrainState state = null;
         if (strainKey != null) {
             String name = strainNameLookup.lookup(strainKey);
@@ -1312,8 +1320,8 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
 
           // create an accession object for the ssId
           processAccession(SNPLoaderConstants.PREFIX_SSNP + ssId, 
-		LogicalDBConstants.SUBSNP,
-                ssKey, MGITypeConstants.SUBSNP);
+        		LogicalDBConstants.SUBSNP,
+                	ssKey, MGITypeConstants.SUBSNP);
 
           // create an accession object for the current submitter snp id
           processAccession(ss.getSubmitterSNPId(),
@@ -1321,13 +1329,24 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
 
           // process the strain alleles
           //for (Iterator j = populations.iterator(); j.hasNext(); ) {
-	  for (int j = 0; j < populations.length; j++) {
-	      DBSNPGenotypePopulation p = populations[j];
-		if (p == null) {
-		    continue;
-		}
-		processSSStrainAlleles(ssKey, ssId, p);
-         }
+		  for (int j = 0; j < populations.length; j++) {
+		      DBSNPGenotypePopulation p = populations[j];
+		      //DEBUG
+		      /*
+		      HashMap<String, Allele> sa = p.getStrainAlleles();
+	    	  for (String strainKey : sa.keySet()) {
+          	    
+                  Allele a = sa.get(strainKey);
+                  //System.out.println("ProcessSS strain " + strainKey + " allele " + a.getAllele());
+                  
+	    	  }	//END DEBUG*/
+
+
+		      if (p == null) {
+			     continue;
+		      }
+		      processSSStrainAlleles(ssKey, ssId, p);
+	      }
 
     }
     /**
@@ -1435,7 +1454,7 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
             // resolve and set the population key
             // allow this to throw KeyNotFoundException, precondition is that
             // populations are in place
-            state.setPopulationKey(populationKeyLookupByPopId.lookup(popId));
+            state.setPopulationKey(popKeyLookupByName.lookup("EVA_MGPV3"));
 
             // set the strain key
             state.setMgdStrainKey(strainKey);

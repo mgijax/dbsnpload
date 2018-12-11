@@ -181,7 +181,9 @@ public class DBSNPNseInputFile extends InputXMLDataFile
                              else if (atts[i] != null && atts[i].equals("orient")) {
                                  currentSS.setSSOrientToRS(it.getAttributeValue(i));
                              }
-
+                             else if (atts[i] != null && atts[i].equals("buildId")) {
+                            	 currentSS.setBuildNo(new Integer(it.getAttributeValue(i)));
+                             }
                          }
                      }
                      /// note here we are getting the ss observed - we don't want the rs

@@ -61,36 +61,37 @@ public class MGPGenotypeRefSNPInputFile  {
 	
     	while (it.hasNext()) {
 	    genoInput = (DBSNPGenotypeRefSNPInput)it.next();
-	    if (genoInput != null) { // null if header line was processed 
-	    	/* following for writing parser output for testing
-		    String line = genoInput.getRsId() + SNPLoaderConstants.TAB;
-			
-			HashMap popMap = (HashMap)genoInput.getSSPopulationsForRs();
-			Collection v = popMap.values();
-			
-			for (Iterator k = v.iterator(); k.hasNext(); ) {
-	            DBSNPGenotypePopulation[] popArray = (DBSNPGenotypePopulation[]) k.next();
-	            
-	            for (int l = 0; l < popArray.length; l++ ) {
-	                DBSNPGenotypePopulation pop = popArray[l];
-	                HashMap<String, Allele> strainalleles = (HashMap)pop.getStrainAlleles();
-	                
-	                for (String strainKey : strainalleles.keySet()) {
-	                	    
-	                        Allele a = strainalleles.get(strainKey);
-	                        line = line +  strainKey + ':' + a.getAllele() + SNPLoaderConstants.TAB;
-	                }
-	
-	            }
-	           
-			}
-			System.out.println(line); */
-			genoRSId = genoInput.getRsId(); //.substring(2);
-			//System.out.println("getInputMap rsID: " + genoRSId);
-			inputMap.put(genoRSId, genoInput);
-	    }
+		    if (genoInput != null) { // null if header line was processed 
+		    	//following for writing parser output for testing
+			    /*String line = genoInput.getRsId() + SNPLoaderConstants.TAB;
+				
+				HashMap popMap = (HashMap)genoInput.getSSPopulationsForRs();
+				Collection v = popMap.values();
+				
+				for (Iterator k = v.iterator(); k.hasNext(); ) {
+		            DBSNPGenotypePopulation[] popArray = (DBSNPGenotypePopulation[]) k.next();
+		            
+		            for (int l = 0; l < popArray.length; l++ ) {
+		                DBSNPGenotypePopulation pop = popArray[l];
+		                HashMap<String, Allele> strainalleles = (HashMap)pop.getStrainAlleles();
+		                
+		                for (String strainKey : strainalleles.keySet()) {
+		                	    
+		                        Allele a = strainalleles.get(strainKey);
+		                        line = line +  strainKey + ':' + a.getAllele() + SNPLoaderConstants.TAB;
+		                }
+		
+		            }
+		           
+				}
+				//System.out.println(line);
+				*/
+				genoRSId = genoInput.getRsId(); //.substring(2);
+				//System.out.println("getInputMap rsID: " + genoRSId);
+				inputMap.put(genoRSId, genoInput);
+		    }
 	  }
-    return inputMap;
+      return inputMap;
     }
 
 
@@ -118,8 +119,9 @@ public class MGPGenotypeRefSNPInputFile  {
 
     {
      
-    	private int ssCtr = 0;
+    	private int ssCtr = 1;
     	private int isHeader = 1;
+    	
         public Object interpret(String rec) throws InterpretException {
         	//System.out.println("Interpreter rec: " + rec);
             // the current input object
@@ -175,26 +177,30 @@ public class MGPGenotypeRefSNPInputFile  {
 	                  
 	            currentPopulation = new DBSNPGenotypePopulation();
 	            currentPopulation.setPopId("");
+	            // iterate through the strains creating Strain Alleles and 
+	            // setting their orientation
+	            
+	            for (int i = 0; i < strains.length; i++) {
+	            	String allele = strains[i].trim();
+	            	if (allele == "-") {
+	            		continue;
+	            	}
+	            	String strain = ((String)strainMap.get(i)).trim();
+	            	//System.out.println("Interpreter strain " + strain + " allele " + allele);
+	            	currentAllele = new Allele(allele,
+	                        currentSSOrientToRS);
+	            	currentPopulation.addStrainAlleles(strain, currentAllele);
+	            			
+	            }
 	            currentSSPopulationArray[currentPopArrIndex] =  currentPopulation;
 	            currentPopArrIndex++;
 	            
 	            // here we are using a ctr as we have no SS IDs, for MGP
 	            // we will have only one SS/RS and the SS ID must come from
 	            // the XML file (join on RS ID)
-	            currentInput.addPopulation( Integer.toString(ssCtr++),
-	                    currentSSPopulationArray);
-	 
-	            // iterate through the strains creating Strain Alleles and 
-	            // setting their orientation
-	            
-	            for (int i = 0; i < strains.length; i++) {
-	            	String allele = strains[i].trim();
-	            	String strain = ((String)strainMap.get(i)).trim();
-	            	currentAllele = new Allele(allele,
-	                        currentSSOrientToRS);
-	            	currentPopulation.addStrainAlleles(strain, currentAllele);
-	            			
-	            }
+	            currentInput.addPopulation( Integer.toString(ssCtr),
+	                    currentSSPopulationArray); 
+
           }  
     
             return currentInput;

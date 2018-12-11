@@ -29,6 +29,10 @@ public class ChromosomeStats {
     // elapsed time to process
     private float timeToProcess;
 
+    // MGP
+    private int totalGenoSnpOnChr;
+    private int totalGenoAddOnChr;
+    private int totalGenoUpdateOnChr;
     public void setChromosome(String c) {
         chromosome = c;
     }
@@ -53,6 +57,17 @@ public class ChromosomeStats {
     public void setTimeToProcess(float t) {
         timeToProcess = t;
     }
+    public void setTotalGenoSnpOnChr(int t) {
+    	totalGenoSnpOnChr = t;
+    }
+    public void setTotalGenoAddOnChr (int t) {
+    	totalGenoAddOnChr = t;
+    }
+    public void setTotalGenoUpdateOnChr(int t ) {
+    	totalGenoUpdateOnChr = t;
+    }
+    
+    
     public String getChromosome() {
         return chromosome;
     }
@@ -79,4 +94,14 @@ public class ChromosomeStats {
     public float getTimeToProcess() {
         return timeToProcess;
     }
+    public int getTotalGenoSnpOnChr() {
+    	return totalGenoSnpOnChr;
+    }
+    public int getTotalGenoAddOnChr () {
+    	return totalGenoAddOnChr;
+    }
+    public int getTotalGenoUpdateOnChr() {
+    	return totalGenoUpdateOnChr;
+    }
+    
 }

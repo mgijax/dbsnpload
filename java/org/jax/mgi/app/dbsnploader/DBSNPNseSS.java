@@ -28,7 +28,9 @@ class DBSNPNseSS {
     private Integer isExemplar = 0;
     // dbsnp ss observed alleles; a summary of the ss alleles
     private String observedAlleles;
-
+    // dbsnp ss build#
+    private Integer buildNo;
+    
     /**********************
      * Constructors
      **********************/
@@ -66,6 +68,10 @@ class DBSNPNseSS {
     public void setObservedAlleles(String s) {
         observedAlleles = s;
     }
+    public void setBuildNo(Integer b) {
+    	buildNo = b;
+    }
+    
     /******************
      * Get methods
      *****************/
@@ -89,5 +95,8 @@ class DBSNPNseSS {
      }
      public String getObservedAlleles() {
          return observedAlleles;
+     }
+     public Integer getBuildNo() {
+    	 return buildNo;
      }
 }
