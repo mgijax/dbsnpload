@@ -1,3 +1,9 @@
+TAG: dbsnpload-tr12963-1
+DATE: 11/23/2018
+STAFF: sc
+CHANGES: TR12934 - Load MGP v5 (Sanger) SNPs into MGI
+DADT-24: MGP Add Mode
+
 TAG: dbsnpload-6-0-4-2
 DATE: 11/23/2018
 STAFF: sc
