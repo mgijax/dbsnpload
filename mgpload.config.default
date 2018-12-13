@@ -124,7 +124,7 @@ export GENO_SNP_INFILESUFFIX NSE_SNP_INFILESUFFIX
 
 # list of chromosomes to load, comma delimited
 SNP_CHROMOSOMES_TOLOAD="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,X,Y,MT"
-#SNP_CHROMOSOMES_TOLOAD="19,Y"
+#SNP_CHROMOSOMES_TOLOAD="18,19"
 
 # full path to 'SNPs not loaded' report
 SNP_NOTLOADED=${RPTDIR}/RefSnpsNotLoaded.txt
@@ -171,7 +171,9 @@ export DLA_LOADER DLA_START
 # The list of SNP tables for the java load to truncate
 # Note that snpPopulation.sh truncates SNP_Accession
 # Note that snpcacheload deals with SNP_ConsensusSnp_Marker
-#DLA_TRUNCATE_SNP_TABLES=DP_SNP_Marker,SNP_ConsensusSnp,SNP_ConsensusSnp_StrainAllele,SNP_Coord_Cache,SNP_Flank,SNP_Strain,SNP_SubSnp,SNP_SubSnp_StrainAllele
+DLA_TRUNCATE_SNP_TABLES=SNP_Strain
+
+export DLA_TRUNCATE_SNP_TABLES
 
 # Ok to delete dbsnpload Accessions
 # The population load truncates SNP_Accession
@@ -183,8 +185,6 @@ SNP_OK_TO_DELETE_ACCESSIONS=false
 #SNP_UPDATE_MGITABLES=${DLA_TRUNCATE_SNP_TABLES},SNP_Population,SNP_Accession
 
 export SNP_OK_TO_DELETE_ACCESSIONS
-#export DLA_TRUNCATE_LOAD_TABLES DLA_TRUNCATE_QC_TABLES SNP_OK_TO_DELETE_ACCESSIONS SNP_UPDATE_MGITABLES
-
 #
 # put production snp database in sql user mode settings
 #
