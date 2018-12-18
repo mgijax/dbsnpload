@@ -1,3 +1,10 @@
+TAG: dbsnpload-tr12963-2
+DATE: 11/23/2018
+STAFF: sc
+CHANGES: TR12934 - Load MGP v5 (Sanger) SNPs into MGI
+Lots of tweaks to improve memory footprint. Tag
+before major revision for the same purpose
+
 TAG: dbsnpload-tr12963-1
 DATE: 11/23/2018
 STAFF: sc
