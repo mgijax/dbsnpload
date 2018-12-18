@@ -283,8 +283,10 @@ public class SNPSNP {
                 stream.insert((DP_SNP_MarkerDAO)i.next());
             }
             // insert all new snp strains
-            for (i = strains.iterator(); i.hasNext();) {
+            // we are adding in MGP strains ahead of time. We dod not want to truncate this 
+            // table and reload because there are many dbsnp strains not used by MGP
+            /*for (i = strains.iterator(); i.hasNext();) {
                 stream.insert((SNP_StrainDAO)i.next());
-            }
+            }*/ 
         }
     }

@@ -1,21 +1,15 @@
 package org.jax.mgi.app.dbsnploader;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Vector;
 
 import org.jax.mgi.shr.config.ConfigException;
 import org.jax.mgi.shr.exception.MGIException;
 import org.jax.mgi.shr.ioutils.IOUException;
-
 import org.jax.mgi.shr.ioutils.InputDataFile;
 import org.jax.mgi.shr.ioutils.InterpretException;
 import org.jax.mgi.shr.ioutils.RecordDataInterpreter;
 import org.jax.mgi.shr.ioutils.RecordDataIterator;
-import org.jax.mgi.shr.stringutil.StringLib;
 
 /**
  * is a Representation of RefSnp strain alleles from the DBSNP Genotype input file
@@ -57,7 +51,7 @@ public class MGPGenotypeRefSNPInputFile  {
     	RecordDataIterator it = inFile.getIterator(interpreter);
     	DBSNPGenotypeRefSNPInput genoInput = null;
     	HashMap inputMap = new HashMap();
-    	String genoRSId = null;
+    	int genoRSId;
 	
     	while (it.hasNext()) {
 	    genoInput = (DBSNPGenotypeRefSNPInput)it.next();
@@ -128,7 +122,7 @@ public class MGPGenotypeRefSNPInputFile  {
             DBSNPGenotypeRefSNPInput currentInput = null;
 
             // current rsid
-            String currentRSId = null;
+            int currentRSId;
 
             // current ssid for this rs
             String currentSSId = null;
@@ -163,8 +157,19 @@ public class MGPGenotypeRefSNPInputFile  {
             	//System.out.println("is data record");
 	            String s = rec.replaceFirst(SNPLoaderConstants.CRT,"");
 	            String[] fields = s.split(SNPLoaderConstants.TAB);
-	            currentRSId = fields[1];
-	           // System.out.println("currentRSId: " + currentRSId);
+	            /*
+	            String r = fields[1];
+	            System.out.println("rsID from file: " + r);
+	            // index of ';' semi-colon in rsID
+	            int sci = r.indexOf(";");
+	            if (sci != -1)  {
+	            	r = r.substring(0, sci);
+	            	System.out.println("first rsID taken: " + r);
+	            }*/
+	            
+	            
+	            currentRSId = new Integer(fields[1]).intValue();
+	            System.out.println("rsID as integer: " + currentRSId);
 	            String[]strains = Arrays.copyOfRange(fields, 2, fields.length);
 	            
 	            // create the input object for the record and set rsId
@@ -220,11 +225,10 @@ public class MGPGenotypeRefSNPInputFile  {
             // If the first character of the input record is a "#", it is a
             // comment and should be ignored.
             //
-            /*if (rec.substring(0,1).equals("#"))
+            if (rec.contains(";"))
                 return false;
             else
-                return true; */
- 	    return true;
+                return true; 
         }
     }
 }

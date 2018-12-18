@@ -8,6 +8,7 @@ import org.jax.mgi.dbs.mgd.lookup.TranslationException;
 import org.jax.mgi.shr.cache.CacheException;
 import org.jax.mgi.shr.cache.FullCachedLookup;
 import org.jax.mgi.shr.cache.KeyValue;
+import org.jax.mgi.shr.cache.LazyCachedLookup;
 import org.jax.mgi.shr.config.ConfigException;
 import org.jax.mgi.shr.dbutils.DBException;
 import org.jax.mgi.shr.dbutils.RowDataInterpreter;
@@ -30,8 +31,11 @@ public class DBSNPRSLookup extends FullCachedLookup
 
   // indicator of whether or not the cache has been initialized
   private static boolean hasBeenInitialized = false;
+  
+  // the chr we are processing
+  String chromosome;
 
-
+ 
    /**
    * constructor
    * @throws CacheException thrown if there is an error with the cache
@@ -39,9 +43,12 @@ public class DBSNPRSLookup extends FullCachedLookup
    * @throws ConfigException thrown if there is an error accessing the
    * configuration file
    */
-  public DBSNPRSLookup()
+  public DBSNPRSLookup(String chr)
       throws CacheException, DBException, ConfigException {
     super(SQLDataManagerFactory.getShared(SchemaConstants.SNP));
+    
+    this.chromosome = chr;
+    
     if (!hasBeenInitialized) {
         initCache(cache);
       }
@@ -72,9 +79,11 @@ public class DBSNPRSLookup extends FullCachedLookup
    */
  public String getFullInitQuery()
   {
-    String s = "SELECT accid " +
-	    "FROM SNP_Accession " + 
-	    "WHERE _LogicalDB_key = 73 ";
+    String s = "SELECT a.accid " +
+	    "FROM SNP_Accession a, SNP_Coord_Cache c " + 
+	    "WHERE a._LogicalDB_key = 73 " +
+	    "and a._Object_key = c._ConsensusSnp_key " +
+	    "and c.chromosome = '" + chromosome + "'";
     return s;
   }
 
@@ -88,9 +97,9 @@ public class DBSNPRSLookup extends FullCachedLookup
     class Interpreter implements RowDataInterpreter {
 		String rsID;
     	public Object interpret(RowReference row) throws DBException {
-			//return new KeyValue(row.getString(1), row.getInt(2));
+			
 			rsID = row.getString(1);
-			return new KeyValue(rsID, rsID );
+			return new KeyValue(rsID, ""); 
 		}
 		
     }

@@ -46,17 +46,17 @@ public class DBSNPGenotypeRefSNPInputFile extends InputXMLDataFile {
 
     public HashMap getInputMap () throws MGIException
     {
-	XMLDataIterator it = this.getIterator();
-	DBSNPGenotypeRefSNPInput genoInput = null;
-	HashMap inputMap = new HashMap();
-	String genoRSId = null;
-	
-	while (it.hasNext()) {
-	    genoInput = (DBSNPGenotypeRefSNPInput)it.next();
-            genoRSId = genoInput.getRsId();
- 	    inputMap.put(genoRSId, genoInput);
-	}
-	return inputMap;
+		XMLDataIterator it = this.getIterator();
+		DBSNPGenotypeRefSNPInput genoInput = null;
+		HashMap inputMap = new HashMap();
+		int genoRSId;
+		
+		while (it.hasNext()) {
+		    genoInput = (DBSNPGenotypeRefSNPInput)it.next();
+	        genoRSId = genoInput.getRsId();
+	 	    inputMap.put(genoRSId, genoInput);
+		}
+		return inputMap;
     }
 
 
@@ -161,7 +161,7 @@ public class DBSNPGenotypeRefSNPInputFile extends InputXMLDataFile {
                         currentInput = new DBSNPGenotypeRefSNPInput();
                         for (int i = 0; i < attsCt; i++) {
                             if (atts[i] != null && atts[i].equals("rsId")) {
-                                currentInput.setRsId(it.getAttributeValue(i));
+                                currentInput.setRsId(new Integer(it.getAttributeValue(i)).intValue());
                             }
                         }
                     }

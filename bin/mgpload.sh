@@ -285,7 +285,8 @@ fi
 #
 # run java dbSnp loader
 #
-echo "running dbsnp load"
+
+echo "running mgp load"
 runsnpload
 
 #

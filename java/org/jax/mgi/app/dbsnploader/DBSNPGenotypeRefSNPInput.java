@@ -18,7 +18,7 @@ class DBSNPGenotypeRefSNPInput {
     private HashMap ssPopulationMap;
 
     // RefSnp id
-    private String rsId;
+    private int rsId;
 
     /**
      * default constructor
@@ -32,7 +32,7 @@ class DBSNPGenotypeRefSNPInput {
     /**
      * constructor which takes an rs id
      */
-    public DBSNPGenotypeRefSNPInput(String rs) {
+    public DBSNPGenotypeRefSNPInput(int rs) {
         this();
         rsId = rs;
     }
@@ -41,7 +41,7 @@ class DBSNPGenotypeRefSNPInput {
      * sets the rs id
      * @param r - a rs id
      */
-    public void setRsId(String r) {
+    public void setRsId(int r) {
         rsId = r;
     }
 
@@ -58,7 +58,7 @@ class DBSNPGenotypeRefSNPInput {
      * gets the rs id
      * @return the rs id
      */
-    public String getRsId() {
+    public int getRsId() {
         return rsId;
     }
 

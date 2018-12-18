@@ -1,29 +1,22 @@
 package org.jax.mgi.app.dbsnploader;
 
-import org.jax.mgi.shr.dla.loader.DLALoader;
-import org.jax.mgi.shr.dbutils.dao.SQLStream;
-import org.jax.mgi.shr.exception.MGIException;
-import org.jax.mgi.dbs.mgd.MGITypeConstants;
-import org.jax.mgi.dbs.SchemaConstants;
-import org.jax.mgi.dbs.mgd.LogicalDBConstants;
-import org.jax.mgi.shr.ioutils.XMLDataIterator;
-import org.jax.mgi.shr.dla.loader.DLALoaderHelper;
-import org.jax.mgi.shr.dbutils.SQLDataManager;
-import org.jax.mgi.shr.dbutils.SQLDataManagerFactory;
-import org.jax.mgi.shr.config.DatabaseCfg;
-import org.jax.mgi.shr.dbutils.bcp.BCPManager;
-import org.jax.mgi.shr.config.BCPManagerCfg;
-import org.jax.mgi.shr.cache.CacheException;
-import org.jax.mgi.shr.dbutils.DBException;
-import org.jax.mgi.shr.config.ConfigException;
-import org.jax.mgi.shr.cache.KeyNotFoundException;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Vector;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Vector;
+
+import org.jax.mgi.dbs.SchemaConstants;
+import org.jax.mgi.shr.config.BCPManagerCfg;
+import org.jax.mgi.shr.config.ConfigException;
+import org.jax.mgi.shr.dbutils.SQLDataManager;
+import org.jax.mgi.shr.dbutils.SQLDataManagerFactory;
+import org.jax.mgi.shr.dbutils.bcp.BCPManager;
+import org.jax.mgi.shr.dbutils.dao.SQLStream;
+import org.jax.mgi.shr.dla.loader.DLALoader;
+import org.jax.mgi.shr.exception.MGIException;
+import org.jax.mgi.shr.ioutils.XMLDataIterator;
 
 
 
@@ -62,7 +55,8 @@ public class MGPLoader extends DLALoader {
     private BufferedWriter snpsNotLoadedWriter;
 
     // current number of XML RefSNPs looked at
-    private int xmlRsCtr;
+    // don't need for MGP
+    //private int xmlRsCtr;
 
     // the number of VCF RefSnps processed
     private int vcfRsCtr;
@@ -131,7 +125,7 @@ public class MGPLoader extends DLALoader {
         loadCfg = new DBSNPLoaderCfg();
 
         // the set of snp tables to truncate
-        String[] snpTables = loadCfg.getTruncateSnpTables();
+        //String[] snpTables = loadCfg.getTruncateSnpTables();
 
         // conf
         genoConfig = new DBSNPLoaderCfg("GENO");
@@ -171,9 +165,9 @@ public class MGPLoader extends DLALoader {
 
         // create ExceptionFactory
         snpEFactory = new SNPLoaderExceptionFactory();
-        /*
-        try {
-            logger.logdInfo("Truncating SNP tables", true);
+        
+        /*try {
+            logger.logdInfo("Truncating SNP_Strain table", true);
 		
             if (snpTables != null) {
                 DLALoaderHelper.truncateTables(snpTables,
@@ -185,7 +179,7 @@ public class MGPLoader extends DLALoader {
         }*/
 
         // initialize all counters
-        xmlRsCtr = 0;
+        //xmlRsCtr = 0;
         vcfRsCtr = 0;
         ssCtr = 0;
         rsWithNoAllelesCtr = 0;
@@ -201,8 +195,7 @@ public class MGPLoader extends DLALoader {
 
         // initialize the statistics container
         chrStats = new Vector();
-        // initialize the RS in db lookup
-        rsLookup = new DBSNPRSLookup();
+               
     }
 
     /**
@@ -233,6 +226,7 @@ public class MGPLoader extends DLALoader {
          * process chromosome files one at a time
          */
         for (int i = 0; i < chromosomes.length; i++ ) {
+        	
             // get the current time
             long startTime = System.currentTimeMillis();
 
@@ -246,8 +240,11 @@ public class MGPLoader extends DLALoader {
             // encourage the garbage collector
             System.gc();
 
-            // get the next chromosome
+            // get the next chromosome and init the rsLookup for that chr
             String chr = chromosomes[i].trim();
+            System.out.println("initializing rsLookup");
+            rsLookup = new DBSNPRSLookup(chr);
+            System.out.println("done initializing rsLookup");
             
             long startFreeMem = Runtime.getRuntime().freeMemory();
             stats.setChromosome(chr);
@@ -273,7 +270,7 @@ public class MGPLoader extends DLALoader {
 
 		    HashMap genoSNPMap = new MGPGenotypeRefSNPInputFile(
                  genotypeFilename).getInputMap();
-		    vcfRsCtr = genoSNPMap.size();
+		    vcfRsCtr = vcfRsCtr + genoSNPMap.size();
 		    /**
              * create iterator over NSE file
              */
@@ -313,7 +310,7 @@ public class MGPLoader extends DLALoader {
             DBSNPNseInput nseInput = null;
 
             while (it.hasNext()) {
-                
+            	//xmlRsCtr++;
                 nseInput = (DBSNPNseInput)it.next();
                 String nseRSId = nseInput.getRS().getRsId();
                 //System.out.println("XML rsID: " + nseRSId);
@@ -326,22 +323,27 @@ public class MGPLoader extends DLALoader {
                 	totalGenoSnpOnChr++;
                 	genoInput = 
                 			(DBSNPGenotypeRefSNPInput)genoSNPMap.get(nseRSId);
-                	genoRSId = genoInput.getRsId();
+                	genoRSId = Integer.toString(genoInput.getRsId()); 
                 	//System.out.println("geno rsID: " + genoRSId);
-                	if (rsLookup.lookup("rs" + genoRSId) != null) {
+                	//if (rsLookup.lookup("rs" + genoRSId) != null) {
+                	if (rsLookup.lookup(genoRSId) != null) {
                     	logger.logcInfo("Geno RS is already in MGI rs" + genoRSId, false);
                     	totalGenoUpdateOnChr++;
+                    	/*
+                    	 * mgpProcessor.processUpdate(nseInput, genoInput, "update");
+                    	 */
                     	continue;
                     }
                 	else {
                 		logger.logcInfo("Geno RS not in MGI rs" + genoRSId, false);
-                		mgpProcessor.processInput(nseInput, genoInput);
+                		mgpProcessor.processInput(nseInput, genoInput); // add action param "add" 
+                		
                 		totalGenoAddOnChr++;
                 	}
                 		
                 }
               
-                xmlRsCtr++;
+                
                 //ssCtr += nseInput.getSubSNPs().size();
             }
             stats.setTotalSnpsOnChr(totalGenoSnpOnChr);
@@ -435,22 +437,16 @@ public class MGPLoader extends DLALoader {
      * Reports load statistics
      */
     private void reportLoadStatistics() throws ConfigException {
-        logger.logdInfo("Total XML RefSnps Looked at: " + xmlRsCtr, false);
-        logger.logdInfo("Total VCF RefSnps Looked at: " + vcfRsCtr, false);
-        //logger.logdInfo("Total SubSnps for the RefSnps Looked at: " + ssCtr, false);
+        //logger.logdInfo("Total XML RefSnps In XML Files: " + xmlRsCtr, false);
+        logger.logdInfo("Total VCF RefSnps In VCF Files: " + vcfRsCtr, false);
+        
         logger.logdInfo("Total RefSnp records repeated in the input " +
             "(can be multiple per RefSnp): " +
                         rsRepeatExceptionCtr, false);
-        /*logger.logdInfo("Total RefSnps with no dbSNP defined strain/alleles for any assay of the SNP: " +
-                        (rsWithNoAllelesCtr), false);
-        logger.logdInfo("Total RefSnps with no MGI defined strain/alleles for any assay of the SNP: " +
-                        (rsWithNoAlleleSummaryCtr), false);
-        logger.logdInfo("Total RefSnps mapped to more than 1 chromosome in the C57BL/6J genome: " +
-                        rsMultiBL6ChrCtr, false);*/
+        
         logger.logdInfo("Total RefSnps mapped to > " + loadCfg.getMaxChrCoordCt()
                          + " coordinates on the same chromosome: " + rsMultiBL6ChrCoordCtr, false);
-        /*logger.logdInfo("Total RefSnps unmapped in the C57BL/6J genome: " +
-                        rsWithNoBL6Ctr, false);*/
+        
         logger.logdInfo("Total RefSnps with Vocab resolving errors: " +
                         rsWithVocabResolverExceptionCtr, false);
 
@@ -462,14 +458,14 @@ public class MGPLoader extends DLALoader {
         String crt = "\n";
         logger.logdInfo("Chr" + tab + "time (min)" + tab + "FreeMemStart (bytes)" + tab +
                         "FreeMemAfterLookup" + tab + "FreeMemEnd" + tab +
-                        "TotalSnpsOnChr" + tab + "TotalRefSnpsLoaded" + tab + "TotalSubSnpsLoaded" + crt, false);
+                        "TotalMgpSnpsOnChr" + tab + "TotalMgpRefSnpsLoaded" + tab + "TotalMgpSubSnpsLoaded" + tab + "TotalMgpSubSnpsNotInDatabase" + tab + "totalMgpSubSnpsInDatabase" + crt, false);
         for (Iterator i = chrStats.iterator(); i.hasNext();) {
             ChromosomeStats s  = (ChromosomeStats)i.next();
             logger.logdInfo(s.getChromosome() + tab + s.getTimeToProcess() + tab +
                             s.getStartFreeMem() + tab +
                             s.getFreeMemAfterGenoLookup() + tab + s.getEndFreeMem() +
                             tab + s.getTotalRefSnpsOnChr() + tab + s.getTotalRefSnpsLoaded()  +
-                            tab + s.getTotalSubSnpsLoaded() + crt, false);
+                            tab + s.getTotalSubSnpsLoaded() + tab + s.getTotalGenoAddOnChr() + tab + s.getTotalGenoUpdateOnChr() + crt, false);
         }
     }
 }
