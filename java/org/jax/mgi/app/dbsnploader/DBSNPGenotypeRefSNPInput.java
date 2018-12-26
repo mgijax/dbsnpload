@@ -26,7 +26,7 @@ class DBSNPGenotypeRefSNPInput {
     public DBSNPGenotypeRefSNPInput() {
         // build 126 lets try 2 for now. In build 125 there were very few multi-
         //population subSnps
-        ssPopulationMap = new HashMap(2);
+        ssPopulationMap = new HashMap(1);
     }
 
     /**
@@ -76,6 +76,9 @@ class DBSNPGenotypeRefSNPInput {
      */
     public HashMap getSSPopulationsForRs() {
         return ssPopulationMap;
+    }
+    public void reinit() {
+    	
     }
 }
 

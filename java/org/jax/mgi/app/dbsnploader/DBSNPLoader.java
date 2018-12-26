@@ -369,9 +369,9 @@ public class DBSNPLoader extends DLALoader {
 		if (genoSNPMap.containsKey(nseRSId)) {
 		    genoInput = 
 			(DBSNPGenotypeRefSNPInput)genoSNPMap.get(nseRSId);
-		    genoRSId = genoInput.getRsId();
+		    genoRSId = Integer.toString(genoInput.getRsId());
 		}
-		if (genoRSId != null && nseRSId.equals(genoRSId)) {
+		if (genoRSId != null && nseRSId.equals(nseRSId)) {
 		    // we have a genotype for this RS 
 		    //goToNextGenotype = true;
 		    

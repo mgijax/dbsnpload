@@ -54,10 +54,7 @@ public class MGPLoader extends DLALoader {
     // writer to reports rsIds not loaded
     private BufferedWriter snpsNotLoadedWriter;
 
-    // current number of XML RefSNPs looked at
-    // don't need for MGP
-    //private int xmlRsCtr;
-
+ 
     // the number of VCF RefSnps processed
     private int vcfRsCtr;
     
@@ -111,6 +108,7 @@ public class MGPLoader extends DLALoader {
  
     // lookup of rsIDs already in the database
     DBSNPRSLookup rsLookup;
+    Vector v;
     
     // holds one ChromosomeStats object per chromosome
     Vector chrStats;
@@ -179,7 +177,6 @@ public class MGPLoader extends DLALoader {
         }*/
 
         // initialize all counters
-        //xmlRsCtr = 0;
         vcfRsCtr = 0;
         ssCtr = 0;
         rsWithNoAllelesCtr = 0;
@@ -267,9 +264,10 @@ public class MGPLoader extends DLALoader {
 			    Runtime.getRuntime().freeMemory(), true);
 
 		    //System.out.println("filename="+genotypeFilename);
-
+            System.out.println("MGPLoader calling getinputMap");
 		    HashMap genoSNPMap = new MGPGenotypeRefSNPInputFile(
                  genotypeFilename).getInputMap();
+		    System.out.println("MGPLoader returned from calling getinputMap");
 		    vcfRsCtr = vcfRsCtr + genoSNPMap.size();
 		    /**
              * create iterator over NSE file
@@ -289,7 +287,7 @@ public class MGPLoader extends DLALoader {
             long afterLookupFreeMem = Runtime.getRuntime().freeMemory();
             stats.setFreeMemAfterGenoLookup(afterLookupFreeMem);
 
-            //System.out.println("processing NSE file " + nseFilename);
+            System.out.println("processing NSE file " + nseFilename);
             logger.logdInfo("processing " + nseFilename + ". Free memory: " +
 			    afterLookupFreeMem, true);
 
@@ -306,25 +304,23 @@ public class MGPLoader extends DLALoader {
             String genoRSId = null;
 
             // Create the two input objects
-            DBSNPGenotypeRefSNPInput genoInput = null;
+            MGPGenotypeRefSNPInput genoInput = null;
             DBSNPNseInput nseInput = null;
 
             while (it.hasNext()) {
-            	//xmlRsCtr++;
                 nseInput = (DBSNPNseInput)it.next();
                 String nseRSId = nseInput.getRS().getRsId();
-                //System.out.println("XML rsID: " + nseRSId);
+                System.out.println("XML rsID: " + nseRSId);
                 //logger.logcInfo("Next RS" + nseRSId, false);
-                
+                int intNseRSId = new Integer(nseRSId).intValue();
 
-                // get first submitter handle for later reporting
-                String handle = ((DBSNPNseSS)nseInput.getSubSNPs().firstElement()).getSubmitterHandle();
-                if (genoSNPMap.containsKey(nseRSId)) {
+                if (genoSNPMap.containsKey(intNseRSId)) {
                 	totalGenoSnpOnChr++;
                 	genoInput = 
-                			(DBSNPGenotypeRefSNPInput)genoSNPMap.get(nseRSId);
+                			(MGPGenotypeRefSNPInput)genoSNPMap.get(intNseRSId);
+                	System.out.println("genoInput.rsID " + genoInput.getRsId());
                 	genoRSId = Integer.toString(genoInput.getRsId()); 
-                	//System.out.println("geno rsID: " + genoRSId);
+                	System.out.println("geno rsID: " + genoRSId);
                 	//if (rsLookup.lookup("rs" + genoRSId) != null) {
                 	if (rsLookup.lookup(genoRSId) != null) {
                     	logger.logcInfo("Geno RS is already in MGI rs" + genoRSId, false);
@@ -392,52 +388,9 @@ public class MGPLoader extends DLALoader {
     }
 
     /**
-     * deletes snp..SNP_Accession for  RefSNP, SubSNP and SubmitterSnp ids
-     * @throws MGIException
-     */
-    /*
-    private void deleteAccessions() throws MGIException {
-        logger.logdInfo("Deleting Accessions", true);
-
-        try {
-            snpDBMgr.executeUpdate(
-                    "select a._Accession_key " +
-                    "into temporary table todelete " +
-                    "from SNP_Accession a " +
-                    "where a._MGIType_key =  " + MGITypeConstants.CONSENSUSSNP +
-                    " and a._LogicalDB_key = " + LogicalDBConstants.REFSNP +
-                    " UNION " +
-                    "select a._Accession_key " +
-                    "from SNP_Accession a " +
-                    "where a._MGIType_key =  " + MGITypeConstants.SUBSNP +
-                    " and a._LogicalDB_key = " + LogicalDBConstants.SUBSNP +
-                    " UNION " +
-                    "select a._Accession_key " +
-                    "from SNP_Accession a " +
-                    "where a._MGIType_key =  " + MGITypeConstants.SUBSNP +
-                    " and a._LogicalDB_key = " +
-            LogicalDBConstants.SUBMITTERSNP);
-
-            snpDBMgr.executeUpdate(
-                "create index idx1 on todelete(_Accession_key)");
-
-            snpDBMgr.executeUpdate("delete from SNP_Accession a " +
-                           "using todelete d " +
-                           "where d._Accession_key = a._Accession_key");
-       }
-       catch (MGIException e) {
-           SNPLoaderException e1 =
-                   (SNPLoaderException) snpEFactory.getException(
-                   SNPLoaderExceptionFactory.SNPDeleteAccessionsErr, e);
-               throw e1;
-       }
-    }delete this and OK TO DELETE ACCESSIONS config variable once tested*/
-
-    /**
      * Reports load statistics
      */
     private void reportLoadStatistics() throws ConfigException {
-        //logger.logdInfo("Total XML RefSnps In XML Files: " + xmlRsCtr, false);
         logger.logdInfo("Total VCF RefSnps In VCF Files: " + vcfRsCtr, false);
         
         logger.logdInfo("Total RefSnp records repeated in the input " +

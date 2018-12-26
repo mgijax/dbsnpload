@@ -88,7 +88,6 @@ public class MGPInputProcessor {
     private static String SNP_NOTLOADED_MULTICHR;
     private static String SNP_NOTLOADED_MULTICHR_COORD;
     private static String SNP_NOTLOADED_NO_BL6;
-    private static String SNP_NOTLOADED_NO_STRAINALLELE;
     private static final String NL = "\n";
     private static final String TAB = "\t";
 
@@ -225,7 +224,7 @@ public class MGPInputProcessor {
         SNP_NOTLOADED_MULTICHR = loadCfg.getSnpNotLoadedMultChr();
         SNP_NOTLOADED_MULTICHR_COORD = loadCfg.getSnpNotLoadedMultiChrCoord();
         SNP_NOTLOADED_NO_BL6 = loadCfg.getSnpNotLoadedNoBL6();
-        SNP_NOTLOADED_NO_STRAINALLELE = loadCfg.getSnpNotLoadedNoStrainAllele();
+        loadCfg.getSnpNotLoadedNoStrainAllele();
 
         // get a logger
         logger = DLALogger.getInstance();
@@ -392,7 +391,7 @@ public class MGPInputProcessor {
      /**
      * Resolves and/or translates raw values to MGI values and creates bcp files
      * @param nInput DBSNPNseInput object representing raw refsnp values
-     * @param gInput DBSNPGenotypeRefSNPInput object representing genotypes
+     * @param gInput MGPGenotypeRefSNPInput object representing genotypes
      * from the input the NSE Input file
      * @effects - writes bcp files to a filesystem
      * @throws MGIException if
@@ -406,7 +405,7 @@ public class MGPInputProcessor {
      * <LI>if error resolving a) orientation b)
      * </OL>
      */
-    public void processInput(DBSNPNseInput nInput, DBSNPGenotypeRefSNPInput gInput ) throws MGIException {//add String "action"
+    public void processInput(DBSNPNseInput nInput, MGPGenotypeRefSNPInput gInput ) throws MGIException {//add String "action"
         // The compound snp object we are building
         snpSnp = new SNPSNP(snpStream);
 
@@ -433,8 +432,8 @@ public class MGPInputProcessor {
 
         // looks like ssid:array of DBSNPGenotypePopulation objects, ...}
         // get the ss population(s) for this rs
-        HashMap currentSSPopulationMap = gInput.getSSPopulationsForRs();
-	
+        //HashMap currentSSPopulationMap = gInput.getSSPopulationsForRs();
+        String currentStrainAlleles = gInput.getStrainAlleles();
         // create the consensus object
         Integer consensusKey = processConsensusSnp(rs);
         //System.out.println("processInput consensusKey " + consensusKey);
@@ -459,14 +458,14 @@ public class MGPInputProcessor {
         DBSNPNseSS ss = getMgpSS(subSNPs, rsId); // if no SC_MOUSE_GENOME in the subSNPs no SNP will be created
         if (ss != null) {
         	//System.out.println("currentSSPopulationMap keySet " + currentSSPopulationMap.keySet());
-           	DBSNPGenotypePopulation[] popsForSSArray = 
+           /*	DBSNPGenotypePopulation[] popsForSSArray = 
             		(DBSNPGenotypePopulation[]) currentSSPopulationMap.get(
-		        new Integer(1)); // MGP genotypeInput objects don't have ssIDs, Interpreter loads the one population with a counter
+		        new Integer(1)); */// MGP genotypeInput objects don't have ssIDs, Interpreter loads the one population with a counter
            	
             // create all DAO's for SubSnps (SNP_SubSnpDAOs, SNP_AccessionDAOs
             // SNP_SubSnp_StrainAlleleDAOs, SNP_StrainDAOs)
         	//System.out.println("calling processSS for " + rsId);
-            processSS(consensusKey, ss, popsForSSArray);
+            processSS(consensusKey, ss, currentStrainAlleles);
         
 	        
 	        // create flank DAOs for the 5' flanking sequence
@@ -480,7 +479,7 @@ public class MGPInputProcessor {
 	        // send rsId just for debug
         	// comment out for testing of finding best SC_MOUSE_GENOMES SS
 	        String orderedAlleleSummary = processConsensusAlleles(consensusKey,
-	            currentSSPopulationMap, rsId);
+	            currentStrainAlleles, rsId, ss.getSSOrientToRS());
 	
 	        // resolve the remaining SNP_ConsensusSnpState attributes
 	        // comment out for testing of finding best SC_MOUSE_GENOMES SS
@@ -834,8 +833,8 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
      * @throws MGIException if error determining consensus allele
      */
     private String processConsensusAlleles(Integer consensusKey,
-                                         HashMap ssPopulationMap,
-                                         String rsId)
+                                         String strainAlleles,
+                                         String rsId, String orient)
         throws DBException, ConfigException, TranslationException,
 			      CacheException, KeyNotFoundException,
 			      MGIException {
@@ -848,128 +847,93 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
         HashSet alleleSummarySet = new HashSet();
 
         /**
-         * Iterate thru each SS
-         */
+         * Iterate thru each strain
+         */       
+        System.out.println("processConsensusAlleles csKey " + consensusKey + " strainAlleles " + strainAlleles + " rsId " + rsId + " orient " + orient );
+		String[] fields1 = strainAlleles.split(";");
+		for (int i = 0; i< fields1.length; i++ ) {
+			 String sa = fields1[i];
+			 System.out.println("strainAllele " + sa);
+			 String[] fields2 = sa.split("\\|");
+			 
+			 String strain = fields2[0];
+			 String allele = fields2[1];
+			 System.out.println("processConsensusAlleles strain " + strain + " allele " + allele);
+			 SNP_StrainState strState = resolveStrain(strain);
+	        if (strState == null) {
+	            continue;
+	        }
+	        Integer strainKey = strState.getMgdStrainKey();
+
 	
+	         if (allele.equals("-") ) {
+	             continue;
+	         }
         
-        for (Iterator i = ssPopulationMap.keySet().iterator(); i.hasNext(); ) {
-            // get the ssid
-            Integer currentSSId = (Integer) i.next();
-
-            // get the set of populations for this SS
-            DBSNPGenotypePopulation[] population = 
-            		(DBSNPGenotypePopulation[]) ssPopulationMap.get(currentSSId);
-
-            /**
-             * Iterate thru the populations of the current SS and create the
-             * allele summary. Also create a mapping of strain to allele and its
-             * instance count { strainKey:{allele:count}, ... } for determining
-             * the consensusAllele by majority
-             */
-
-            //for (Iterator j = population.iterator(); j.hasNext(); ) {
-             //   DBSNPGenotypePopulation pop = (DBSNPGenotypePopulation) j.next();
-		    for (int j = 0; j < population.length; j++ ) {
-		         DBSNPGenotypePopulation pop = population[j];
-				if(pop == null) {
-				    continue;
-				}
-					
-	                HashMap alleleMap = pop.getStrainAlleles();
-	                /**
-	                 * Iterate thru strains
-	                 */
-	                for (Iterator k = alleleMap.keySet().iterator(); k.hasNext(); ) {
-	                    String strain = ((String) k.next()).trim()  ;
-	                    //System.out.println("strain: " + strain);
-	                    SNP_StrainState strState = resolveStrain(strain, pop.getPopId());
-	                    if (strState == null) {
-	                        continue;
-	                    }
-	                    Integer strainKey = strState.getMgdStrainKey();
-	
-	                    // get the allele string from the Allele object
-	                     Allele a = (Allele) alleleMap.get(strain);
-	                     String allele = a.getAllele();
-	                     // BUILD 125 - map " " allele to "N" for now.
-	                     // BUILD 126 - don't consider
-	                     if (allele.equals("-") ) {
-	                         continue;
-	                     }
-	                    
-	                    String orient = a.getOrientation();
-	                    /**
-	                     * if in reverse orientation we need to complement
-	                     * 'allele' before storing
-	                     */
-	                    if (orient.equals(
-	                        SNPLoaderConstants.GENO_REVERSE_ORIENT)) {
-	                        allele = complementAllele(allele, currentSSId);
-	                    }
-	                    /**
-	                     * Add the allele to alleleSummary set (proper set,
-	                     * no repeats)
-	                     */
-	                    alleleSummarySet.add(allele);
-	                    addToConsensusAlleleMap(strainKey, allele,
-	                                            consensusAlleleMap);
-	                }
-	                /**
-	                 * done iterating thru strains
-	                 */
-            }
-            /**
-             * Done iterating thru populations
-             */
-        }
-        /**
-         * Done iterating thru ss
-         */
-
-        /**
-         * Process the alleleSummary
-         */
-
-        // add the delimiters to the rs allele summary
-        StringBuffer summaryString = new StringBuffer();
-        for (Iterator i = alleleSummarySet.iterator(); i.hasNext(); ) {
-            summaryString.append( (String) i.next() + "/");
-        }
-        int len = summaryString.length();
-        /**
-         * if we have 0 length summary allele it is because
-         *  BUILD 125
-         * 1) no strains resolve, therefore no alleles.
-         * 2) the only allele is 'N'
-         * BUILD 126
-         * 1) no strains resolve, therefore no alleles.
-         */
-        if (len < 1) {
-            logger.logcInfo("NO ALLELE SUMMARY for RS" + rsId, false);
-	    SNPNoConsensusAlleleSummaryException e = new
-                SNPNoConsensusAlleleSummaryException();
-            e.bind(rsId);
-            throw e;
-        }
-        // remove the trailing '/'
-        summaryString.deleteCharAt(len - 1);
-        if (summaryString.length() > 200) {
-            /**
-             * track rsID of each long allele summary
-             */
-
-            csAlleleSummTooLong.put(rsId, summaryString + " length: " + summaryString.length());
-
-        }
-        // order the allele summary
-        String orderedAlleleSummary = alleleOrderer.order(summaryString.toString());
-
-
-        /**
-         * now find the consensus alleles for each strain
-         */
-        createConsensusAlleles(consensusKey, consensusAlleleMap);
-        return orderedAlleleSummary;
+		    /**
+		     * if in reverse orientation we need to complement
+		     * 'allele' before storing
+		     */
+		    if (orient.equals(
+		        SNPLoaderConstants.NSE_REVERSE)) { // we are now using orient from xml NOT from genotype (vcf)
+		        allele = complementAllele(allele, rsId);
+		    }
+		    /**
+		     * Add the allele to alleleSummary set (proper set,
+		     * no repeats)
+		     */
+		    alleleSummarySet.add(allele);
+		    addToConsensusAlleleMap(strainKey, allele,
+		                            consensusAlleleMap);
+		}
+		/**
+		 * done iterating thru strains
+		 */
+		
+		    /**
+		     * Process the alleleSummary
+		     */
+		
+		    // add the delimiters to the rs allele summary
+		    StringBuffer summaryString = new StringBuffer();
+		    for (Iterator i = alleleSummarySet.iterator(); i.hasNext(); ) {
+		        summaryString.append( (String) i.next() + "/");
+		    }
+		    int len = summaryString.length();
+		    /**
+		     * if we have 0 length summary allele it is because
+		     *  BUILD 125
+		     * 1) no strains resolve, therefore no alleles.
+		     * 2) the only allele is 'N'
+		     * BUILD 126
+		     * 1) no strains resolve, therefore no alleles.
+		     */
+		    if (len < 1) {
+		        logger.logcInfo("NO ALLELE SUMMARY for RS" + rsId, false);
+		    SNPNoConsensusAlleleSummaryException e = new
+		            SNPNoConsensusAlleleSummaryException();
+		        e.bind(rsId);
+		        throw e;
+		    }
+		    // remove the trailing '/'
+		    summaryString.deleteCharAt(len - 1);
+		    if (summaryString.length() > 200) {
+		        /**
+		         * track rsID of each long allele summary
+		         */
+		
+		        csAlleleSummTooLong.put(rsId, summaryString + " length: " + summaryString.length());
+		
+		    }
+		    // order the allele summary
+		    String orderedAlleleSummary = alleleOrderer.order(summaryString.toString());
+		
+		
+		    /**
+		     * now find the consensus alleles for each strain
+		     */
+		    createConsensusAlleles(consensusKey, consensusAlleleMap);
+		    return orderedAlleleSummary;
     }
 
     /**
@@ -1036,7 +1000,7 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
                  * consensusAllele to '?'
                  */
 
-                // consensus allele deterimined by majority rule has a conflict
+                // consensus allele determined by majority rule has a conflict
                 isConflict = 1;
 
                 // the count of instances of the current allele
@@ -1104,7 +1068,7 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
      * @throws CacheException - if lookup caching error
      * @throws KeyNotFoundException - if unable to resolve strain
      */
-    private SNP_StrainState resolveStrain(String strain, String popId) throws
+    private SNP_StrainState resolveStrain(String strain) throws
         DBException, ConfigException,
         TranslationException, CacheException, KeyNotFoundException {
 
@@ -1138,7 +1102,7 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
      * of alleles not able to be complemented)
      * @return complemented allele string
      */
-    private String complementAllele(String allele, Integer ssId) {
+    private String complementAllele(String allele, String rsId) {
         // the complemented allele
         StringBuffer convertedAllele = new StringBuffer();
 
@@ -1170,8 +1134,8 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
                     }
                     newAlleleChar.put(allele, count);
                     // log SS ID of new allele character
-                    logger.logcInfo("UNRECOGNIZED ALLELE CHARACTER for SS" +
-                                    ssId.toString() + " allele " + alArray[ctr], false);
+                    logger.logcInfo("UNRECOGNIZED ALLELE CHARACTER for RS" +
+                                    rsId + " allele " + alArray[ctr], false);
             }
         }
         return convertedAllele.toString();
@@ -1229,7 +1193,7 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
     * @throws KeyNotFoundException
     * @throws SNPVocabResolverException
     */
-    private void processSS(Integer consensusKey, DBSNPNseSS ss, DBSNPGenotypePopulation[] populations) throws
+    private void processSS(Integer consensusKey, DBSNPNseSS ss, String strainAlleles) throws
         DBException, ConfigException, CacheException, TranslationException,
         KeyNotFoundException, SNPVocabResolverException {
         // get the ssId, we will use it alot
@@ -1322,27 +1286,8 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
           // create an accession object for the current submitter snp id
           processAccession(ss.getSubmitterSNPId(),
               LogicalDBConstants.SUBMITTERSNP, ssKey, MGITypeConstants.SUBSNP);
-
-          // process the strain alleles
-          //for (Iterator j = populations.iterator(); j.hasNext(); ) {
-		  for (int j = 0; j < populations.length; j++) {
-		      DBSNPGenotypePopulation p = populations[j];
-		      //DEBUG
-		      /*
-		      HashMap<String, Allele> sa = p.getStrainAlleles();
-	    	  for (String strainKey : sa.keySet()) {
-          	    
-                  Allele a = sa.get(strainKey);
-                  //System.out.println("ProcessSS strain " + strainKey + " allele " + a.getAllele());
-                  
-	    	  }	//END DEBUG*/
-
-
-		      if (p == null) {
-			     continue;
-		      }
-		      processSSStrainAlleles(ssKey, ssId, p);
-	      }
+          
+		  processSSStrainAlleles(ssKey, ssId, strainAlleles);
 
     }
     /**
@@ -1393,69 +1338,55 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
      * @throws KeyNotFoundException if fail to resolve strain or population id to its name
      */
     private void processSSStrainAlleles(Integer ssKey, String ssId,
-                                        DBSNPGenotypePopulation pop) throws
+                                        String strainAlleles) throws
         DBException, ConfigException, CacheException, TranslationException,
         KeyNotFoundException {
-        // create a strain allele DAO for each strain assay of this population
-        // get the allele map of the population
-        HashMap alleleMap = pop.getStrainAlleles();
+        
+		// get the population id
+		String popId = ""; // no popId for MGP
+		
+		String[] fields1 = strainAlleles.split(";");
+		for (int i = 0; i< fields1.length; i++ ) {
+			 String sa = fields1[i];
+			 String[] fields2 = sa.split("\\|");
+			 String strain = fields2[0];
+			 String allele = fields2[1];
+			 // resolve the strain
+		     SNP_StrainState strainState= resolveStrain(strain);
+		     if (strainState == null) {
+		         /**
+		          * track number of each new strain
+		          */
+		         Integer count = new Integer(1);
+		         if(newStrains.containsKey(strain)) {
+		             count = incrementInteger((Integer)newStrains.get(strain));
+		         }
+		         newStrains.put(strain, count);
+		
+		         logger.logcInfo("UNRESOLVED STRAIN " + strain + " RS" + rsId + " SS" +
+		                         ssId + " PopId" + popId, false);
+		         continue;
+		     }
+		     // get the strainKey attribute from strainState
+		     Integer strainKey = strainState.getMgdStrainKey();
 
-        // get the population id
-        String popId = pop.getPopId();
-
-        // iterate thru the alleleMap
-        for (Iterator i = alleleMap.keySet().iterator(); i.hasNext(); ) {
-            // get the strain
-            String strain = ((String) i.next()).trim();
-            // get the allele, translate blank alleles to "N"
-            Allele a = (Allele) alleleMap.get(strain);
-            String allele = a.getAllele();
-            
-            // resolve the strain
-            SNP_StrainState strainState= resolveStrain(strain, popId);
-
-            // if we can't resolve strain, write it to the curation log
-            // and go on to the next
-            if (strainState == null) {
-                /**
-                 * track number of each new strain
-                 */
-                Integer count = new Integer(1);
-                if(newStrains.containsKey(strain)) {
-                    count = incrementInteger((Integer)newStrains.get(strain));
-                }
-                newStrains.put(strain, count);
-
-                logger.logcInfo("UNRESOLVED STRAIN " + strain + " RS" + rsId + " SS" +
-                                ssId + "PopId" + popId, false);
-                continue;
-            }
-            // get the strainKey attribute from strainState
-            Integer strainKey = strainState.getMgdStrainKey();
-
-            // create SNP_StrainDAO for this strain, if we haven't already
-            // all MGP strains added by migration, if we do this we will duplicate.
-            // we cannot truncate SNP_Strain or we will use the dbsnp strains not used
-            // by MGP
-            //createStrain(strainState);
-
-            // create a SNP_SubSnp_StrainAlleleState object and set it's attributes
-            SNP_SubSnp_StrainAlleleState state = new SNP_SubSnp_StrainAlleleState();
-            state.setSubSnpKey(ssKey);
-
-            // resolve and set the population key
-            // allow this to throw KeyNotFoundException, precondition is that
-            // populations are in place
-            state.setPopulationKey(popKeyLookupByName.lookup("EVA_MGPV3"));
-
-            // set the strain key
-            state.setMgdStrainKey(strainKey);
-
-            // set the allele
-            state.setAllele(allele);
-
-            // set the state object in the SNPSNP
-            snpSnp.addSubSnpStrainAllele(state);
+			// create a SNP_SubSnp_StrainAlleleState object and set it's attributes
+			SNP_SubSnp_StrainAlleleState state = new SNP_SubSnp_StrainAlleleState();
+			state.setSubSnpKey(ssKey);
+			
+			// resolve and set the population key
+			// allow this to throw KeyNotFoundException, precondition is that
+			// populations are in place
+			state.setPopulationKey(popKeyLookupByName.lookup("EVA_MGPV3"));
+			
+			// set the strain key
+			state.setMgdStrainKey(strainKey);
+			
+			// set the allele
+			state.setAllele(allele);
+			
+			// set the state object in the SNPSNP
+			snpSnp.addSubSnpStrainAllele(state);
         }
     }
     /**

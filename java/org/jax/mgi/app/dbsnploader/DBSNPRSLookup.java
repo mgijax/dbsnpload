@@ -98,7 +98,7 @@ public class DBSNPRSLookup extends FullCachedLookup
 		String rsID;
     	public Object interpret(RowReference row) throws DBException {
 			
-			rsID = row.getString(1);
+			rsID = row.getString(1).substring(2);
 			return new KeyValue(rsID, ""); 
 		}
 		
