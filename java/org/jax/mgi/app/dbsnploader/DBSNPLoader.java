@@ -259,7 +259,7 @@ public class DBSNPLoader extends DLALoader {
             XMLDataIterator indivIterator =
                 new DBSNPGenotypeIndividualInputFile(
 				genotypeFilename).getIterator();
-		System.out.println("filename="+genotypeFilename);
+            System.out.println("filename="+genotypeFilename);
             while(indivIterator.hasNext() ) {
                 dbsnpProcessor.processGenoIndivInput(
 				(DBSNPGenotypeIndividualInput)indivIterator.

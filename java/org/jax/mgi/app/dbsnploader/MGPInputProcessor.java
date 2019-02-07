@@ -327,14 +327,14 @@ public class MGPInputProcessor {
     	// check all the scMouseGenome ss
     	// if only one return it 
     	if(scMouseGenome.size() == 0) {
-    		System.out.println("getMgpSS no SC_MOUSE_GENOME SS for " + rsId);
+    		//System.out.println("getMgpSS no SC_MOUSE_GENOME SS for " + rsId);
     		noRsCtr++;
     	} else if(scMouseGenome.size() == 1) {
-    		System.out.println("getMgpSS returning single SC_MOUSE_GENOME SS" + scMouseGenome.get(0).getSSId());
+    		//System.out.println("getMgpSS returning single SC_MOUSE_GENOME SS" + scMouseGenome.get(0).getSSId());
     		ssToReturn = scMouseGenome.get(0);
     	}
     	else { // if multiple figure out which one
-    		System.out.println("getMgpSS multiple SC_MOUSE_GENOME SS" + scMouseGenome.size());
+    		//System.out.println("getMgpSS multiple SC_MOUSE_GENOME SS" + scMouseGenome.size());
     		ArrayList<DBSNPNseSS> bestCurrentBuildNo = new ArrayList<DBSNPNseSS>();
     		int bestBuildNo = 0;
     		DBSNPNseSS next2;
@@ -358,7 +358,7 @@ public class MGPInputProcessor {
     		}
     		if (bestCurrentBuildNo.size() == 1) {
     			ssToReturn =  bestCurrentBuildNo.get(0);
-    			System.out.println("getMgpSS returning ss " + ssToReturn.getSSId() + " based on buildNo " + ssToReturn.getBuildNo() + " for rs" + rsId);
+    			//System.out.println("getMgpSS returning ss " + ssToReturn.getSSId() + " based on buildNo " + ssToReturn.getBuildNo() + " for rs" + rsId);
     		}
     		else {
     			DBSNPNseSS bestCurrentSSId = null;
@@ -379,7 +379,7 @@ public class MGPInputProcessor {
     				}
     			}
     			ssToReturn = bestCurrentSSId;
-    			System.out.println("getMgpSS returning ss based on greatest ssID ss" + ssToReturn.getSSId() + " for rs" + rsId);
+    			//System.out.println("getMgpSS returning ss based on greatest ssID ss" + ssToReturn.getSSId() + " for rs" + rsId);
     			
     		}
     		
@@ -849,16 +849,16 @@ private String determineVarClass ( String orderedAlleleSummary, boolean hasDelet
         /**
          * Iterate thru each strain
          */       
-        System.out.println("processConsensusAlleles csKey " + consensusKey + " strainAlleles " + strainAlleles + " rsId " + rsId + " orient " + orient );
+        //System.out.println("processConsensusAlleles csKey " + consensusKey + " strainAlleles " + strainAlleles + " rsId " + rsId + " orient " + orient );
 		String[] fields1 = strainAlleles.split(";");
 		for (int i = 0; i< fields1.length; i++ ) {
 			 String sa = fields1[i];
-			 System.out.println("strainAllele " + sa);
+			 //System.out.println("strainAllele " + sa);
 			 String[] fields2 = sa.split("\\|");
 			 
 			 String strain = fields2[0];
 			 String allele = fields2[1];
-			 System.out.println("processConsensusAlleles strain " + strain + " allele " + allele);
+			 //System.out.println("processConsensusAlleles strain " + strain + " allele " + allele);
 			 SNP_StrainState strState = resolveStrain(strain);
 	        if (strState == null) {
 	            continue;

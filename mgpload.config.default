@@ -171,9 +171,9 @@ export DLA_LOADER DLA_START
 # The list of SNP tables for the java load to truncate
 # Note that snpPopulation.sh truncates SNP_Accession
 # Note that snpcacheload deals with SNP_ConsensusSnp_Marker
-DLA_TRUNCATE_SNP_TABLES=SNP_Strain
+#DLA_TRUNCATE_SNP_TABLES=SNP_Strain
 
-export DLA_TRUNCATE_SNP_TABLES
+#export DLA_TRUNCATE_SNP_TABLES
 
 # Ok to delete dbsnpload Accessions
 # The population load truncates SNP_Accession

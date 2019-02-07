@@ -310,7 +310,7 @@ public class MGPLoader extends DLALoader {
             while (it.hasNext()) {
                 nseInput = (DBSNPNseInput)it.next();
                 String nseRSId = nseInput.getRS().getRsId();
-                System.out.println("XML rsID: " + nseRSId);
+                //System.out.println("XML rsID: " + nseRSId);
                 //logger.logcInfo("Next RS" + nseRSId, false);
                 int intNseRSId = new Integer(nseRSId).intValue();
 
@@ -318,12 +318,12 @@ public class MGPLoader extends DLALoader {
                 	totalGenoSnpOnChr++;
                 	genoInput = 
                 			(MGPGenotypeRefSNPInput)genoSNPMap.get(intNseRSId);
-                	System.out.println("genoInput.rsID " + genoInput.getRsId());
+                	//System.out.println("genoInput.rsID " + genoInput.getRsId());
                 	genoRSId = Integer.toString(genoInput.getRsId()); 
-                	System.out.println("geno rsID: " + genoRSId);
+                	//System.out.println("geno rsID: " + genoRSId);
                 	//if (rsLookup.lookup("rs" + genoRSId) != null) {
                 	if (rsLookup.lookup(genoRSId) != null) {
-                    	logger.logcInfo("Geno RS is already in MGI rs" + genoRSId, false);
+                    	//logger.logcInfo("Geno RS is already in MGI rs" + genoRSId, false);
                     	totalGenoUpdateOnChr++;
                     	/*
                     	 * mgpProcessor.processUpdate(nseInput, genoInput, "update");
@@ -331,7 +331,7 @@ public class MGPLoader extends DLALoader {
                     	continue;
                     }
                 	else {
-                		logger.logcInfo("Geno RS not in MGI rs" + genoRSId, false);
+                		//logger.logcInfo("Geno RS not in MGI rs" + genoRSId, false);
                 		mgpProcessor.processInput(nseInput, genoInput); // add action param "add" 
                 		
                 		totalGenoAddOnChr++;
