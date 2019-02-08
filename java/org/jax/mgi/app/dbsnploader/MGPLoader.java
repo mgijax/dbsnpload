@@ -375,7 +375,9 @@ public class MGPLoader extends DLALoader {
         this.snpStream.close();
 
         //logger.logdInfo("Closing mgd stream", false);
-        this.loadStream.close();
+	// comment out - we will do this outside of java as we need
+	// to break up files
+        //this.loadStream.close();
 
         // report load statistics
         reportLoadStatistics();
