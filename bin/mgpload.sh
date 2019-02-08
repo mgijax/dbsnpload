@@ -289,6 +289,13 @@ fi
 echo "running mgp load"
 runsnpload
 
+echo "running splitBcp.sh"
+
+./splitBcp.sh
+STAT=$?
+msg="mgp splitBcp.sh"
+checkstatus  ${STAT} "${msg}"
+
 #
 # load SNP_Transcript_Marker
 #
@@ -297,17 +304,9 @@ runsnpload
 #${DBSNPLOAD}/bin/migrateRefSeqs.sh
 
 #STAT=$?
-#msg="dbsnp load "
+#msg="mgp snp load "
 #checkstatus ${STAT} "${msg}"
 
-#
-# order snp strains
-#
-#echo "running snp strain order update"
-#${STRAIN_ORDER_LOAD}
-#STAT=$?
-#msg="snp strain order update "
-#checkstatus  ${STAT} "${msg}"
 
 #
 # run snp marker cache load
