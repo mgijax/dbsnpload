@@ -3,12 +3,12 @@
 #  $Header
 #  $Name
 #
-#  dbsnpload.sh
+#  mgpload.sh
 ###########################################################################
 #
 #  Purpose:  This script controls the execution of the DB SNP load
 #
-   Usage="mgpload.sh [-s -f -v -h -p -c -r]"
+   Usage="mgpload.sh [-s -c]"
 #
 #         These options provided primarily for development purposes, however
 #         vocabs often do not change between dbsnp builds, so we provide
@@ -16,13 +16,7 @@
 #
 #         where:
 #	        -s DO NOT put front-end snp db in sgl user mode 
-#		-f DO NOT run the fxnClass vocload and translation load
-#               -v DO NOT run the varClass vocload and translation load
-#               -h DO NOT run the  subHandle vocload 
-#		-p DO NOT run Population load - !warning! if you use this option
-#		    be sure to configure SNP_OK_TO_DELETE_ACCESSIONS=true
-#		-c DO NOT run snpcacheload
-#		-r DO NOT run post Processing
+#		-c run snpcacheload
 #  Env Vars:
 #
 #      See the configuration file
@@ -30,8 +24,7 @@
 #  Inputs:
 #
 #      - Common configuration file (/usr/local/mgi/etc/common.config.sh)
-#      - dbsnpload.config
-#      - dbsnpload/data input files for translations and vocabs 
+#      - mgpload.config
 #      - snp and mgd databases
 #
 #  Outputs:
@@ -87,12 +80,7 @@ fi
 #  Verify the argument(s) to the shell script.
 #
 doSgl=no
-doFxn=no
-doVar=no
-doHandle=no
-doPop=no
 doCache=no
-doPost=no
 
 set -- `getopt sfvhpcr $*`
 if [ $? != 0 ]
@@ -104,12 +92,7 @@ for i in $*
 do
     case $i in
 	-s) doSgl=no; shift;;
-        -f) doFxn=yes; shift;;
-        -v) doVar=yes; shift;;
-	-h) doHandle=yes; shift;;
-	-p) doPop=yes; shift;;
-	-c) doCache=es; shift;;
-	-r) doPost=yes; shift;;
+	-c) doCache=yes; shift;;
         --) shift; break;;
     esac
 done
@@ -168,7 +151,7 @@ shutDown ()
 }
 
 #
-# Function that runs the java dbsnp load
+# Function that runs the java mpg snp load
 #
 
 runsnpload ()
@@ -213,74 +196,7 @@ checkstatus ()
 ##################################################################
 echo "main"
 
-
-#
-# run fxn class vocload?
-#
-if [ ${doFxn} = "yes" ]
-then
-    ${DBSNP_VOCLOAD} -f
-    STAT=$?
-    msg="dbsnp fxnClass vocabulary load "
-    checkstatus ${STAT} "${msg}"
-fi
-
-#
-# run variation class vocload?
-#
-if [ ${doVar} = "yes" ]
-then
-    ${DBSNP_VOCLOAD} -v
-    STAT=$?
-    msg="dbsnp varClass vocabulary load "
-    checkstatus ${STAT} "${msg}"
-fi
-
-#
-# run submitter handle vocload?
-#
-if [ ${doHandle} = "yes" ]
-then
-    ${DBSNP_VOCLOAD} -h
-    STAT=$?
-    msg="dbsnp subHandle vocabulary load "
-    checkstatus ${STAT} "${msg}"
-fi
-
-#
-# run variation class translation load?
-#
-if [ ${doVar} = "yes" ]
-then
-    ${DBSNP_TRANS_LOAD} -v
-    STAT=$?
-    msg="dbsnp varClass translation load "
-    checkstatus ${STAT} "${msg}"
-fi
-
-#
-# run fxn class translation load?
-#
-if [ ${doFxn} = "yes" ]
-then
-    ${DBSNP_TRANS_LOAD} -f
-    STAT=$?
-    msg="dbsnp fxnClass translation load "
-    checkstatus ${STAT} "${msg}"
-fi
-
 echo "run pop load"
-# 
-# run population load
-#
-if [ ${doPop} = "yes" ]
-then
-    echo "running population load"
-    ${POPULATION_LOAD}
-    STAT=$?
-    msg="dbsnp population load "
-    checkstatus ${STAT} "${msg}"
-fi
 
 #
 # run java dbSnp loader
@@ -289,24 +205,24 @@ fi
 echo "running mgp load"
 runsnpload
 
-echo "running splitBcp.sh"
-
-./splitBcp.sh
-STAT=$?
-msg="mgp splitBcp.sh"
-checkstatus  ${STAT} "${msg}"
-
 #
 # load SNP_Transcript_Marker
 #
-#echo "running migrateRefSeqs.sh"
+echo "running migrateRefSeqs.sh"
 
-#${DBSNPLOAD}/bin/migrateRefSeqs.sh
+${DBSNPLOAD}/bin/migrateRefSeqs.sh
+STAT=$?
+msg="mgp snp load "
+checkstatus ${STAT} "${msg}"
 
-#STAT=$?
-#msg="mgp snp load "
-#checkstatus ${STAT} "${msg}"
-
+#
+# run postProcessing - dump/load/update mgd MGI_dbinfo
+#
+echo "running post-processing"
+${SNP_POST_PROCESS}
+STAT=$?
+msg="post-processing "
+checkstatus  ${STAT} "${msg}"
 
 #
 # run snp marker cache load
@@ -316,22 +232,11 @@ then
     echo "running ${SNP_MARKER_CACHE_LOAD}"
     ${SNP_MARKER_CACHE_LOAD}
     STAT=$?
-    msg="dbsnp marker cache load "
+    msg="dbsnp/mgp marker cache load "
     checkstatus  ${STAT} "${msg}"
 fi
-#
-# run postProcessing - dump/load/update mgd MGI_dbinfo
-#
-if [ ${doPost} = "yes" ]
-then
-    echo "running post-processingggg"
-    ${SNP_POST_PROCESS}
-    STAT=$?
-    msg="post-processing "
-    checkstatus  ${STAT} "${msg}"
-fi
-# run postload cleanup and email logs
 
+# run postload cleanup and email logs
 shutDown
 
 exit 0
