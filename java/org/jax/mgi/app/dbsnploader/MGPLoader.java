@@ -95,9 +95,6 @@ public class MGPLoader extends DLALoader {
     // configurator for nse file configuration
     private DBSNPLoaderCfg nseConfig;;
 
-    // SNP exception factory
-    private SNPLoaderExceptionFactory snpEFactory;
-
     // file path separator on this platform
     private static final String PATH_SEPARATOR = System.getProperty("file.separator");
 
@@ -161,21 +158,6 @@ public class MGPLoader extends DLALoader {
         // Note we need the mgd connection to load the lookups
         qcDBMgr.closeResources();
 
-        // create ExceptionFactory
-        snpEFactory = new SNPLoaderExceptionFactory();
-        
-        /*try {
-            logger.logdInfo("Truncating SNP_Strain table", true);
-		
-            if (snpTables != null) {
-                DLALoaderHelper.truncateTables(snpTables,
-                                               snpDBMgr.getDBSchema(), logger);
-            }
-        }
-        catch (Exception e) {
-            throw new MGIException(e.getMessage());
-        }*/
-
         // initialize all counters
         vcfRsCtr = 0;
         ssCtr = 0;
@@ -204,10 +186,10 @@ public class MGPLoader extends DLALoader {
 
         // delete accession records, note that truncating SNP tables is done at
         // the dla level via Configuration
-       // if(loadCfg.getOkToDeleteAccessions().equals(Boolean.TRUE)) {
-       //     deleteAccessions();
+        // if(loadCfg.getOkToDeleteAccessions().equals(Boolean.TRUE)) {
+        //     deleteAccessions();
         //}
-    	// for MGP may be able to delete this method
+    	// we are not deleting anything in MGP load
     }
 
     /**
@@ -368,15 +350,13 @@ public class MGPLoader extends DLALoader {
      */
     protected void postprocess() throws MGIException
     {
-
-
+    	// for mgp postprocessing script will handle bcp.
+    	
         // close snp and mgd streams
-        logger.logdInfo("Closing snp stream", false);
-        this.snpStream.close();
+        //logger.logdInfo("Closing snp stream", false);
+        //this.snpStream.close();
 
         //logger.logdInfo("Closing mgd stream", false);
-	// comment out - we will do this outside of java as we need
-	// to break up files
         //this.loadStream.close();
 
         // report load statistics
