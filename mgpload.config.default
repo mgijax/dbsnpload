@@ -124,7 +124,6 @@ export GENO_SNP_INFILESUFFIX NSE_SNP_INFILESUFFIX
 
 # list of chromosomes to load, comma delimited
 SNP_CHROMOSOMES_TOLOAD="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,X,Y,MT"
-#SNP_CHROMOSOMES_TOLOAD="18,19"
 
 # full path to 'SNPs not loaded' report
 SNP_NOTLOADED=${RPTDIR}/RefSnpsNotLoaded.txt
@@ -313,17 +312,13 @@ export REFSEQ_BCP_FILE REFSEQ_BCP REFSEQ_LOG
 
 #
 # post-processing settings
-# - backup loaded snp db, load production snp db,
-#   update production mgd..MGI_dbinfo
+# split up and execute bcp
 #
 
-# post-processing script
-SNP_POST_PROCESS=${DBSNPLOAD}/bin/postProcess.sh
+# post-processing script to split and exec bcp 
+SNP_POST_PROCESS=${DBSNPLOAD}/bin/splitBcp.sh
 
-# full path to backup from the unix server on which the load runs; for dump
-SNP_BACKUP_LOCALPATH=/extra1/sybase/snp.backup
-
-export SNP_POST_PROCESS SNP_BACKUP_LOCALPATH 
+export SNP_POST_PROCESS 
 
 # SQL STREAM
 # this overrides the default BCP_Inline_Stream
