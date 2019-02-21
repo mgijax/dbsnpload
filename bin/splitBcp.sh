@@ -27,12 +27,13 @@ DL="\t"
 SCHEMA='snp'
 export SCHEMA
 
-# Largest bcp file we want in KB
-maxsizeK=20000000
-# Largest bcp file in G
-maxsizeG="2G"
+# We will split files >= maxsizeK
+maxsizeK=10000000
+# number of lines for each file; we tried using --bytes equal to maxsizeK
+# but this split files in the middle of lines
+maxsizeLines="500000"
 
-echo "splitting files > $maxsizeG"
+echo "splitting files > than $maxsizeK kilobytes into files of 500k lines"
 for f in `ls ${OUTPUTDIR} | grep bcp$` # listing of bcp files
 do
     file=${OUTPUTDIR}/$f
@@ -41,7 +42,7 @@ do
     echo $actualsize
     if [ $actualsize -ge $maxsizeK ]
     then
-	split --bytes $maxsizeG --numeric-suffixes --suffix-length=3 $file $file
+	split --lines $maxsizeLines --numeric-suffixes --suffix-length=3 $file $file
 	gzip $file
     fi
 done 
@@ -51,6 +52,7 @@ echo "processing unsplit bcp files"
 
 for f in `ls  ${OUTPUTDIR} | grep bcp$`
 do
+    date | tee -a ${LOG}
     echo $f
     table="$(cut -d'.' -f1 <<<$f)"
     echo $table
@@ -70,6 +72,7 @@ echo ""
 echo "processing split bcp files"
 for f in `ls  ${OUTPUTDIR} | grep bcp0`
 do
+    date | tee -a ${LOG}
     echo $f
     table="$(cut -d'.' -f1 <<<$f)"
     echo $table
@@ -84,3 +87,4 @@ do
        exit 1
     fi
 done
+date | tee -a ${LOG}
