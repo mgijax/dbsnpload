@@ -41,7 +41,7 @@ Usage="migrateRefSeqs.sh"
 NL="\n"
 
 # bcp file column delimiter
-DL="|"
+DL="\t"
 
 # name of the snp schema
 SCHEMA='snp'

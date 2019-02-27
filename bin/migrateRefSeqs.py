@@ -22,9 +22,8 @@ import string
 import db
 
 NL = '\n'
-DL = '|'
 TAB = '\t'
-
+DL = TAB
 db.useOneConnection(1)
 
 # next available primary key
