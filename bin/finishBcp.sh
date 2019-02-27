@@ -93,5 +93,5 @@ ${MGD_DBSCHEMADIR}/trigger/enable_triggers.sh ${TABLE} ${SCHEMA}
 sleep 5
 
 echo "about to analyze table ${TABLE}"
-psql -h${MGD_DBSERVER} -d{$MGD_DBNAME} -U${MGD_DBUSER} --command "analyze ${SCHEMA}.${TABLE};"
+psql -h${MGD_DBSERVER} -d${MGD_DBNAME} -U${MGD_DBUSER} --command "analyze ${SCHEMA}.${TABLE};"
 date | tee -a ${LOG}

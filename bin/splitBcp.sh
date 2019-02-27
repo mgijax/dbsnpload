@@ -31,9 +31,9 @@ export SCHEMA
 maxsizeK=10000000
 # number of lines for each file; we tried using --bytes equal to maxsizeK
 # but this split files in the middle of lines
-maxsizeLines="500000"
+maxsizeLines="500000000"
 
-echo "splitting files > than $maxsizeK kilobytes into files of 500k lines"
+echo "splitting files > than $maxsizeK kilobytes into files of 500m lines"
 for f in `ls ${OUTPUTDIR} | grep bcp$` # listing of bcp files
 do
     file=${OUTPUTDIR}/$f
