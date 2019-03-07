@@ -196,8 +196,6 @@ checkstatus ()
 ##################################################################
 echo "main"
 
-echo "run pop load"
-
 #
 # run java dbSnp loader
 #
@@ -206,23 +204,23 @@ echo "running mgp load"
 runsnpload
 
 #
+# run postProcessing - dump/load/update mgd MGI_dbinfo
+#
+echo "running post-processing; bcp into snp tables"
+${SNP_POST_PROCESS}
+STAT=$?
+msg="post-processing "
+checkstatus  ${STAT} "${msg}"
+
+#
 # load SNP_Transcript_Marker
 #
-echo "running migrateRefSeqs.sh"
+echo "running migrateRefSeqs.sh this will truncate and bcp SNP_Transcript_Protein.bcp"
 
 ${DBSNPLOAD}/bin/migrateRefSeqs.sh
 STAT=$?
 msg="mgp snp load "
 checkstatus ${STAT} "${msg}"
-
-#
-# run postProcessing - dump/load/update mgd MGI_dbinfo
-#
-echo "running post-processing"
-${SNP_POST_PROCESS}
-STAT=$?
-msg="post-processing "
-checkstatus  ${STAT} "${msg}"
 
 #
 # run snp marker cache load
@@ -240,6 +238,3 @@ fi
 shutDown
 
 exit 0
-
-$Log
-
