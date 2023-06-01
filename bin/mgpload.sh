@@ -206,8 +206,8 @@ runsnpload
 #
 # run postProcessing - dump/load/update mgd MGI_dbinfo
 #
-echo "running post-processing; bcp into snp tables"
-${SNP_POST_PROCESS}
+echo "running post-processing; bcp into snp tables" | tee -a ${LOG_DIAG}
+${SNP_POST_PROCESS} >>&  ${LOG_DIAG}
 STAT=$?
 msg="post-processing "
 checkstatus  ${STAT} "${msg}"
@@ -215,9 +215,10 @@ checkstatus  ${STAT} "${msg}"
 #
 # load SNP_Transcript_Marker
 #
-echo "running migrateRefSeqs.sh this will truncate and bcp SNP_Transcript_Protein.bcp"
+echo "running migrateRefSeqs.sh this will truncate and bcp SNP_Transcript_Protein.bcp" | tee -a ${LOG_DIAG}
 
-${DBSNPLOAD}/bin/migrateRefSeqs.sh
+${DBSNPLOAD}/bin/migrateRefSeqs.sh >>&  ${LOG_DIAG}
+
 STAT=$?
 msg="mgp snp load "
 checkstatus ${STAT} "${msg}"
@@ -227,8 +228,8 @@ checkstatus ${STAT} "${msg}"
 #
 if [ ${doCache} = "yes" ]
 then
-    echo "running ${SNP_MARKER_CACHE_LOAD}"
-    ${SNP_MARKER_CACHE_LOAD}
+    echo "running ${SNP_MARKER_CACHE_LOAD}" | tee -a ${LOG_DIAG}
+    ${SNP_MARKER_CACHE_LOAD} >>&  ${LOG_DIAG}
     STAT=$?
     msg="dbsnp/mgp marker cache load "
     checkstatus  ${STAT} "${msg}"
