@@ -1,0 +1,5 @@
+To run the mgp version of the dbsnpload
+1. Run filter_vcf_snps.sh - this filters the gzipped source file into individualchromosome files used as input to the loader
+2. need to add population and migrate snp_accession.accid: run mgpMigrate.csh
+3. need to install pgsnpdbschema product
+4. run mgpload.sh
