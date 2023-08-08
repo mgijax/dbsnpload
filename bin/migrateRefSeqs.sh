@@ -105,7 +105,7 @@ echo `date`  >> ${REFSEQ_LOG}
 ${PG_SNP_DBSCHEMADIR}/table/SNP_Transcript_Protein_truncate.object
 ${PG_SNP_DBSCHEMADIR}/index/SNP_Transcript_Protein_drop.object
 
-${DBSNPLOAD}/bin/migrateRefSeqs.py >> ${REFSEQ_LOG} 2<&1
+${PYTHON} ${DBSNPLOAD}/bin/migrateRefSeqs.py >> ${REFSEQ_LOG} 2<&1
 STAT=$?
 msg="RefSeq Migration script "
 checkstatus  ${STAT} "${msg}"

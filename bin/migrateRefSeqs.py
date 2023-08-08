@@ -1,4 +1,3 @@
-#!/usr/local/bin/python
 '''
 #
 # Purpose:
@@ -37,7 +36,7 @@ for r in results:
     nId = r['refseqnucleotide']
     pId = r['refseqprotein']
     if pId == None:
-	pId = ''
+        pId = ''
     fp.write('%s%s%s%s%s%s' % (primaryKey, DL, nId, DL, pId, NL))
     primaryKey  += 1
 

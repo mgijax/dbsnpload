@@ -131,6 +131,11 @@ else
 fi
 
 #
+# createArchive, startLog, getConfigEnv, get job key
+#
+preload
+
+#
 #  Function that performs cleanup tasks for the job stream prior to
 #  termination.
 #

@@ -1,4 +1,3 @@
-#!/usr/local/bin/python
 
 '''
 #
@@ -35,21 +34,20 @@ handleFileName = os.environ['HANDLE_VOCAB_FILE']
 handleFile = open(handleFileName, 'w')
 
 def createVocabFile():
-	print 'Creating %s' % handleFileName
-	# input file
-	inFile = open(os.environ['INT_HANDLE_VOCAB_FILE'], 'r')
-	line = string.strip(inFile.readline())
-	while line:
-	    handleFile.write("%s%s%s%s%s%s%s%s%s%s" % (line, TAB, line, TAB, TAB, TAB, TAB, TAB, TAB, NL))
-	    line = string.strip(inFile.readline())
-	handleFile.close()
+        print('Creating %s' % handleFileName)
+        # input file
+        inFile = open(os.environ['INT_HANDLE_VOCAB_FILE'], 'r')
+        line = str.strip(inFile.readline())
+        while line:
+            handleFile.write("%s%s%s%s%s%s%s%s%s%s" % (line, TAB, line, TAB, TAB, TAB, TAB, TAB, TAB, NL))
+            line = str.strip(inFile.readline())
+        handleFile.close()
 
 #
 # Main Routine
 #
-print "MGD_DBUSER %s" % os.environ['MGD_DBUSER']
+print("MGD_DBUSER %s" % os.environ['MGD_DBUSER'])
 
-print '%s' % mgi_utils.date()
+print('%s' % mgi_utils.date())
 createVocabFile()
-print '%s' % mgi_utils.date()
-
+print('%s' % mgi_utils.date())

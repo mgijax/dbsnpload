@@ -45,6 +45,7 @@ public class MGPGenotypeRefSNPInputFile  {
 
     public HashMap getInputMap () throws MGIException 
     {
+        System.out.println("MGPGenotypeRefSNPInputFile: filename is" + filename);
     	inFile = new InputDataFile(filename);
     	interpreter = new MGPGenotypeInterpreter();
     	RecordDataIterator it = inFile.getIterator(interpreter);
