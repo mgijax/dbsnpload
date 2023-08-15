@@ -1,4 +1,3 @@
-#!/usr/local/bin/python
 
 '''
 #
@@ -63,11 +62,11 @@ snpStrainOrderDict = {}
 # turn of tracing statements
 db.setTrace(True)
 password = db.get_sqlPassword()
-print db.get_sqlUser()
-print db.get_sqlServer()
-print db.get_sqlDatabase()
+print(db.get_sqlUser())
+print(db.get_sqlServer())
+print(db.get_sqlDatabase())
 
-print 'connecting to database...\n'
+print('connecting to database...\n')
 sys.stdout.flush()
 
 # set up connection to the mgd database
@@ -76,78 +75,77 @@ db.useOneConnection(1)
 # Get postgres output, don't translate to old db.py output
 db.setReturnAsSybase(False)
 
-print 'querying for snp strains in mgi...\n'
+print('querying for snp strains in mgi...\n')
 # query for the SNP strains
 results = db.sql('''
-	select strain, _mgdStrain_key
-    	from SNP_Strain
-    	order by strain
-	''', 'auto')
+        select strain, _mgdStrain_key
+        from SNP_Strain
+        order by strain
+        ''', 'auto')
 
-print 'reporting strains in MGI to %s%s' % (os.environ['SNP_STRAIN_FILE'], "\n")
+print('reporting strains in MGI to %s%s' % (os.environ['SNP_STRAIN_FILE'], "\n"))
 for r in results[1]:
     snpStrainDict[ r[0] ] = r[1]
     outFile.write("%s%s%s%s" % (r[0], "\t", r[1], "\n"))
 
-print 'reading the strain order input file ...\n'
+print('reading the strain order input file ...\n')
 sequenceNum = 0
-line = string.strip(inFile.readline())
+line = str.strip(inFile.readline())
 while line:
     sequenceNum = sequenceNum + 1
     snpStrainOrderDict[line] = sequenceNum
-    line = string.strip(inFile.readline())
+    line = str.strip(inFile.readline())
 outFile.close()
 inFile.close()
 #print snpStrainOrderDict
 
 # QC what is in the database against the input file
-print 'qc of snp strains in MGI against the strain order file ... \n'
-snpStrainsList = snpStrainDict.keys()
+print('qc of snp strains in MGI against the strain order file ... \n')
+snpStrainsList = list(snpStrainDict.keys())
 snpStrainNotInOrderList = []
-snpStrainOrderList = snpStrainOrderDict.keys()
+snpStrainOrderList = list(snpStrainOrderDict.keys())
 orderStrainNotInSnpList = []
 
 for strain in snpStrainsList:
     if strain not in snpStrainOrderList:
-    	snpStrainNotInOrderList.append(strain)
+        snpStrainNotInOrderList.append(strain)
 
 for strain in snpStrainOrderList:
     if strain not in snpStrainsList:
-	orderStrainNotInSnpList.append(strain)
+        orderStrainNotInSnpList.append(strain)
 
 if len(snpStrainNotInOrderList) > 0 or len(orderStrainNotInSnpList) > 0:
     discrepFile = os.environ['LOG_DISCREP']
-    print "Writing discrepancies to %s\n" % (discrepFile)
+    print("Writing discrepancies to %s\n" % (discrepFile))
     logDiscrep = open(discrepFile, 'w')
     logDiscrep.write("Snp Strains in MGI not in Order File: %s" % "\n")
-    print "Snp Strains in MGI not in Order File:" 
+    print("Snp Strains in MGI not in Order File:") 
     for strain in snpStrainNotInOrderList:
-	logDiscrep.write("%s%s" % (strain, "\n") )
-	print strain
-    print "" 
+        logDiscrep.write("%s%s" % (strain, "\n") )
+        print(strain)
+    print("") 
     logDiscrep.write("Order File Strain not in Snp Strains in MGI: %s" % "\n")
-    print "Order File Strain not in Snp Strains in MGI:"
+    print("Order File Strain not in Snp Strains in MGI:")
     for strain in orderStrainNotInSnpList:
         logDiscrep.write("%s%s" % (strain, "\n") )
-	print strain
-    print ""
+        print(strain)
+    print("")
     logDiscrep.close()
     #sys.exit(1)
 
-print "updating SNP strain order"
-print snpStrainOrderDict
-for strain in snpStrainOrderDict.keys():
+print("updating SNP strain order")
+print(snpStrainOrderDict)
+for strain in list(snpStrainOrderDict.keys()):
     try:
         sequenceNum = snpStrainOrderDict[strain]
         strainKey = snpStrainDict[strain]
         sql = '''
-	    update SNP_Strain
-	    set sequenceNum = %s
-	    where _mgdStrain_key = %s 
- 	    ''' % (sequenceNum, strainKey)
-        print sql
+            update SNP_Strain
+            set sequenceNum = %s
+            where _mgdStrain_key = %s 
+            ''' % (sequenceNum, strainKey)
+        print(sql)
         db.sql(sql, None)
         db.commit()
     except:
         pass
-
