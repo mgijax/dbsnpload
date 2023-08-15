@@ -26,7 +26,7 @@ fi
 
 date >  ${MGP_VCF_LOG_FILE}
 echo 'Processing MGP' |  tee -a ${MGP_VCF_LOG_FILE}
-zcat ${MGP_VCF_INPUT_FILE} | ${DBSNPLOAD}/bin/filter_vcf_snps.py | tee -a ${MGP_VCF_LOG_FILE}
+zcat ${MGP_VCF_INPUT_FILE} | ${PYTHON} ${DBSNPLOAD}/bin/filter_vcf_snps.py | tee -a ${MGP_VCF_LOG_FILE}
 
 echo 'Done processing MGP' |  tee -a ${MGP_VCF_LOG_FILE}
 date |  tee -a ${MGP_VCF_LOG_FILE}

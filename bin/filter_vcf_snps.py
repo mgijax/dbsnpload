@@ -1,7 +1,3 @@
-#!/usr/local/bin/python
-#!/usr/bin/python2.7
-
-
 '''
 #
 # Report:
@@ -86,7 +82,7 @@ columnHeader = 'CHROM%sID%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%
 vcfColumnHeader = 'CHROM%sPOS%sID%sREF%sALT%sQUAL%sFILTER%sINFO%sFORMAT%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s' % (TAB, TAB, TAB, TAB, TAB, TAB, TAB, TAB, TAB, s1, TAB, s2, TAB, s3, TAB, s4, TAB, s5, TAB, s6, TAB, s7, TAB, s8, TAB, s9, TAB, s10, TAB, s11, TAB, s12, TAB, s13, TAB, s14, TAB, s15, TAB, s16, TAB, s17, TAB, s18, TAB, s19, TAB, s20, TAB, s21, TAB, s22, TAB, s23, TAB, s24, TAB, s25, TAB, s26, TAB, s27, TAB, s28, TAB, s29, TAB, s30, TAB, s31, TAB, s32, TAB, s33, TAB, s34, TAB, s35, TAB, s36, CRT)
 
 # list of chromosomes for creating separate files
-chrList = string.split(os.getenv('SNP_CHROMOSOMES_TOLOAD'), ',')
+chrList = str.split(os.getenv('SNP_CHROMOSOMES_TOLOAD'), ',')
 
 #
 # dynamically created file pointers one for each c in chrList
@@ -128,13 +124,13 @@ def init():
 
     # initialize the chromosome file pointers and write column header to each
     for c in chrList:
-	try:
-	    inputFileDict[c] = open('%s/chr%s.txt' % (outFileDir, c), 'w')
-	    inputFileDict[c].write(columnHeader)
-	    vcfFileDict[c] = open('%s/chr%s.vcf' % (outFileDir, c), 'w')
-	    vcfFileDict[c].write(vcfColumnHeader)
-	except:
-	    return 1
+        try:
+            inputFileDict[c] = open('%s/chr%s.txt' % (outFileDir, c), 'w')
+            inputFileDict[c].write(columnHeader)
+            vcfFileDict[c] = open('%s/chr%s.vcf' % (outFileDir, c), 'w')
+            vcfFileDict[c].write(vcfColumnHeader)
+        except:
+            return 1
     return 0
 
 def calculateAllele(rsID, chr, strain, ref, alt, gtValue): # reference allele, alt allele(s), GT value
@@ -144,17 +140,17 @@ def calculateAllele(rsID, chr, strain, ref, alt, gtValue): # reference allele, a
     # Effects: 
 
     allele = 'z'
-    tokens = string.split(alt, ',')
+    tokens = str.split(alt, ',')
     if gtValue ==  '0/0': # use the REF allele
-	allele = ref
+        allele = ref
     elif gtValue ==  '1/1': # use the first ALT allele
-	allele = tokens[0]
+        allele = tokens[0]
     elif gtValue == '2/2': # use the  second ALT allele
-	allele = tokens[1]
+        allele = tokens[1]
     elif gtValue == '3/3': # use the  second ALT allele
         allele = tokens[2]
     else:
-	fpLog.write('this is an error %s, %s, %s, %s, %s%s' % (rsID, chr, ref, alt, gtValue, CRT))
+        fpLog.write('this is an error %s, %s, %s, %s, %s%s' % (rsID, chr, ref, alt, gtValue, CRT))
     
     return allele
 
@@ -183,11 +179,11 @@ def writeVcfFile(chr, pos, rsID, ref, alt, qual, filter, info, format, tokens):
     # DP=417;DP4=93,1,210,113;CSQ=T||||intergenic_variant||||||||
     #print info
     if info.count(';') == 2: # if two ';' then there is a CSQ section
-	temp = string.split(info, ';')
-	info = temp[2] # remove DP=417;DP4=93,1,210,113;
+        temp = str.split(info, ';')
+        info = temp[2] # remove DP=417;DP4=93,1,210,113;
     else:
-	info = ''   # no CSQ section
-	newInfo = ''
+        info = ''   # no CSQ section
+        newInfo = ''
     # pipe-delim tokens that we want, if CSQ sectin not present then
     # output column will be blank
     # 0 = CSQ
@@ -200,20 +196,20 @@ def writeVcfFile(chr, pos, rsID, ref, alt, qual, filter, info, format, tokens):
     # 12 = Strand
 
     if info != '':
-	# one or more genes ',' delimited
-	newInfo = ''
-	geneTokens = string.split(info, ',')
-	#print geneTokens
-	for t in geneTokens:
-	    geneTokens = string.split(t, '|')
-	    newInfo = newInfo + '%s|%s|%s|%s|%s|%s|%s|%s,' % (geneTokens[0], geneTokens[1], geneTokens[2], geneTokens[4], geneTokens[7], geneTokens[8], geneTokens[9], geneTokens[12])
-	newInfo = newInfo[:-1]  # strip off final comma
+        # one or more genes ',' delimited
+        newInfo = ''
+        geneTokens = str.split(info, ',')
+        #print geneTokens
+        for t in geneTokens:
+            geneTokens = str.split(t, '|')
+            newInfo = newInfo + '%s|%s|%s|%s|%s|%s|%s|%s,' % (geneTokens[0], geneTokens[1], geneTokens[2], geneTokens[4], geneTokens[7], geneTokens[8], geneTokens[9], geneTokens[12])
+        newInfo = newInfo[:-1]  # strip off final comma
 
     vcfFileDict[chr].write('%s%s' % (newInfo, TAB))
     gt = 0
     fi = 13
     # Parse format column
-    fTokens = string.split(format, ':')
+    fTokens = str.split(format, ':')
     GT = fTokens[gt]
     FI = fTokens[fi]
     newFormat = '%s:%s%s' % (GT, FI, TAB)
@@ -221,17 +217,17 @@ def writeVcfFile(chr, pos, rsID, ref, alt, qual, filter, info, format, tokens):
 
     # parse strain columns
     for col in [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44]:
-	s = tokens[col]
-	sTokens = string.split(s, ':')
-	GT = sTokens[gt]
-	FI = sTokens[fi]
+        s = tokens[col]
+        sTokens = str.split(s, ':')
+        GT = sTokens[gt]
+        FI = sTokens[fi]
 
-	newStrain = ''
-	if col == 44:
-	     newStrain = '%s:%s%s' % (GT, FI, CRT)
-	else:
-	    newStrain = '%s:%s%s' % (GT, FI, TAB)
-	vcfFileDict[chr].write(newStrain)
+        newStrain = ''
+        if col == 44:
+             newStrain = '%s:%s%s' % (GT, FI, CRT)
+        else:
+            newStrain = '%s:%s%s' % (GT, FI, TAB)
+        vcfFileDict[chr].write(newStrain)
     return 0
 
 def processFile():
@@ -246,72 +242,72 @@ def processFile():
     pattern = r'[^-\t]'
     line = readNextLine()
     while line:
-	line = string.strip(line)
-	newLine = ''
-	if string.find(line, '#') == 0:
-	    line = readNextLine()
-	    continue
-	else:
-	    totalCt += 1
-	    tokens = string.split(line, TAB)
-	    chr = tokens[0]
-	    pos = tokens[1]  	# vcf file only
-	    rsID = tokens[2]
-	    
-	    if rsID == '.':	# no RS ID
-		noRsCt += 1
-		line = readNextLine()
-		continue
-	    rsID = rsID[2:] # strip off the 'rs' prefix
+        line = str.strip(line)
+        newLine = ''
+        if str.find(line, '#') == 0:
+            line = readNextLine()
+            continue
+        else:
+            totalCt += 1
+            tokens = str.split(line, TAB)
+            chr = tokens[0]
+            pos = tokens[1]  	# vcf file only
+            rsID = tokens[2]
+            
+            if rsID == '.':	# no RS ID
+                noRsCt += 1
+                line = readNextLine()
+                continue
+            rsID = rsID[2:] # strip off the 'rs' prefix
 
-	    # for debug so we can develop on one chromosome 
-	    # if desired
-	    #if chr not in inputFileDict  r chr not in vcfFileDict:
-	    #    continue
+            # for debug so we can develop on one chromosome 
+            # if desired
+            #if chr not in inputFileDict  r chr not in vcfFileDict:
+            #    continue
 
- 	    #inputFileDict[chr].write('%s%s%s%s' % (chr, TAB, rsID, TAB))
-	    newLine = newLine + '%s%s%s%s' % (chr, TAB, rsID, TAB)
-	    ref = tokens[3]
-	    alt = tokens[4]
-	    qual = tokens[5]
-	    filter = tokens[6]
-	    if string.find(alt, ',') != -1: # multiple alleles
-		multiCt += 1
-	    info = tokens[7]
-	    format = tokens[8]
-	    writeVcfFile(chr, pos, rsID, ref, alt, qual, filter, info, format, tokens)
+            #inputFileDict[chr].write('%s%s%s%s' % (chr, TAB, rsID, TAB))
+            newLine = newLine + '%s%s%s%s' % (chr, TAB, rsID, TAB)
+            ref = tokens[3]
+            alt = tokens[4]
+            qual = tokens[5]
+            filter = tokens[6]
+            if str.find(alt, ',') != -1: # multiple alleles
+                multiCt += 1
+            info = tokens[7]
+            format = tokens[8]
+            writeVcfFile(chr, pos, rsID, ref, alt, qual, filter, info, format, tokens)
 
-	    # parse strain columns
-	    strainPart = ''
-	    for col in [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44]:
-		s = tokens[col]
-		sTokens = string.split(s, ':')
-		fi = sTokens[FI]
-		gt = sTokens[GT]
-	        #fpLog.write( '%s %s %s %s%s' % (chr, rsID, gt, fi, CRT))
-		allele = '-'
-		if fi != '1':
-		    fi0Ct += 1
-		else:
-		    if gt == '0/1': # heterzygous, report it
-			fi1hetCt += 1 
-			fpLog.write('genotype quality is 1, but allele is heterzygous: %s strain column %s%s' % (rsID, col, CRT))
-		    else:
-			allele = calculateAllele(rsID, chr, col, ref, alt, gt)
-		#inputFileDict[chr].write('%s%s' % (allele, TAB))
-		strainPart = strainPart + '%s%s' % (allele, TAB)
-	    if re.search(pattern, strainPart): # no alleles for any MGP strains
-		newLine = newLine + strainPart
-		# now add column for B6
-		newLine = newLine + '%s%s' % (ref, CRT)
-		inputFileDict[chr].write(newLine)
-		if chr not in rsCtByChrDict:
-		     rsCtByChrDict[chr] = 1
-		else:
-		    rsCtByChrDict[chr] += 1
-	    else:
-		noAlleleCt += 1
-	line = readNextLine()
+            # parse strain columns
+            strainPart = ''
+            for col in [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44]:
+                s = tokens[col]
+                sTokens = str.split(s, ':')
+                fi = sTokens[FI]
+                gt = sTokens[GT]
+                #fpLog.write( '%s %s %s %s%s' % (chr, rsID, gt, fi, CRT))
+                allele = '-'
+                if fi != '1':
+                    fi0Ct += 1
+                else:
+                    if gt == '0/1': # heterzygous, report it
+                        fi1hetCt += 1 
+                        fpLog.write('genotype quality is 1, but allele is heterzygous: %s strain column %s%s' % (rsID, col, CRT))
+                    else:
+                        allele = calculateAllele(rsID, chr, col, ref, alt, gt)
+                #inputFileDict[chr].write('%s%s' % (allele, TAB))
+                strainPart = strainPart + '%s%s' % (allele, TAB)
+            if re.search(pattern, strainPart): # no alleles for any MGP strains
+                newLine = newLine + strainPart
+                # now add column for B6
+                newLine = newLine + '%s%s' % (ref, CRT)
+                inputFileDict[chr].write(newLine)
+                if chr not in rsCtByChrDict:
+                     rsCtByChrDict[chr] = 1
+                else:
+                    rsCtByChrDict[chr] += 1
+            else:
+                noAlleleCt += 1
+        line = readNextLine()
 
     return 0
 
@@ -327,7 +323,7 @@ def writeLog():
     fpLog.write('Total heterozygous strain alleles with genotype quality = 1: %s\n' % fi1hetCt)
     fpLog.write('Counts of RS by Chromosome\n')
     for c in rsCtByChrDict:
-	fpLog.write('  chr%s: %s\n' % (c, rsCtByChrDict[c]))
+        fpLog.write('  chr%s: %s\n' % (c, rsCtByChrDict[c]))
     return 0
 
 def openFiles():
@@ -340,7 +336,7 @@ def openFiles():
     global fpLog
 
     try:
-	fpLog = open(logFile, 'a+')
+        fpLog = open(logFile, 'a+')
     except:
         return 1
     return 0
