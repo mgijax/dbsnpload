@@ -1,5 +1,9 @@
 #!/usr/bin/sh
 
+#
+# HISTORY
+#
+
 cd `dirname $0`/..
 
 CONFIG_LOAD=`pwd`/mgpload.config
