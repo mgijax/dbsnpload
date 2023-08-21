@@ -16,7 +16,7 @@ class MGPGenotypeRefSNPInput {
     //private HashMap ssPopulationMap;
 
     // RefSnp id
-    private int rsId;
+    private String  rsId;
     
     // pipe-delim string for strain alleles for this rs
     private String strainAlleles;
@@ -25,7 +25,7 @@ class MGPGenotypeRefSNPInput {
     /**
      * constructor
      */
-    public MGPGenotypeRefSNPInput(int rs, String sa) {
+    public MGPGenotypeRefSNPInput(String rs, String sa) {
         rsId = rs;
         strainAlleles = sa;
     }
@@ -34,7 +34,7 @@ class MGPGenotypeRefSNPInput {
      * gets the rs id
      * @return the rs id
      */
-    public int getRsId() {
+    public String getRsId() {
         return rsId;
     }
     

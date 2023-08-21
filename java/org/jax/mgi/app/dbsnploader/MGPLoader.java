@@ -293,16 +293,17 @@ public class MGPLoader extends DLALoader {
                 nseInput = (DBSNPNseInput)it.next();
                 String nseRSId = nseInput.getRS().getRsId();
                 //System.out.println("XML rsID: " + nseRSId);
-                //logger.logcInfo("Next RS" + nseRSId, false);
-                int intNseRSId = new Integer(nseRSId).intValue();
-
-                if (genoSNPMap.containsKey(intNseRSId)) {
+                //logger.logdInfo("Next NSE RS" + nseRSId, true);
+                //int intNseRSId = new Integer(nseRSId).intValue();
+                //if (genoSNPMap.containsKey(intNseRSId)) {
+                if (genoSNPMap.containsKey(nseRSId)) {
                 	totalGenoSnpOnChr++;
                 	genoInput = 
-                			(MGPGenotypeRefSNPInput)genoSNPMap.get(intNseRSId);
+                			//(MGPGenotypeRefSNPInput)genoSNPMap.get(intNseRSId);
+                                        (MGPGenotypeRefSNPInput)genoSNPMap.get(nseRSId);
                 	//System.out.println("genoInput.rsID " + genoInput.getRsId());
-                	genoRSId = Integer.toString(genoInput.getRsId()); 
-                	//System.out.println("geno rsID: " + genoRSId);
+                	genoRSId = genoInput.getRsId(); 
+                	logger.logdInfo("geno rsID: " + genoRSId, true);
                 	//if (rsLookup.lookup("rs" + genoRSId) != null) {
                 	if (rsLookup.lookup(genoRSId) != null) {
                     	//logger.logcInfo("Geno RS is already in MGI rs" + genoRSId, false);

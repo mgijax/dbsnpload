@@ -51,7 +51,7 @@ public class MGPGenotypeRefSNPInputFile  {
     	RecordDataIterator it = inFile.getIterator(interpreter);
     	MGPGenotypeRefSNPInput genoInput = null;
     	HashMap inputMap = new HashMap();
-    	int genoRSId;
+    	String genoRSId;
 	
     	while (it.hasNext()) {
 	    genoInput = (MGPGenotypeRefSNPInput)it.next();
@@ -98,7 +98,7 @@ public class MGPGenotypeRefSNPInputFile  {
             MGPGenotypeRefSNPInput currentInput = null;
 
             // current rsid
-            int currentRSId;
+            String currentRSId;
            
             // allele for current strain
             Allele currentAllele = null;
@@ -125,7 +125,7 @@ public class MGPGenotypeRefSNPInputFile  {
 	            }*/
 	            
 	            
-	            currentRSId = new Integer(fields[1]).intValue();
+	            currentRSId = fields[1];
 	            //System.out.println("Interpret rsID: " + currentRSId);
 	            
 	            // all MGS snps are in fwd orientation - we won't be using this, we'll be 
