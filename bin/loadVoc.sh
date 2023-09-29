@@ -32,6 +32,10 @@ Usage="loadVoc.sh [-f -v -h]"
 #
 #  Notes:  None
 #
+# 09/29/2023 - sc
+#       This script is obsolete and may not be used. We have removed 
+#       VOCDAGLOAD from the vocload product
+#
 ###########################################################################
 
 cd `dirname $0`/..

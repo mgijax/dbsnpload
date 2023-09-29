@@ -91,9 +91,9 @@ OUTPUTDIR=${FILEDIR}/output
 export FILEDIR LOGDIR RPTDIR ARCHIVEDIR OUTPUTDIR
 
 # MGP VCF file filter settings
-MGP_VCF_INPUT_DIR=${DATADOWNLOADS}/ftp-mouse.sanger.ac.uk/current_snps/
+MGP_VCF_INPUT_DIR=${DATADOWNLOADS}/ftp.ebi.ac.uk/pub/databases/mousegenomes/REL-2112-v8-SNPs_Indels
 MGP_VCF_OUTPUT_DIR=${MGP_VCF_INPUT_DIR}
-MGP_VCF_INPUT_FILE=${MGP_VCF_INPUT_DIR}/mgp.v5.merged.snps_all.dbSNP142.vcf.gz
+MGP_VCF_INPUT_FILE=${MGP_VCF_INPUT_DIR}/mgp_REL2021_snps.rsID.vcf.gz
 MGP_VCF_LOG_FILE=${LOGDIR}/filter_vcf_snps.log
 
 export MGP_VCF_INPUT_DIR MGP_VCF_OUTPUT_DIR MGP_VCF_INPUT_FILE MGP_VCF_LOG_FILE
@@ -124,6 +124,7 @@ export GENO_SNP_INFILESUFFIX NSE_SNP_INFILESUFFIX
 
 # list of chromosomes to load, comma delimited
 SNP_CHROMOSOMES_TOLOAD="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,X,Y,MT"
+#SNP_CHROMOSOMES_TOLOAD="19"
 
 # full path to 'SNPs not loaded' report
 SNP_NOTLOADED=${RPTDIR}/RefSnpsNotLoaded.txt
@@ -221,16 +222,19 @@ SNP_DATA_DIR=${DBSNPLOAD}/data
 
 export SNP_DATA_DIR 
 
+# sc - 09/29/2023 commented out all vocload sttings as not used by mgp
+# and Lori is removing some scripts from vocload
+
 # full path to simple vocabulary loader
-VOCSIMPLELOAD=${VOCLOAD}/runSimpleFullLoadNoArchive.sh
+#VOCSIMPLELOAD=${VOCLOAD}/runSimpleFullLoadNoArchive.sh
 
 # full path to dag vocabulary loader
-VOCDAGLOAD=${VOCLOAD}/runDAGFullLoad.sh
+#VOCDAGLOAD=${VOCLOAD}/runDAGFullLoad.sh
 
 # full load to wrapper to run  dbsnpload vocabularies
-DBSNP_VOCLOAD=${DBSNPLOAD}/bin/loadVoc.sh
+#DBSNP_VOCLOAD=${DBSNPLOAD}/bin/loadVoc.sh
 
-export VOCLOAD VOCSIMPLELOAD VOCDAGLOAD DBSNP_VOCLOAD
+#export VOCLOAD VOCSIMPLELOAD VOCDAGLOAD DBSNP_VOCLOAD
 
 # vocload handle vocab settings
 HANDLE_VOCAB_NAME="SNP Submitter Handle"
