@@ -74,7 +74,7 @@ sys.stdout.flush()
 db.useOneConnection(1)
 
 # Get postgres output, don't translate to old db.py output
-db.setReturnAsSybase(False)
+db.setReturnAsMGI(False)
 
 print 'querying for snp strains in mgi...\n'
 # query for the SNP strains

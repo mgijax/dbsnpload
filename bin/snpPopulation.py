@@ -71,7 +71,7 @@ def setup():
     	db.useOneConnection(1)
 
     	# Get postgres output, don't translate to old db.py output
-    	db.setReturnAsSybase(False)
+    	db.setReturnAsMGI(False)
 
     	print 'Creating Handle Lookup'
 	sys.stdout.flush()
