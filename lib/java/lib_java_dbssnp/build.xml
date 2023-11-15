@@ -8,7 +8,7 @@
    -->
    <property environment="env"/>
    <property name="jar.name" value="dbssnp"/>
-   <property name="classpath" value="${env.CLASSPATH}:${env.MGI_JAVALIB}/core.jar:${env.DBSGEN}/classes:${env.VELOCITY}:${env.JUNIT}:${env.JCONNECT}"/>
+   <property name="classpath" value="${env.CLASSPATH}:${env.MGI_JAVALIB}/core.jar:${env.DBSGEN}/classes:${env.VELOCITY}:${env.JUNIT}"/>
 
    <!-- Import the universal targets.
    -->
