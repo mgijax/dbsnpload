@@ -1,0 +1,169 @@
+Fri Dec  1 08:47:12 EST 2023
+--- starting part 1
+MGD_DBNAME=sc
+MGD_DBPASSWORDFILE=/home/sc/work/dbutils/pgdbutilities/.pgpass_1
+MGD_DBSERVER=bhmgidb03lt
+MGD_DBUSER=mgd_dbo
+delete from snp_population where _population_key in (28, 29)
+;
+DELETE 2
+select * from voc_term
+where _vocab_key = 51
+;
+ _term_key | _vocab_key |         term         | abbreviation | note | sequencenum | isobsolete | _createdby_key | _modifiedby_key |       creation_date        |     modification_date      
+-----------+------------+----------------------+--------------+------+-------------+------------+----------------+-----------------+----------------------------+----------------------------
+  10125500 |         51 | ABI                  |              |      |           1 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125501 |         51 | AEOMICA              |              |      |           2 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125502 |         51 | CASEADAMS            |              |      |           3 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125503 |         51 | CGAP-GAI             |              |      |           4 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125504 |         51 | CHEVERUD             |              |      |           5 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125505 |         51 | CHINGNLAC            |              |      |           6 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125506 |         51 | CRAMUS               |              |      |           7 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125507 |         51 | DIFE                 |              |      |           8 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125508 |         51 | ENSEMBL              |              |      |           9 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125509 |         51 | ERO                  |              |      |          10 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125510 |         51 | HGERSHENFELD         |              |      |          11 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125511 |         51 | IHBGSFLUFU           |              |      |          12 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125512 |         51 | IMMUNOGENSVI         |              |      |          13 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125513 |         51 | JAXBEVPAIGEN         |              |      |          14 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125514 |         51 | JSAM-COH             |              |      |          15 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125515 |         51 | KEENEY               |              |      |          16 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125516 |         51 | KJASZCZAK            |              |      |          17 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125517 |         51 | KMRGMT               |              |      |          18 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125518 |         51 | KOKORO_BIOLOGY_GROUP |              |      |          19 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125519 |         51 | LPG-NCI              |              |      |          20 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125520 |         51 | MATINLAB-MDACC       |              |      |          21 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125521 |         51 | MITCCR               |              |      |          22 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125522 |         51 | NAUMOVAEPI           |              |      |          23 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125523 |         51 | NCBI-GENBANK-VAR     |              |      |          24 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125524 |         51 | NDMCARDLE            |              |      |          25 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125525 |         51 | OTAGOCGL             |              |      |          26 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125526 |         51 | PARC_SEQ             |              |      |          27 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125527 |         51 | PAWSNP               |              |      |          28 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125528 |         51 | PERLEGEN             |              |      |          29 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125529 |         51 | PI_DPPM_INT          |              |      |          30 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125530 |         51 | RIKENBSIMPS          |              |      |          31 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125531 |         51 | ROCHEBIO             |              |      |          32 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125532 |         51 | SC_JCM               |              |      |          33 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125533 |         51 | SC_MOUSE_GENOMES     |              |      |          34 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125534 |         51 | SIDJANIN             |              |      |          35 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125535 |         51 | TIZUMI               |              |      |          36 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125536 |         51 | TOLLAB               |              |      |          37 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125537 |         51 | TWGNF                |              |      |          38 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125538 |         51 | UNISTS               |              |      |          39 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125539 |         51 | UOL_CGR              |              |      |          40 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125540 |         51 | UTHSCSEQ             |              |      |          41 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125541 |         51 | VISION_GENETICS_LAB  |              |      |          42 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125542 |         51 | WI                   |              |      |          43 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+  10125543 |         51 | WIMOUSESNPS          |              |      |          44 |          0 |           1001 |            1001 | 2013-06-12 17:29:37.53     | 2013-06-12 17:29:37.53
+ 113842640 |         51 | EVA_MGPV3            |              |      |          45 |          0 |           1001 |            1001 | 2023-11-29 15:01:55.524349 | 2023-11-29 15:01:55.524349
+(45 rows)
+
+select p._population_key, p.subhandle,
+        p._subhandle_key as badKey, t.term, t._term_key as goodKey
+    into temporary table handleUpdates
+    from snp_population p, voc_term t
+    where p.subhandle = t.term
+    and t._vocab_key = 51
+;
+SELECT 28
+select * from handleUpdates
+;
+ _population_key |      subhandle       |  badkey  |         term         |  goodkey  
+-----------------+----------------------+----------+----------------------+-----------
+              18 | ABI                  | 15516459 | ABI                  |  10125500
+              14 | CHEVERUD             | 15516463 | CHEVERUD             |  10125504
+              26 | CRAMUS               | 15516465 | CRAMUS               |  10125506
+               8 | DIFE                 | 15516466 | DIFE                 |  10125507
+               7 | ENSEMBL              | 15516467 | ENSEMBL              |  10125508
+              21 | ERO                  | 15516468 | ERO                  |  10125509
+              20 | ERO                  | 15516468 | ERO                  |  10125509
+               1 | JAXBEVPAIGEN         | 15516472 | JAXBEVPAIGEN         |  10125513
+              12 | KMRGMT               | 15516476 | KMRGMT               |  10125517
+              13 | KOKORO_BIOLOGY_GROUP | 15516477 | KOKORO_BIOLOGY_GROUP |  10125518
+              23 | MATINLAB-MDACC       | 15516479 | MATINLAB-MDACC       |  10125520
+              22 | MITCCR               | 15516480 | MITCCR               |  10125521
+               3 | NCBI-GENBANK-VAR     | 15516482 | NCBI-GENBANK-VAR     |  10125523
+               6 | PARC_SEQ             | 15516485 | PARC_SEQ             |  10125526
+              16 | PAWSNP               | 15516486 | PAWSNP               |  10125527
+              15 | PERLEGEN             | 15516487 | PERLEGEN             |  10125528
+               5 | PERLEGEN             | 15516487 | PERLEGEN             |  10125528
+              17 | PI_DPPM_INT          | 15516488 | PI_DPPM_INT          |  10125529
+              11 | PI_DPPM_INT          | 15516488 | PI_DPPM_INT          |  10125529
+               2 | ROCHEBIO             | 15516490 | ROCHEBIO             |  10125531
+              19 | TIZUMI               | 15516494 | TIZUMI               |  10125535
+              27 | TWGNF                | 15516496 | TWGNF                |  10125537
+               4 | TWGNF                | 15516496 | TWGNF                |  10125537
+               9 | UOL_CGR              | 15516498 | UOL_CGR              |  10125539
+              10 | VISION_GENETICS_LAB  | 15516500 | VISION_GENETICS_LAB  |  10125541
+              24 | WI                   | 15516501 | WI                   |  10125542
+              25 | WIMOUSESNPS          | 15516502 | WIMOUSESNPS          |  10125543
+              30 | EVA_MGPV3            | 15516503 | EVA_MGPV3            | 113842640
+(28 rows)
+
+create index idx1 on handleUpdates(_population_key)
+;
+CREATE INDEX
+update snp_population
+set _subhandle_key = h.goodKey
+from handleUpdates h
+where h._population_key = snp_population._population_key
+;
+UPDATE 28
+select p._population_key, p.name, p.subhandle, p._subhandle_key as popHandleKey, t.term, t._term_key as termHandleKey
+from snp_population p, voc_term t
+where p.subhandle = t.term
+and t._vocab_key = 51
+order by _population_key
+;
+ _population_key |          name           |      subhandle       | pophandlekey |         term         | termhandlekey 
+-----------------+-------------------------+----------------------+--------------+----------------------+---------------
+               1 | Strain_ID               | JAXBEVPAIGEN         |     10125513 | JAXBEVPAIGEN         |      10125513
+               2 | RPAMM                   | ROCHEBIO             |     10125531 | ROCHEBIO             |      10125531
+               3 | MOUSE-POP-NC_005089     | NCBI-GENBANK-VAR     |     10125523 | NCBI-GENBANK-VAR     |      10125523
+               4 | TWGNF-Mouse-2           | TWGNF                |     10125537 | TWGNF                |      10125537
+               5 | MM_PANEL                | PERLEGEN             |     10125528 | PERLEGEN             |      10125528
+               6 | INBRED                  | PARC_SEQ             |     10125526 | PARC_SEQ             |      10125526
+               7 | ENSEMBL_Sanger          | ENSEMBL              |     10125508 | ENSEMBL              |      10125508
+               8 | SJL_07                  | DIFE                 |     10125507 | DIFE                 |      10125507
+               9 | Mmu17_30637692_36837814 | UOL_CGR              |     10125539 | UOL_CGR              |      10125539
+              10 | MM_STRAINS              | VISION_GENETICS_LAB  |     10125541 | VISION_GENETICS_LAB  |      10125541
+              11 | INT_PANEL1              | PI_DPPM_INT          |     10125529 | PI_DPPM_INT          |      10125529
+              12 | KMRGMT-Mouse            | KMRGMT               |     10125517 | KMRGMT               |      10125517
+              13 | KOKORO_MOUSE            | KOKORO_BIOLOGY_GROUP |     10125518 | KOKORO_BIOLOGY_GROUP |      10125518
+              14 | SCREENING_POP           | CHEVERUD             |     10125504 | CHEVERUD             |      10125504
+              15 | MM_PANEL2               | PERLEGEN             |     10125528 | PERLEGEN             |      10125528
+              16 | Acadl_SNP_variants      | PAWSNP               |     10125527 | PAWSNP               |      10125527
+              17 | INT_PANEL2              | PI_DPPM_INT          |     10125529 | PI_DPPM_INT          |      10125529
+              18 | CRAMUS_MOUSE            | ABI                  |     10125500 | ABI                  |      10125500
+              19 | TB001                   | TIZUMI               |     10125535 | TIZUMI               |      10125535
+              20 | PANEL1                  | ERO                  |     10125509 | ERO                  |      10125509
+              21 | PANEL2                  | ERO                  |     10125509 | ERO                  |      10125509
+              22 | Mouse_(BJ)              | MITCCR               |     10125521 | MITCCR               |      10125521
+              23 | Pools-1                 | MATINLAB-MDACC       |     10125520 | MATINLAB-MDACC       |      10125520
+              24 | MOUSE                   | WI                   |     10125542 | WI                   |      10125542
+              25 | MITROCHE_POP            | WIMOUSESNPS          |     10125543 | WIMOUSESNPS          |      10125543
+              26 | CRAMUS_MOUSE            | CRAMUS               |     10125506 | CRAMUS               |      10125506
+              27 | TWGNF-Mouse             | TWGNF                |     10125537 | TWGNF                |      10125537
+              30 | EVA_MGPV3               | EVA_MGPV3            |    113842640 | EVA_MGPV3            |     113842640
+(28 rows)
+
+update snp_subsnp
+set _subhandle_key = h.goodKey
+from handleUpdates h
+where snp_subsnp._subhandle_key  = h.badKey
+;
+UPDATE 23877430
+select count(*)
+from snp_subsnp s
+where not exists (select 1
+from voc_term t
+where s._subhandle_key = t._term_key
+and t._vocab_key = 51)
+;
+ count 
+-------
+     0
+(1 row)
+
+Fri Dec  1 08:52:32 EST 2023
